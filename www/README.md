@@ -1,0 +1,1 @@
+These files are part of MathJax and are here to allow local development.  These would be downloaded automatically if using the jsdelivr verison of MathJax.

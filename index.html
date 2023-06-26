@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<script>
+MathJax = {
+	loader: {
+		load: ['[custom]/siunitx.js', '[tex]/gensymb'], //gensymb is required for \degree and \ohm
+		paths: {custom: '.'}
+	},
+	tex: {
+		packages: {'[+]': ['siunitx', 'gensymb']},  //gensymb is required for \degree and \ohm
+		inlineMath: {'[+]': [['$', '$']]}
+		/* global options go here, see IOptions in options.ts for properties */
+		// Uncomment example below: 
+		// perMode: 'fraction'
+	}
+};
+</script>
+<!-- es5 version -->
+<script type="text/javascript" id="MathJax-script" async src="www/mathjax.js">
+</script>
+<body>
+	<style>
+		.tableStyle {
+			border: 1px solid;
+			border-collapse: collapse;
+		}
+		.tableStyle th,td {
+			border: 1px solid;
+		}
+	</style>
+
+$$\color{red} \qty{4}{\kilogram}  \qty[color=blue]{4}{\kilogram} \mathrm{still red} $$
+
+
+<h2>Num</h2>
+<table id="numTable" class="tableStyle"></table>
+
+<h2>Unit</h2>
+<table id="unitTable" class="tableStyle"></table>
+
+
+<script>
+var num = [
+
+	String.raw`\num{1234}`,
+	String.raw`\num{12345}`,
+	String.raw`\num{0.123}`,
+	String.raw`\num{.123}`,
+	String.raw`\num{0,1234}`,
+	String.raw`\num{.12345}`,
+	String.raw`\num{3.45d-4}`,
+	String.raw`\num{-e10}`,
+	String.raw`\num{9.99(9)}`,
+	String.raw`\num{9.99 +- 0.09}`,
+	String.raw`\num{9.99 \pm 0.09}`,
+	String.raw`\num{123 +- 4.5}`,
+	String.raw`\num{12.3 +- 6}`,
+	String.raw`\num{123.4(12)}`,
+	String.raw`\num{123.4(1.2)}`,
+	String.raw`\num{123.4(12)(45)}`,
+	String.raw`\num{123.4 \pm 1.2 \pm 4.5}`,
+	String.raw`\num[parse-numbers = false]{\sqrt{2}}`,
+
+	String.raw`\num{10.}`,
+	String.raw`\num[retain-explicit-decimal-marker]{10.}`,
+	String.raw`\num{+345}`,
+	String.raw`\num[retain-explicit-plus]{+345}`,
+	String.raw`\num{-0}`,
+	String.raw`\num[retain-negative-zero]{-0}`,
+	String.raw`\num{12.3(0)}`,
+	String.raw`\num[retain-zero-uncertainty]{12.3(0)}`,
+
+
+	// postprocess demo
+	String.raw`\num{0.001}`,
+	String.raw`\num{0.0100}`,
+	String.raw`\num{1200}`,
+	String.raw`\num[exponent-mode = scientific]{0.001}`,
+	String.raw`\num[exponent-mode = scientific]{0.0100}`,
+	String.raw`\num[exponent-mode = scientific]{1200}`,
+	String.raw`\num[exponent-mode = engineering]{0.001}`,
+	String.raw`\num[exponent-mode = engineering]{0.0100}`,
+	String.raw`\num[exponent-mode = engineering]{1200}`,
+	String.raw`\num[exponent-mode = fixed, fixed-exponent=2]{0.001}`,
+	String.raw`\num[exponent-mode = fixed, fixed-exponent=2]{0.0100}`,
+	String.raw`\num[exponent-mode = fixed, fixed-exponent=2]{1200}`,
+	String.raw`\num[exponent-mode = fixed, fixed-exponent=0]{0.0100}`,
+	String.raw`\num[exponent-mode = fixed, fixed-exponent=0]{1.00e-2}`,
+	String.raw`\num{0.01(2)}`,
+	String.raw`\num[drop-uncertainty]{0.01(2)}`,
+	String.raw`\num{0.01e3}`,
+	String.raw`\num[drop-exponent]{0.01e3}`,
+	//rounding
+	String.raw`\num{1.23456}`,
+	String.raw`\num{14.23}`,
+	String.raw`\num{0.12345(9)}`,
+	String.raw`\num[round-mode = places, round-precision = 3]{1.23456}`,
+	String.raw`\num[round-mode = places, round-precision = 3]{14.23}`,
+	String.raw`\num[round-mode = places, round-precision = 3]{0.12345(9)}`,
+	String.raw`\num[round-mode = figures, round-precision = 3]{1.23456}`,
+	String.raw`\num[round-mode = figures, round-precision = 3]{14.23}`,
+	String.raw`\num[round-mode = figures, round-precision = 3]{0.12345(9)}`,
+	String.raw`\num[round-mode = figures, round-precision = 3]{25555}`,
+	String.raw`\num[round-mode = uncertainty, round-precision = 1]{0.12345(9)}`,
+	String.raw`\num[round-mode = uncertainty, round-precision = 1]{0.12345(23)}`,
+	String.raw`\num[round-mode = uncertainty, round-precision = 1]{0.12345(234)}`,
+	String.raw`\num[round-mode = figures, round-precision = 4]{12.3}`,
+	String.raw`\num[round-mode = figures, round-precision = 4, round-pad=false]{12.3}`,
+
+	String.raw`\num[round-mode = places]{0.0055}`,
+	String.raw`\num[round-mode = places]{0.0045}`,
+	String.raw`\num[round-mode = places, round-minimum = 0.01]{0.0055}`,
+	String.raw`\num[round-mode = places, round-minimum = 0.01]{0.0045}`,
+	String.raw`\num[round-mode = places]{-0.001}`,
+	String.raw`\num[round-mode = places, round-zero-positive = false]{-0.001}`,
+	String.raw`\num{2.0}`,
+	String.raw`\num{2.1}`,
+	String.raw`\num[drop-zero-decimal]{2.0}`,
+	String.raw`\num[drop-zero-decimal]{2.1}`,
+	String.raw`\num{123}`,
+	String.raw`\num[minimum-integer-digits = 2]{123}`,
+	String.raw`\num[minimum-integer-digits = 4]{123}`,
+	String.raw`\num{0.123}`,
+	String.raw`\num[minimum-decimal-digits = 2]{0.123}`,
+	String.raw`\num[minimum-decimal-digits = 4]{0.123}`,
+
+
+	String.raw`\num[group-minimum-digits = 5]{1234.5678}`,
+	String.raw`\num[group-minimum-digits = 5]{12345.67890}`,
+	String.raw`\num[digit-group-other-size = 2]{1234567890}`,
+	String.raw`\num[output-decimal-marker = {,}]{1.23}`,
+	String.raw`\num[exponent-product = \times]{1e2}`,
+	String.raw`\num[exponent-product = \cdot]{1e2}`,
+	String.raw`\num[exponent-base = 2]{1e2}`,
+	String.raw`\num[output-exponent-marker = e]{1e2}`,
+	String.raw`\num[output-exponent-marker = \mathrm{E}]{1e2}`,
+	String.raw`\num{123.45(120)}`,
+	String.raw`\num{0.035(14)}`,
+	String.raw`\num[uncertainty-mode = compact-marker]{123.45(120)}`,
+	String.raw`\num[uncertainty-mode = compact-marker]{0.035(14)}`,
+	String.raw`\num[uncertainty-mode=separate]{1.234 +- 0.005}`,
+	String.raw`\num[{uncertainty-mode=compact,output-open-uncertainty=[,output-close-uncertainty=],uncertainty-separator=\,}]{1.234(5)}`,
+	String.raw`\num{-15673}`,
+	String.raw`\num[bracket-negative-numbers]{-15673}`,
+	String.raw`\num{-15673}`,
+	String.raw`\num[negative-color = red]{-15673}`,
+	String.raw`\num[negative-color = red,bracket-negative-numbers]{-15673}`,
+	String.raw`\num{345}`,
+	String.raw`\num[print-implicit-plus]{345}`,
+	String.raw`\num{1e4}`,
+	String.raw`\num[print-unity-mantissa = false]{1e4}`,
+	String.raw`\num{444e0}`,
+	String.raw`\num[print-zero-exponent = true]{444e0}`,
+	String.raw`\num{0.123}`,
+	String.raw`\num[print-zero-integer = false]{0.123}`,
+	String.raw`\num{123.00}`,
+	String.raw`\num[zero-decimal-as-symbol]{123.00}`,
+	String.raw`\num[zero-decimal-as-symbol, zero-symbol=\text{[---]}]{123.00}`,
+
+
+];
+var table = document.getElementById('numTable');
+for (var i = 0; i<num.length; i++){
+	var tr = document.createElement('tr');
+	table.appendChild(tr);
+	var td = document.createElement('td');
+	td.innerText = num[i];
+	tr.appendChild(td);
+	td = document.createElement('td');
+	td.innerText = "$$ " + num[i] + " $$";
+	tr.appendChild(td);
+}
+
+
+
+
+var unit = [
+	String.raw`\unit[per-mode=power]{\kilo\gram\per\second}`,
+	String.raw`\unit[per-mode=power]{\kilo\gram\of{Fe}\per\second}`,
+	String.raw`\unit{kg.m^2.s^{-2}}`,
+	String.raw`\unit{kg_{Fe}.m^2.s^{-2}}`,
+	String.raw`\unit[inter-unit-product = \cdot]{\kilo\gram\meter\squared\per\second\squared}`,
+	String.raw`\unit{g}`,
+	String.raw`\unit[per-mode=symbol]{\kilo\gram\meter\squared\per\second\squared}`,
+	String.raw`\unit[per-mode=symbol]{\kilo\gram\meter\squared\per\second}`,
+	String.raw`\unit[per-mode=symbol, per-symbol-script-correction = ]{\kilo\gram\meter\squared\per\second\squared}`,
+	String.raw`\unit[per-mode=fraction]{\kilo\gram\meter\tothe{2}\per\second\tothe{2}}`,
+	String.raw`\unit[per-mode=fraction]{\highlight{red}\kilo\gram\meter\tothe{2}\per\highlight{orange}\second\tothe{2}}`,
+	String.raw`\unit[per-mode=fraction, inter-unit-product = \cdot]{\kilo\gram\raiseto{2}\meter\per\raiseto{2}\second}`,
+	String.raw`\unit[per-mode=fraction, inter-unit-product = \cdot]{\cancel\kilo\gram\squared\per\cancel\kilo\gram\squared\meter\per\raiseto{2}\second}`,
+	String.raw`\unit{\square\becquerel}`,
+	String.raw`\unit{\joule\squared\per\lumen}`,
+	String.raw`\unit{\cubic\lux\volt\tesla\cubed}`,
+	String.raw`\unit{\henry\tothe{5}}`,
+	String.raw`\unit{\raiseto{4.5}\radian}`,
+	String.raw`\unit{\joule\per\mole\per\kelvin}`,
+	String.raw`\unit{\joule\per\mole\kelvin}`,
+	String.raw`\unit{\per\henry\tothe{5}}`,
+	String.raw`\unit{\per\square\becquerel}`,
+	String.raw`\unit{\kWh}`
+]
+
+var table = document.getElementById('unitTable');
+for (var i = 0; i<unit.length; i++){
+	var tr = document.createElement('tr');
+	table.appendChild(tr);
+	var td = document.createElement('td');
+	td.innerText = unit[i];
+	tr.appendChild(td);
+	td = document.createElement('td');
+	td.innerText = "$$ " + unit[i] + " $$";
+	tr.appendChild(td);
+}
+
+var qty = [
+	String.raw`\qty{1.23}{J.mol^{-1}.K^{-1}}`,	
+	String.raw`\qty{.23e7}{\candela}`,
+	String.raw`\qty[per-mode = symbol]{1.99}{\per\kilogram}`,
+	String.raw`\qty[per-mode = fraction]{1,345}{\coulomb\per\mole}`,
+	String.raw`\qty{2.67}{\farad}`,
+	String.raw`\qty[quantity-product = \ ]{2.67}{\farad}`,
+	String.raw`\qty[quantity-product = ]{2.67}{\farad}`,
+	String.raw`\qty{1e3}{\metre\second}`,
+	String.raw`\qty[prefix-mode = combine-exponent]{1e3}{\metre\second}`,
+	String.raw`\qty{10}{\kilo\gram\squared\deci\second}`,
+	String.raw`\qty[prefix-mode = extract-exponent]{10}{\kilo\gram\squared\deci\second}`,
+	// NOT WORKING
+	String.raw`\qty[prefix-mode = extract-exponent]{7.5}{\gram}`,
+	String.raw`\qty[extract-mass-in-kilograms = false]{10}{\kilo\gram\squared\deci\second}`,
+	String.raw`\qty[prefix-mode = extract-exponent, extract-mass-in-kilograms = false]{10}{\kilo\gram\squared\deci\second}`,
+	String.raw`\qty[prefix-mode = extract-exponent, extract-mass-in-kilograms = false]{7.5}{\gram}`,
+	String.raw`\qty[uncertainty-mode=separate]{12.3(4)}{\kilo\gram}`,
+	String.raw`\qty[uncertainty-mode=separate, separate-uncertainty-units = bracket]{12.3(4)}{\kilo\gram}`,
+	String.raw`\qty[uncertainty-mode=separate, separate-uncertainty-units = repeat]{12.3(4)}{\kilo\gram}`,
+	String.raw`\qty[uncertainty-mode=separate, separate-uncertainty-units = single]{12.3(4)}{\kilo\gram}`,
+	String.raw``,
+];
+
+var table = document.getElementById('qtyTable');
+for (var i = 0; i<qty.length; i++){
+	var tr = document.createElement('tr');
+	table.appendChild(tr);
+	var td = document.createElement('td');
+	td.innerText = qty[i];
+	tr.appendChild(td);
+	td = document.createElement('td');
+	td.innerText = "$$ " + qty[i] + " $$";
+	tr.appendChild(td);
+}
+
+</script>
+
+</body>
+
+</html>
