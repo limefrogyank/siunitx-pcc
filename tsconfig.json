@@ -2,12 +2,13 @@
 	"compilerOptions": {
 	  "outDir": "./js",
 	  "noImplicitAny": false,
-	  "module": "es6",
-	  "target": "es2015",
+	  "module": "ES6",
+	  "target": "ES2015",
 	  "jsx":"preserve",
 	  "allowJs": true,
 	  "sourceMap": true,
-	  "moduleResolution": "node"
+	  "moduleResolution": "node",
+	  "lib":["ES5", "DOM"]
 	},
 	"include": [
 	  "src/**/*"

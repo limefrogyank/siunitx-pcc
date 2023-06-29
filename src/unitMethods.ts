@@ -308,7 +308,7 @@ export function processUnit(parser: TexParser): MmlNode {
 }
 
 function joinValues(values: IterableIterator<string>, joinString: string): string { 
-	return Array<string>.from(values).filter((e,i,a)=> i===a.indexOf(e)).sort((a,b)=> a.length - b.length).join(joinString); 
+	return Array.from(values).filter((e,i,a)=> i===a.indexOf(e)).sort((a,b)=> a.length - b.length).join(joinString); 
 }
 
 
