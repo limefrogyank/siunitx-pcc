@@ -7,7 +7,7 @@ module.exports = PACKAGE(
      'components/src/core/lib',
      'components/src/input/tex-base/lib'
   ],
-  __dirname,                            // our directory
-  '../.'                                   // where to put the packaged component,
+  __dirname + '/js',                            // our directory
+  '.'                                   // where to put the packaged component,
 
 );

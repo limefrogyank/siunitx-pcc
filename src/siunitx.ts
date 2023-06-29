@@ -2,8 +2,10 @@ import { TeX } from 'mathjax-full/js/input/tex';
 import { Configuration, ParserConfiguration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
+import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
 import { findOptions, NumOptionDefaults, UnitOptionDefaults } from './options';
+import { processQuantity } from './qtyMethods';
 import { processUnit } from './unitMethods';
 import { userDefinedUnitOptions, userDefinedUnits } from './units';
 
@@ -13,15 +15,19 @@ const methodMap = new Map<string, (parser: TexParser) => void>([
         parser.Push(node);
     }],
     ['\\ang', (parser: TexParser): void => {
-        // TBD
+        const node = processAngle(parser);
+        parser.Push(node);
     }],
     ['\\unit', (parser: TexParser): void => {
         const node = processUnit(parser);
         parser.Push(node);
     }],
     ['\\qty', (parser: TexParser): void => {
-        // TBD
+        processQuantity(parser); // doesn't return a node, pushes internally
     }],
+    ['\\sisetup', (parser: TexParser): void =>{
+        // TBD
+    }]
 
 ]);
 
@@ -51,7 +57,8 @@ new CommandMap('siunitxMap', {
     ang: ['siunitxToken', 'ang'],
     unit: ['siunitxToken', 'unit'],
     qty: ['siunitxToken', 'qty'],
-    DeclareSIUnit: ['siunitxGlobal', 'DeclareSIUnit']
+    DeclareSIUnit: ['siunitxGlobal', 'DeclareSIUnit'],
+    sisetup: ['sisetupToken', 'sisetup']
 }, {
     siunitxToken: (parser, name) => {
         GlobalParser = parser;

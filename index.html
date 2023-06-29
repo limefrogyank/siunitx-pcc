@@ -32,12 +32,20 @@ MathJax = {
 $$\color{red} \qty{4}{\kilogram}  \qty[color=blue]{4}{\kilogram} \mathrm{still red} $$
 
 
+<h2>Ang</h2>
+<table id="angTable" class="tableStyle"></table>
+
 <h2>Num</h2>
 <table id="numTable" class="tableStyle"></table>
 
 <h2>Unit</h2>
 <table id="unitTable" class="tableStyle"></table>
 
+<h2>Qty</h2>
+<table id="qtyTable" class="tableStyle"></table>
+
+<h2>DeclareSIUnit</h2>
+<table id="declareSIUnitTable" class="tableStyle"></table>
 
 <script>
 var num = [
@@ -49,16 +57,17 @@ var num = [
 	String.raw`\num{0,1234}`,
 	String.raw`\num{.12345}`,
 	String.raw`\num{3.45d-4}`,
-	String.raw`\num{-e10}`,
+	String.raw`\num{-e10}`, // BROKEN
 	String.raw`\num{9.99(9)}`,
 	String.raw`\num{9.99 +- 0.09}`,
 	String.raw`\num{9.99 \pm 0.09}`,
-	String.raw`\num{123 +- 4.5}`,
+	String.raw`\num{123 +- 4.5}`,  	// BROKEN (but just a bad number anyways)
 	String.raw`\num{12.3 +- 6}`,
 	String.raw`\num{123.4(12)}`,
 	String.raw`\num{123.4(1.2)}`,
 	String.raw`\num{123.4(12)(45)}`,
 	String.raw`\num{123.4 \pm 1.2 \pm 4.5}`,
+	String.raw`\num{\sqrt{2}}`,
 	String.raw`\num[parse-numbers = false]{\sqrt{2}}`,
 
 	String.raw`\num{10.}`,
@@ -171,7 +180,45 @@ for (var i = 0; i<num.length; i++){
 	tr.appendChild(td);
 }
 
+var ang = [
+	String.raw`\ang{10}`,
+	String.raw`\ang{12.3}`,
+	String.raw`\ang{4,5}`,
+	String.raw`\ang{1;2;3}`,
+	String.raw`\ang{;;1}`,
+	String.raw`\ang{-0;1;}`,
+	String.raw`\ang{2.67}`,
+	String.raw`\ang{2;3;4}`,
+	String.raw`\ang[angle-mode = arc]{2.67}`,
+	String.raw`\ang[angle-mode = arc]{2;3;4}`,
+	String.raw`\ang[angle-mode = decimal]{2.67}`,
+	String.raw`\ang[angle-mode = decimal]{2;3;4}`,
+	String.raw`\ang{2.67}`,
+	String.raw`\ang[number-angle-product = \,]{2.67}`,
+	String.raw`\ang{6;7;6.5}`,
+	String.raw`\ang[angle-separator = \,]{6;7;6.5}`,
 
+	String.raw`\ang{45.697}`,
+	String.raw`\ang{6;7;6.5}`,
+	String.raw`\ang[angle-symbol-over-decimal]{45.697}`,
+	String.raw`\ang[angle-symbol-over-decimal]{6;7;6.5}`,
+	String.raw``,
+	String.raw``,
+	String.raw``,
+	String.raw``,
+];
+
+var table = document.getElementById('angTable');
+for (var i = 0; i<ang.length; i++){
+	var tr = document.createElement('tr');
+	table.appendChild(tr);
+	var td = document.createElement('td');
+	td.innerText = ang[i];
+	tr.appendChild(td);
+	td = document.createElement('td');
+	td.innerText = "$$ " + ang[i] + " $$";
+	tr.appendChild(td);
+}
 
 
 var unit = [
@@ -248,7 +295,32 @@ for (var i = 0; i<qty.length; i++){
 	tr.appendChild(td);
 }
 
+var declareSIUnit = [
+	String.raw`\DeclareSIUnit[inter-unit-product = \times]{\hello}{FakeUnit} \unit{\hello\kg\second}`,
+	String.raw`\unit{\kg\second}`,
+	String.raw`\unit{\hello\kg\second}`,
+	String.raw`\unit[inter-unit-product = \,]{\hello\kg\second}`,
+	String.raw`\DeclareSIUnit{\faren}{\degree F} \unit{\faren\kg\second}`,
+	String.raw`\qty{1.2}{\faren}`,
+	
+	
+];
+
+var table = document.getElementById('declareSIUnitTable');
+for (var i = 0; i<declareSIUnit.length; i++){
+	var tr = document.createElement('tr');
+	table.appendChild(tr);
+	var td = document.createElement('td');
+	td.innerText = declareSIUnit[i];
+	tr.appendChild(td);
+	td = document.createElement('td');
+	td.innerText = "$$ " + declareSIUnit[i] + " $$";
+	tr.appendChild(td);
+}
+
 </script>
+
+
 
 </body>
 

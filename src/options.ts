@@ -9,6 +9,7 @@ type RoundMode = 'none' | 'figures' | 'places' | 'uncertainty';
 type GroupDigits = 'all' | 'none' | 'decimal' | 'integer';
 type UncertaintyMode = 'separate'|'compact'|'full'|'compact-marker';
 type UncertaintyDescriptorMode = 'bracket'|'bracket-separator'|'separator'|'subscript';
+type AngleMode = 'input' | 'arc' | 'decimal';
 export type PrefixMode = 'input' | 'combine-exponent' | 'extract-exponent';
 export type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single'; 
 
@@ -115,7 +116,29 @@ export interface INumOutputOptions {
 
 export interface INumOptions extends INumParseOptions, INumPostOptions, INumOutputOptions { }
 
-export interface IOptions extends IUnitOptions, INumOptions { }
+export interface IQuantityOptions extends INumOptions, IUnitOptions{
+	allowQuantityBreaks: boolean;
+	extractMassInKilograms: boolean;
+	prefixMode: PrefixMode;
+	quantityProduct: '\\,';
+	separateUncertaintyUnits: SeparateUncertaintyUnits;
+}
+
+// since angles use the same system number processing system, it extends the INumOptions
+export interface IAngleOptions extends INumOptions {
+	angleMode: AngleMode;
+	angleSymbolDegree: string;
+	angleSymbolMinute: string;
+	angleSymbolOverDecimal: boolean;
+	angleSymbolSecond: string;
+	angleSeparator: string,
+	fillAngleDegrees: boolean,
+	fillAngleMinutes: boolean,
+	fillAngleSeconds: boolean,
+	numberAngleProduct: string
+}
+
+export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions, IQuantityOptions { }
 
 export const PrintOptionsDefault : IPrintOptions = {
 	color: '',
@@ -219,6 +242,30 @@ export const NumOutputOptionDefaults: INumOutputOptions = {
 }
 
 export const NumOptionDefaults: INumOptions = {...NumParseOptionDefaults, ...NumPostOptionDefaults, ...NumOutputOptionDefaults};
+
+export const QuantityOptionDefaults: IQuantityOptions = {
+	...NumOptionDefaults,
+	...UnitOptionDefaults,
+	allowQuantityBreaks: false,
+	extractMassInKilograms: true,
+	prefixMode: 'input',
+	quantityProduct: '\\,',
+	separateUncertaintyUnits: 'bracket'
+}
+
+export const AngleOptionDefaults: IAngleOptions = {
+	...NumOptionDefaults,
+	angleMode: 'input',
+	angleSymbolDegree: '\\degree',
+	angleSymbolMinute: "'", //'\\arcminute',
+	angleSymbolOverDecimal: false,
+	angleSymbolSecond: "''",//'\\arcsecond',
+	angleSeparator: '',
+	fillAngleDegrees: false,
+	fillAngleMinutes: false,
+	fillAngleSeconds: false,
+	numberAngleProduct: ''
+}
 
 // Needed a new version of TexParser.GetBrackets because it wanted to parse the internal macros automatically.  
 // This method just gets the bracketed option string only.
@@ -337,5 +384,6 @@ export function processOptions(globalOptions: IOptions, optionString: string) : 
 			globalOptions[prop] = value;
 		}
 	}
+
 	
 }
