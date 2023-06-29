@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<script>
+    MathJax = {
+        loader: {
+            load: ['[custom]/siunitx.js', '[tex]/gensymb'], //gensymb is required for \degree and \ohm
+            paths: { custom: '.' }
+        },
+        tex: {
+            packages: { '[+]': ['siunitx', 'gensymb'] },  //gensymb is required for \degree and \ohm
+            inlineMath: { '[+]': [['$', '$']] }
+            /* global options go here, see IOptions in options.ts for properties */
+            // Uncomment example below: 
+            // perMode: 'fraction'
+        }
+    };
+</script>
+<!-- es5 version -->
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+
+<body>
+    $ \unit{\kg\per\mol} $
+</body>
+
+</html>

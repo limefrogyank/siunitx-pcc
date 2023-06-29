@@ -1,6 +1,6 @@
 //const { paths } = require('mathjax-full/components/src/dependencies');
-//const PACKAGE = require('mathjax-full/components/webpack.common.js');
-const PACKAGE = require('./webpackModded');
+const PACKAGE = require('mathjax-full/components/webpack.common.js');
+//const PACKAGE = require('./webpackModded');
 
 
 

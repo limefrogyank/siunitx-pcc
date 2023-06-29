@@ -21,7 +21,7 @@
     "webpack-cli": "^4.9.2"
   },
   "scripts": {
-    "build": "node ./node_modules/mathjax-full/components/bin/makeAll",
+    "build": "tsc && node ./node_modules/mathjax-full/components/bin/makeAll",
     "release": "standard-version",
     "test": "echo 'No tests yet'"
   },
