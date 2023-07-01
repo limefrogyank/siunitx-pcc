@@ -35,8 +35,8 @@ export interface IPrintOptions {
 export interface IUnitOptions {
 	interUnitProduct: string;
 	perMode: PerMode;
-	displayPerMode: PerMode;	// not implemented, global setting
-	inlinePerMode: PerMode;		// not implemented, global setting
+	displayPerMode: PerMode;	// not implemented, global setting only
+	inlinePerMode: PerMode;		// not implemented, global setting only
 	perSymbol: string; 
 	fractionCommand: string;
 	bracketUnitDenominator: boolean;

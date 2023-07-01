@@ -1,1 +1,1 @@
-These files are part of MathJax and are here to allow local development.  These would be downloaded automatically if using the jsdelivr verison of MathJax.
+These files are part of MathJax and are here to allow local development.  These would be downloaded automatically if using the jsdelivr verison of MathJax.  These are sufficient for chtml only.  If you use screen-readers, you'll need more modules. (Again only for local development. If you have internet, just use the jsdelivr version.)
