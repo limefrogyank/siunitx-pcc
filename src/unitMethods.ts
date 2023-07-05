@@ -290,7 +290,7 @@ export function parseUnit(parser: TexParser, text:string, globalOptions: IOption
 export function processUnit(parser: TexParser): MmlNode {
 	const globalOptions : IOptions = {...parser.options as IOptions};
 
-	// TODO: may be better done a different way.
+	// TODO: may be better done a different way. double check.
 	const localOptionString = findOptions(parser);    
 	
 	//processOptions(globalOptions, localOptionString);
@@ -316,6 +316,8 @@ function joinValues(values: IterableIterator<string>, joinString: string): strin
 function processPrefixUnitCombo(text:string, unitPiece:IUnitPiece): void{
 	const prefixes = joinValues(prefixSymbol.values(), '|');
 	const units = joinValues(unitSymbol.values(), '|');
+	// TODO: Do I need to sort regex options from long string to short string?  
+	// I don't think so since we're parsing a single unit at a time...but I should verify.
 
 	const regex = new RegExp('(' + prefixes + ')?(' + units + ')');
 	const result = regex.exec(text);

@@ -76,6 +76,8 @@ DeclareSIUnit is special and has its own starting logic because we want to overr
 
 ## \ang methods
 
+Very similar to `\num` with a few additions.
+
 1. Generate `IAnglePiece` which is three `INumPiece` for degrees, minutes, seconds.  Assume last two are empty for now.
 
 2. Generate same number mapping as in `\num`.
@@ -92,17 +94,59 @@ DeclareSIUnit is special and has its own starting logic because we want to overr
     - degree, minutes, seconds separator
     - add minutes and seconds explicitly if zero
 
+
 ## \unit methods
 
 ### Initialization
 
-Separate options into global and local options.
+Separate options into global and local options.  This is necessary because the `/unit` macro can contain sub-macros.  These can have their own options.  We need a copy of the local options applied to `/unit` so that if a sub-macro has its own options, we can revert to the original local options after processing that sub-macro.
 
 ### parseUnit method
+
+Units are parsed into an array of `IUnitPiece`.  These contain 
 
 String provided will either contain a backslash or not.  Assume no backslash means plain text units, but any backslash is all macro-based units.
 
 #### Macro-based units
 
-1. 
+Macro unit is parsed into `IUnitMacroProcessResult` using the following flow:
+
+1. Is it a macro modifier? (contained in `modifierMacroMap`)  ex. 'square', 'cubic', 'tothe`, 'per', 'of', 'highlight', 'cancel', etc...
+    - Return `next` or `previous` type `IUnitMacroProcessResult` based on which part the modifier affects.
+2. Is it a prefix? (contained in `prefixSymbol` map) ex. 'deci', 'centi', 'kilo', etc...
+    - Return `prefix` type `IUnitMacroProcessResult`.
+3. Is it a user-defined unit?
+    - Return `unit` type `IUnitMacroProcessResult`.
+4. Is it a package-defined unit symbol?  ex. 'meter', 'metre', hertz', 'ng', 'umol', 'mA', etc...
+    - Return `unit` type `IUnitMacroProcessResult`.
+5. Error
+    - Return `new TexError('102', 'The unit macro, ' + macro + ', has not been defined.')`
+
+Any macro options are applied to the local and global options at this point.
+
+The `IUnitMacroProcessResult` is processed:
+- `next` and `prefix` types are stored into a `nextModifier` varible for the next macro.
+- `previous` type pulls the last `IUnitPiece` from the array and copies properties over. 
+- `unit` type:
+    1. Check for `nextModifer` and apply it to the internal `IUnitPiece` from the current result.
+        - check `perMode` options to see if **next** unit should continue to be in the denominator if this one is in the denominator.
+    2. Add internal `IUnitPiece` to array
+
+#### Plain-text units
+
+Create yet another `TeXParser` to parse the string.  Assume unit starts in the numerator.  Each string-based unit will be placed into `prefixUnit` unless control characters are hit:  `~` `.` `/` `^` `_`
+
+When a control character or end-of-string is reached, a regex is applied to `prefixUnit` to create an `IUnitPiece`.  This `IUnitPiece` is then modified based on which control character triggered the regex.  
+
+`RegExp('(' + prefixes + ')?(' + units + ')')`
+
+(prefixes example: 'E|P|k|d|c|...')
+(units example: 'Hz|m|g|N|...')
+
+
+### displayUnits method
+
+Output LaTeX string from `IUnitPiece` array.
+
+
 
