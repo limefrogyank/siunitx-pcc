@@ -290,6 +290,7 @@ export function parseUnit(parser: TexParser, text:string, globalOptions: IOption
 export function processUnit(parser: TexParser): MmlNode {
 	const globalOptions : IOptions = {...parser.options as IOptions};
 
+	// TODO: may be better done a different way.
 	const localOptionString = findOptions(parser);    
 	
 	//processOptions(globalOptions, localOptionString);

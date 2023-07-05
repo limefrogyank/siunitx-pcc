@@ -248,10 +248,11 @@ export function processAngle(parser:TexParser):MmlNode {
 
 	const text = parser.GetArgument('ang');
 
-	processOptions(globalOptions, localOptionString);
+	// FIXME:  processOption here twice in processAngle?  
+	processOptions(globalOptions, localOptionString);  
 	const ang = parseAngle(parser, text, globalOptions);
 
-	// consider error checking result
+	// TODO: consider error checking result
 	// Is there an exponent??  Maybe throw an error.
 	
 	// transform angle format

@@ -363,7 +363,7 @@ export function postProcessNumber(num:INumberPiece, options: INumPostOptions){
 	
 	exponentModeMap.get(options.exponentMode)(num, options);
 
-
 	// remove any explicit plus in exponent
-	if (num.exponentSign == '+') num.exponentSign = '';
+	if (num.exponentSign == '+') 
+		num.exponentSign = '';
 }
