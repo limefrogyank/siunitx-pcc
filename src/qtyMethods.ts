@@ -130,7 +130,11 @@ export function processQuantity(parser:TexParser): void {
 
 		// refresh global options from default
 		globalOptions = {...parser.options as IOptions};	
-		processOptions(globalOptions, localOptionString);
+		//processOptions(globalOptions, localOptionString);
+		const options = processOptions(globalOptions, localOptionString);
+		options.forEach((v,k)=> globalOptions[k] = v);
+
+
 		const num = parseNumber(parser,numString,globalOptions);
 		
 		// convert number and unit if necessary

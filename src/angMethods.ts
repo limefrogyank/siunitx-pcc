@@ -3,7 +3,8 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./errors";
 import { displayNumber } from "./numDisplayMethods";
 import { CharNumFunction, generateNumberMapping, generateNumberPiece, INumberPiece } from "./numMethods";
-import { findOptions, IAngleOptions, IOptions, processOptions } from "./options";
+import { findOptions, IAngleOptions, INumOptions, IOptions, processOptions } from "./options";
+import { MathJax } from "mathjax-full/js/components/global";
 
 interface IAnglePiece {
 	degrees: INumberPiece;
@@ -12,82 +13,99 @@ interface IAnglePiece {
 }
 
 // Can't splat default otherwise references gets copied.  Need to construct it freshly.
-export function generateAnglePiece():IAnglePiece{
-	const ang :IAnglePiece = {
+export function generateAnglePiece(): IAnglePiece {
+	const ang: IAnglePiece = {
 		degrees: generateNumberPiece()
 	};
 	return ang;
 }
 
-function parseAngle(parser:TexParser, text:string, options: IAngleOptions) : IAnglePiece {
-	const ang : IAnglePiece = generateAnglePiece();
-	let num : INumberPiece = ang.degrees;
+function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IAnglePiece {
+	const ang: IAnglePiece = generateAnglePiece();
+	let num: INumberPiece = ang.degrees;
 
 	const mapping = generateNumberMapping(options);
 
 	const subParser = new TexParser(text, parser.stack.env, parser.configuration);
-	subParser.i=0;
+	subParser.i = 0;
 	// process character
 	// if '\', then read until next '\' or whitespace char
 	while (subParser.i < subParser.string.length) {
 		let char = subParser.string.charAt(subParser.i);
 		subParser.i++;
-		if (char != ';'){
-			if (char != '\\'){
-				if (mapping.has(char)){
+		if (char != ';') {
+			if (char != '\\') {
+				if (mapping.has(char)) {
 					const func = mapping.get(char);
-					if (typeof func == 'function'){
+					if (typeof func == 'function') {
 						(mapping.get(char) as CharNumFunction)(char, num);
 					} else {
-						if (num.whole =='' && num.decimal == ''){
-							(func as Map<string,CharNumFunction>).get('inputSigns')(char, num);
+						if (num.whole == '' && num.decimal == '') {
+							(func as Map<string, CharNumFunction>).get('inputSigns')(char, num);
 						} else {
-							(func as Map<string,CharNumFunction>).get('inputUncertaintySigns')(char, num);
+							(func as Map<string, CharNumFunction>).get('inputUncertaintySigns')(char, num);
 						}
-					}					
+					}
 				}
 			} else {
 				let macro = char;
 				char = '';
-				while (subParser.i < subParser.string.length && char != '\\' && char != ' '){
+				while (subParser.i < subParser.string.length && char != '\\' && char != ' ') {
 					char = subParser.string.charAt(subParser.i);
-					if (char != '\\' && char != ' '){
+					if (char != '\\' && char != ' ') {
 						macro += char;
 					}
 					subParser.i++;
 				}
 
-				if (mapping.has(macro)){
+				if (mapping.has(macro)) {
 					const func = mapping.get(macro);
-					if (typeof func == 'function'){
+					if (typeof func == 'function') {
 						(mapping.get(macro) as CharNumFunction)(macro, num);
 					} else {
-						if (num.whole =='' && num.decimal == ''){
-							(func as Map<string,CharNumFunction>).get('inputSigns')(macro, num);
+						if (num.whole == '' && num.decimal == '') {
+							(func as Map<string, CharNumFunction>).get('inputSigns')(macro, num);
 						} else {
-							(func as Map<string,CharNumFunction>).get('inputUncertaintySigns')(macro, num);
+							(func as Map<string, CharNumFunction>).get('inputUncertaintySigns')(macro, num);
 						}
 					}
 				}
 			}
 		} else {
-			if (ang.minutes == null){
+			if (ang.minutes == null) {
 				ang.minutes = generateNumberPiece();
 				num = ang.minutes;
-			} else if (ang.seconds == null){
+			} else if (ang.seconds == null) {
 				ang.seconds = generateNumberPiece();
 				num = ang.seconds;
 			} else {
 				throw siunitxError.TooManySemicolonsInAngle;
 			}
 		}
-		
+
 	}
+
+	// copied directly from parseNumber, this can be applied to degrees only most likely?
+	// TODO: This duplicates some code... clean up?
+	console.log('parse ang');
+	console.log(ang);
+	if (!options.retainExplicitDecimalMarker && ang.degrees.decimal != '' && ang.degrees.fractional == '') {
+		ang.degrees.decimal = '';
+	}
+	if (!options.retainExplicitPlus && ang.degrees.sign == '+') {
+		ang.degrees.sign = '';
+	}
+	const value = +(ang.degrees.whole + (ang.degrees.decimal != '' ? '.' : '') + ang.degrees.fractional);
+	if (value == 0 && !options.retainNegativeZero && ang.degrees.sign == '-') {
+		ang.degrees.sign = '';
+	}
+
+
 	return ang;
 }
 
-function convertToArc(ang:IAnglePiece):void{
-	if (ang.minutes != null || ang.seconds != null){
+function convertToArc(ang: IAnglePiece): void {
+	if (ang.minutes != null || ang.seconds != null) {
 		// already arc format
 		return;
 	}
@@ -97,8 +115,8 @@ function convertToArc(ang:IAnglePiece):void{
 		const firstFraction = +('0.' + ang.degrees.fractional);
 		ang.degrees.fractional = '';
 		ang.degrees.decimal = '';
-		if (firstFraction != 0){
-			const minutes = firstFraction*60;
+		if (firstFraction != 0) {
+			const minutes = firstFraction * 60;
 			ang.minutes = generateNumberPiece();
 			ang.minutes.whole = Math.floor(minutes).toString();
 			const splitMinutes = (minutes + '').split('.');
@@ -107,7 +125,7 @@ function convertToArc(ang:IAnglePiece):void{
 				ang.seconds = generateNumberPiece();
 				ang.seconds.whole = Math.floor(seconds).toString();
 				const splitSeconds = (seconds + '').split('.');
-				if (splitSeconds.length > 1){
+				if (splitSeconds.length > 1) {
 					ang.seconds.decimal = '.';
 					ang.seconds.fractional = splitSeconds[1];
 				}
@@ -117,150 +135,169 @@ function convertToArc(ang:IAnglePiece):void{
 
 }
 
-function convertToDecimal(ang:IAnglePiece):void{
+function convertToDecimal(ang: IAnglePiece): void {
 	let value = 0;
-	if (ang.seconds != null){
-		value = +ang.seconds.whole/60;
+	if (ang.seconds != null) {
+		value = +ang.seconds.whole / 60;
 		ang.seconds = null;
 	}
-	if (ang.minutes != null){
-		value = (+ang.minutes.whole + value)/60;
+	if (ang.minutes != null) {
+		value = (+ang.minutes.whole + value) / 60;
 		ang.minutes = null;
 	}
-	
+
 	value = (+ang.degrees.whole + value);
 	const split = (value + '').split('.');
 	ang.degrees.whole = split[0];
-	if (split.length > 1){
+	if (split.length > 1) {
 		ang.degrees.decimal = '.';
 		ang.degrees.fractional = split[1];
 	}
 }
 
 
-const modeMapping = new Map<string, (ang:IAnglePiece)=>void>([
+const modeMapping = new Map<string, (ang: IAnglePiece) => void>([
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	['input', (): void => { }], // do nothing
 	['arc', convertToArc],
-	['decimal', convertToDecimal] 
+	['decimal', convertToDecimal]
 ]);
 
-function displayAngle(ang:IAnglePiece, options:IAngleOptions) : string {
+function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 	let displayResult = '';
-	
+	console.log(ang);
 	const degreeValue = +(ang.degrees.whole + (ang.degrees.decimal != '' ? '.' : '') + ang.degrees.fractional);
-	if (degreeValue != 0 && !options.fillAngleDegrees){
-
-		if (options.angleSymbolOverDecimal){
+	if (ang.degrees.whole == '' && options.fillAngleDegrees) {
+		if (ang.minutes.sign == '-'){
+			ang.degrees.sign = '-';
+			ang.minutes.sign = '';
+		} else if (ang.seconds.sign == '-'){
+			ang.degrees.sign = '-';
+			ang.seconds.sign = '';
+		}
+		ang.degrees.whole = '0';
+	}
+	if (degreeValue != 0 || ang.degrees.whole == '0' || options.fillAngleDegrees) {
+		if (options.angleSymbolOverDecimal) {			
 			const number = displayNumber(ang.degrees, options);
-			const split= number.split(options.outputDecimalMarker);
-			if (split.length > 1){
+			const split = number.split(options.outputDecimalMarker);
+			if (split.length > 1) {
 				displayResult += split[0];
-				displayResult += '\\rlap{' + options.outputDecimalMarker +'}{' + options.angleSymbolDegree + '}';
-				displayResult += split[1]; 
+				displayResult += '\\rlap{' + options.outputDecimalMarker + '}{\\mathrm{' + options.angleSymbolDegree + '}}';
+				displayResult += split[1];
 			} else {
 				displayResult += number;
 				displayResult += options.numberAngleProduct;
-				displayResult += options.angleSymbolDegree;
+				displayResult += '\\mathrm{' + options.angleSymbolDegree + '}';
 			}
 		} else {
+
 			displayResult += displayNumber(ang.degrees, options);
 			displayResult += options.numberAngleProduct;
-			displayResult += options.angleSymbolDegree;
+			displayResult += '\\mathrm{' + options.angleSymbolDegree + '}';
 		}
-	}
+	} 
+
 
 	if (displayResult != '' && options.angleSeparator != '') {
 		displayResult += options.angleSeparator;
 	}
-	if (ang.minutes != null || options.fillAngleMinutes) {
-		if (ang.minutes == null){
-			ang.minutes = generateNumberPiece();
-			ang.minutes.whole = '0';
-		}
-		const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal != '' ? '.' : '') + ang.minutes.fractional);
-		
-		if (minutesValue != 0 && !options.fillAngleDegrees){
 
-			if (options.angleSymbolOverDecimal){
+	if (ang.minutes != null) {
+		const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal != '' ? '.' : '') + ang.minutes.fractional);
+		if (minutesValue != 0 || ang.minutes.whole == '0' || options.fillAngleMinutes) {
+
+			if (minutesValue == 0 && options.fillAngleMinutes) {
+				if (ang.seconds.sign == '-'){
+					ang.minutes.sign = '-';
+					ang.seconds.sign = '';
+				}
+				ang.minutes.whole = '0';
+			}
+
+			if (options.angleSymbolOverDecimal) {
 				const number = displayNumber(ang.minutes, options);
-				const split= number.split(options.outputDecimalMarker);
-				if (split.length > 1){
+				const split = number.split(options.outputDecimalMarker);
+				if (split.length > 1) {
 					displayResult += split[0];
-					displayResult += '\\rlap{' + options.outputDecimalMarker +'}{' + options.angleSymbolMinute + '}';
-					displayResult += split[1]; 
+					displayResult += '\\rlap{' + options.outputDecimalMarker + '}{\\mathrm{' + options.angleSymbolMinute + '}}';
+					displayResult += split[1];
 				} else {
 					displayResult += number;
 					displayResult += options.numberAngleProduct;
-					displayResult += options.angleSymbolMinute;
+					displayResult += '\\mathrm{' + options.angleSymbolMinute + '}';
 				}
 			} else {
 				displayResult += displayNumber(ang.minutes, options);
 				displayResult += options.numberAngleProduct;
-				displayResult += options.angleSymbolMinute;
+				displayResult += '\\mathrm{' + options.angleSymbolMinute + '}';
 			}
 		}
-	} 
+	}
 
 	if (displayResult != '' && options.angleSeparator != '' && !displayResult.endsWith(options.angleSeparator)) {
 		displayResult += options.angleSeparator;
 	}
-	if (ang.seconds != null || options.fillAngleMinutes) {
-		if (ang.seconds == null){
-			ang.seconds = generateNumberPiece();
-			ang.seconds.whole = '0';
-		}
+	if (ang.seconds != null) {
 		const secondsValue = +(ang.seconds.whole + (ang.seconds.decimal != '' ? '.' : '') + ang.seconds.fractional);
-		
-		if (secondsValue != 0 && !options.fillAngleDegrees){
+		if (secondsValue != 0 || ang.seconds.whole == '0'|| options.fillAngleSeconds) {
 
-			if (options.angleSymbolOverDecimal){
+			if (secondsValue == 0 && options.fillAngleSeconds) {
+				ang.seconds.whole = '0';
+			}
+
+			if (options.angleSymbolOverDecimal) {
 				const number = displayNumber(ang.seconds, options);
-				const split= number.split(options.outputDecimalMarker);
-				if (split.length > 1){
+				const split = number.split(options.outputDecimalMarker);
+				if (split.length > 1) {
 					displayResult += split[0];
-					displayResult += '\\rlap{' + options.outputDecimalMarker +'}{' + options.angleSymbolSecond + '}';
-					displayResult += split[1]; 
+					displayResult += '\\rlap{' + options.outputDecimalMarker + '}{\\mathrm{' + options.angleSymbolSecond + '}}';
+					displayResult += split[1];
 				} else {
 					displayResult += number;
 					displayResult += options.numberAngleProduct;
-					displayResult += options.angleSymbolSecond;
+					displayResult += '\\mathrm{' + options.angleSymbolSecond + '}';
 				}
 			} else {
 				displayResult += displayNumber(ang.seconds, options);
 				displayResult += options.numberAngleProduct;
-				displayResult += options.angleSymbolSecond;
+				displayResult += '\\mathrm{' + options.angleSymbolSecond + '}';
 			}
 		}
-	} 
+	}
 
 	return displayResult;
 }
 
 
-export function processAngle(parser:TexParser):MmlNode {
+export function processAngle(parser: TexParser): MmlNode {
 
-	const globalOptions : IOptions = {...parser.options as IOptions};
+	const globalOptions: IOptions = { ...parser.options as IOptions };
 
-	const localOptionString = findOptions(parser);       
+	const localOptionString = findOptions(parser);
 
-	processOptions(globalOptions, localOptionString);
+	const options = processOptions(globalOptions, localOptionString);
+	options.forEach((v, k) => globalOptions[k] = v);
+
+	//console.log('global: ' + globalOptions.angleSymbolDegree);
 
 	const text = parser.GetArgument('ang');
+	console.log(text);
 
 	// FIXME:  processOption here twice in processAngle?  
-	processOptions(globalOptions, localOptionString);  
+	//processOptions(globalOptions, localOptionString);  
 	const ang = parseAngle(parser, text, globalOptions);
 
 	// TODO: consider error checking result
 	// Is there an exponent??  Maybe throw an error.
-	
+
 	// transform angle format
 	modeMapping.get(globalOptions.angleMode)(ang);
-	
+
 	const displayResult = displayAngle(ang, globalOptions);
+	console.log(displayResult);
 
 	const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
-    
+
 	return mml;
 }

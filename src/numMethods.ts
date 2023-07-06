@@ -270,7 +270,10 @@ export function processNumber(parser: TexParser): MmlNode {
 
 	const localOptionString = findOptions(parser);
 
-	processOptions(globalOptions, localOptionString);
+	//processOptions(globalOptions, localOptionString);
+	const options = processOptions(globalOptions, localOptionString);
+	options.forEach((v,k)=> globalOptions[k] = v);
+
 
 	const text = parser.GetArgument('num');
 

@@ -4,7 +4,7 @@ import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
-import { AngleOptionDefaults, findOptions, NumOptionDefaults, QuantityOptionDefaults, UnitOptionDefaults } from './options';
+import { AngleOptionDefaults, findOptions, NumOptionDefaults, processSISetup, QuantityOptionDefaults, UnitOptionDefaults } from './options';
 import { processQuantity } from './qtyMethods';
 import { processUnit } from './unitMethods';
 import { userDefinedUnitOptions, userDefinedUnits } from './units';
@@ -27,6 +27,7 @@ const methodMap = new Map<string, (parser: TexParser) => void>([
     }],
     ['\\sisetup', (parser: TexParser): void =>{
         // TODO: add sisetup
+        processSISetup(parser);
     }]
 
 ]);
@@ -58,9 +59,10 @@ new CommandMap('siunitxMap', {
     unit: ['siunitxToken', 'unit'],
     qty: ['siunitxToken', 'qty'],
     DeclareSIUnit: ['siunitxGlobal', 'DeclareSIUnit'],
-    sisetup: ['sisetupToken', 'sisetup']
+    sisetup: ['siunitxToken', 'sisetup']
 }, {
     siunitxToken: (parser, name) => {
+        //console.log(parser.options.perMode);
         GlobalParser = parser;
         //const options = processOptions(parser.options as IOptions, findOptions(parser));
         //hack to get display mode (display or inline)
@@ -71,6 +73,7 @@ new CommandMap('siunitxMap', {
         // console.log(parser);
         // const display = isDisplay(node);
         // console.log(display);    
+        
     },
     siunitxGlobal: (parser, name) => {
         GlobalParser = parser;

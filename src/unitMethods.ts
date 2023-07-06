@@ -238,10 +238,16 @@ export function parseUnit(parser: TexParser, text:string, globalOptions: IOption
 			const processedMacro = processUnitMacro(macro, subParser);
 			// check for user defined options
 			if (processedMacro.options !== undefined){
-				processOptions(globalOptions, processedMacro.options);
+				//processOptions(globalOptions, processedMacro.options);
+				const options = processOptions(globalOptions, processedMacro.options);
+				options.forEach((v,k)=> globalOptions[k] = v);
 			}
 			// apply immediate options here
-			processOptions(globalOptions, localOptionString);
+			//processOptions(globalOptions, localOptionString);
+			const options = processOptions(globalOptions, localOptionString);
+			//console.log(options);
+			options.forEach((v,k)=>globalOptions[k] = v);
+			//console.log(globalOptions.perMode);
 			
 			switch (processedMacro.type){
 				case 'next':

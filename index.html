@@ -8,10 +8,10 @@ MathJax = {
 	},
 	tex: {
 		packages: {'[+]': ['siunitx', 'gensymb']},  //gensymb is required for \degree and \ohm
-		inlineMath: {'[+]': [['$', '$']]}
-		/* global options go here, see IOptions in options.ts for properties */
+		inlineMath: {'[+]': [['$', '$']]},
+		/* global options can go here, see IOptions in options.ts for properties */
 		// Uncomment example below: 
-		// perMode: 'fraction'
+		//perMode: 'fraction'
 	}
 };
 </script>
@@ -49,7 +49,7 @@ $$\color{red} \qty{4}{\kilogram}  \qty[color=blue]{4}{\kilogram} \mathrm{still r
 
 <script>
 var num = [
-
+	String.raw`\num{0}`,
 	String.raw`\num{1234}`,
 	String.raw`\num{12345}`,
 	String.raw`\num{0.123}`,
@@ -176,7 +176,7 @@ for (var i = 0; i<num.length; i++){
 	td.innerText = num[i];
 	tr.appendChild(td);
 	td = document.createElement('td');
-	td.innerText = "$$ " + num[i] + " $$";
+	td.innerText = "$ " + num[i] + " $";
 	tr.appendChild(td);
 }
 
@@ -186,7 +186,8 @@ var ang = [
 	String.raw`\ang{4,5}`,
 	String.raw`\ang{1;2;3}`,
 	String.raw`\ang{;;1}`,
-	String.raw`\ang{-0;1;}`,
+	String.raw`\ang{+10;;}`, 
+	String.raw`\ang{-0;1;}`, 
 	String.raw`\ang{2.67}`,
 	String.raw`\ang{2;3;4}`,
 	String.raw`\ang[angle-mode = arc]{2.67}`,
@@ -197,15 +198,49 @@ var ang = [
 	String.raw`\ang[number-angle-product = \,]{2.67}`,
 	String.raw`\ang{6;7;6.5}`,
 	String.raw`\ang[angle-separator = \,]{6;7;6.5}`,
-
+	String.raw`\displaylines{
+\ang{-1;;} \\
+\ang{;-2;} \\
+\ang{;;-3} \\
+}`,
+String.raw`\displaylines{
+\sisetup{fill-angle-degrees}
+\ang{-1;;} \\
+\ang{;-2;} \\
+\ang{;;-3} \\
+\sisetup{fill-angle-degrees = false}
+}`,
+String.raw`\displaylines{
+\sisetup{fill-angle-minutes}
+\ang{-1;;} \\
+\ang{;-2;} \\
+\ang{;;-3} \\
+\sisetup{fill-angle-minutes = false}
+}`,
+String.raw`\displaylines{
+\sisetup{fill-angle-seconds}
+\ang{-1;;} \\
+\ang{;-2;} \\
+\ang{;;-3} \\
+\sisetup{fill-angle-seconds = false}
+}`,
+	String.raw`\ang{6;7;6.5}`,
+	String.raw`
+\sisetup{
+	angle-symbol-degree = d ,
+	angle-symbol-minute = m ,
+	angle-symbol-second = s
+}
+\ang{6;7;6.5}
+\sisetup{
+	angle-symbol-degree = \degree ,
+	angle-symbol-minute = ' ,
+	angle-symbol-second = ''
+}`,
 	String.raw`\ang{45.697}`,
 	String.raw`\ang{6;7;6.5}`,
 	String.raw`\ang[angle-symbol-over-decimal]{45.697}`,
-	String.raw`\ang[angle-symbol-over-decimal]{6;7;6.5}`,
-	String.raw``,
-	String.raw``,
-	String.raw``,
-	String.raw``,
+	String.raw`\ang[angle-symbol-over-decimal]{6;7;6.5}`
 ];
 
 var table = document.getElementById('angTable');
@@ -216,7 +251,7 @@ for (var i = 0; i<ang.length; i++){
 	td.innerText = ang[i];
 	tr.appendChild(td);
 	td = document.createElement('td');
-	td.innerText = "$$ " + ang[i] + " $$";
+	td.innerText = "$ " + ang[i] + " $";
 	tr.appendChild(td);
 }
 
@@ -255,7 +290,7 @@ for (var i = 0; i<unit.length; i++){
 	td.innerText = unit[i];
 	tr.appendChild(td);
 	td = document.createElement('td');
-	td.innerText = "$$ " + unit[i] + " $$";
+	td.innerText = "$ " + unit[i] + " $";
 	tr.appendChild(td);
 }
 
@@ -291,7 +326,7 @@ for (var i = 0; i<qty.length; i++){
 	td.innerText = qty[i];
 	tr.appendChild(td);
 	td = document.createElement('td');
-	td.innerText = "$$ " + qty[i] + " $$";
+	td.innerText = "$ " + qty[i] + " $";
 	tr.appendChild(td);
 }
 
@@ -314,7 +349,7 @@ for (var i = 0; i<declareSIUnit.length; i++){
 	td.innerText = declareSIUnit[i];
 	tr.appendChild(td);
 	td = document.createElement('td');
-	td.innerText = "$$ " + declareSIUnit[i] + " $$";
+	td.innerText = "$ " + declareSIUnit[i] + " $";
 	tr.appendChild(td);
 }
 
