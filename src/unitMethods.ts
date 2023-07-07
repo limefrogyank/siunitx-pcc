@@ -105,7 +105,7 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 	}
 	unitLatex += options.unitFontCommand + '{';
 	//check for square root
-	if (options.powerHalfAsSqrt && unitPiece.power && unitPiece.power == 0.5){
+	if (options.powerHalfAsSqrt && unitPiece.power && unitPiece.power == 0.5) {
 		unitLatex += '\\class{MathML-Unit}{\\sqrt{' + unitPiece.prefix + unitPiece.symbol + '}}';
 		unitPiece.power = null;
 	} else {
@@ -147,7 +147,7 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 	}).length == 1 && options.perMode == 'single-symbol') {
 		perForSingle = true;
 	}
-	
+
 	if (isLiteral) {
 		let latex = '';
 		let startsSlash: IUnitPiece = null;
@@ -161,7 +161,7 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 			}
 		});
 		unitPieces.forEach((v) => {
-			if (v == startsSlash){
+			if (v == startsSlash) {
 				latex += ' / ';
 			}
 			const latexResult = unitLatex(v, options);
@@ -175,14 +175,26 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 		texString = latex;
 
 	} else {
+		// useful for bracket-unit-denominator with perMode=symbol
+		// also useful for perMode=single-symbol
+		let numeratorCount = 0;
+		let denominatorCount = 0;
+		unitPieces.forEach((v) => {
+			if (v.position === 'denominator' || (v.power != null && v.power < 0)) {
+				denominatorCount++;
+			} else {
+				numeratorCount++;
+			}
+		}, 0);
 
-		if (options.perMode == 'fraction' || options.perMode == 'symbol' || options.perMode == 'repeated-symbol' || perForSingle) {
+		if (options.perMode == 'fraction' || options.perMode == 'symbol' 
+		|| options.perMode == 'repeated-symbol' || perForSingle || (options.perMode === 'single-symbol' && denominatorCount == 1 && numeratorCount > 0)) {
 			let numerator = '';
 			let denominator = '';
 			let lastNumeratorHadSuperscript = false;
 			unitPieces.forEach((v) => {
 				let latexResult;
-				if (v.position == 'denominator' || (v.power != null && v.power < 0)) {
+				if (v.position === 'denominator' || (v.power != null && v.power < 0)) {
 					latexResult = unitLatex(v, options, options.perMode == 'fraction' || options.perMode == 'symbol' || options.perMode == 'repeated-symbol' || options.perMode == "single-symbol" || perForSingle);
 
 					if (denominator != '') {
@@ -212,10 +224,14 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 			}
 			// if no denominator, then no fraction needed.
 			if (denominator != '') {
-				if (options.perMode == 'fraction') {
+				//adjust denominator if brackets are needed
+				if (denominatorCount > 1 && options.perMode === 'symbol' && options.bracketUnitDenominator) {
+					denominator = '(' + denominator + ')';
+				}
+				if (options.perMode === 'fraction') {
 					texString = options.fractionCommand + '{' + numerator + '}{' + denominator + '}';
 				}
-				else if (options.perMode == 'repeated-symbol' || options.perMode == 'symbol' || perForSingle) {
+				else if (options.perMode === 'repeated-symbol' || options.perMode === 'symbol' || perForSingle || options.perMode === 'single-symbol') {
 					texString = numerator + (lastNumeratorHadSuperscript ? options.perSymbolScriptCorrection : '') + options.perSymbol + denominator;
 				}
 				else {
@@ -236,8 +252,8 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 					if (y.position == 'denominator') {
 						b = -b;
 					}
-					if (a > b) return 1;
-					else if (a < b) return -1;
+					if (a < b) return 1;
+					else if (a > b) return -1;
 					else return 0;
 				});
 			}
@@ -308,7 +324,9 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 					{
 						if (nextModifier != null) {
 							processedMacro.result = Object.assign(processedMacro.result, nextModifier);
-							if ((parser.options as IOptions).perMode == 'repeated-symbol') {
+							// TODO: WHY IS THIS parser.options and not globaloptions???
+							// Is this even needed?  repeated-symbol is a display option, not a parsing option.
+							if ((parser.options as IOptions).perMode === 'repeated-symbol' || globalOptions.stickyPer ) {
 								const denom = nextModifier.position == 'denominator';
 								nextModifier = null;
 								if (denom) {
@@ -348,7 +366,7 @@ export function processUnit(parser: TexParser): MmlNode {
 
 	const isLiteral = (text.indexOf('\\') == -1);
 	// This will only be a global option.  
-	if (globalOptions.forbidLiteralUnits){ 
+	if (globalOptions.forbidLiteralUnits) {
 		throw siunitxError.LiteralUnitsForbidden(text);
 	}
 

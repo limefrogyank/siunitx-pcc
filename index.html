@@ -283,7 +283,7 @@ var unit = [
 	String.raw`\unit[per-mode = fraction]{\joule\per\mole\per\kelvin}`,
 	String.raw`\unit[per-mode = fraction]{\metre\per\second\squared}`,
 	String.raw`\unit{\ampere\per\mole\second}`,
-	String.raw`\unit[per-mode = power-positive-first]{\ampere\per\mole\second}`,  //BUG: power-positive-first
+	String.raw`\unit[per-mode = power-positive-first]{\ampere\per\mole\second}`,
 	
 	String.raw`\displaylines{
 	\sisetup{per-mode = symbol} \\ 
@@ -292,7 +292,7 @@ var unit = [
 	\unit[per-symbol = \ \text{div}\ ]{\joule\per\mole\per\kelvin} \\
 	\unit[bracket-unit-denominator = false]{\joule\per\mole\per\kelvin} \\
 	\sisetup{per-mode = power}
-	}`,  //BUG: brackets in denominator not working
+	}`,
 	String.raw`\unit[per-mode = repeated-symbol]{\joule\per\mole\per\kelvin}`,
 	String.raw`\displaylines{
 	\sisetup{per-mode = single-symbol}
@@ -300,7 +300,7 @@ var unit = [
 		\unit{\metre\per\second} \\
 		\unit{\joule\per\mole\per\kelvin}
 	\sisetup{per-mode = power}
-	}`,  //BUG: single-symbol not working... middle one should have per symbol
+	}`,
 	String.raw`\displaylines{
 	\sisetup{per-mode = symbol}%
 	\unit{\cm\cubed\per\gram} \\
