@@ -23,4 +23,8 @@ export class siunitxError {
 		return new TexError('102', 'The unit macro, ' + macro + ', has not been defined.');
 	}
 
+	static LiteralUnitsForbidden(macro:string) : TexError {
+		return new TexError('103', macro + ' is detected as a literal units.  These are forbidden globally. Use interpreted units instead (i.e. \\kilo\\gram).');
+	}
+
 }

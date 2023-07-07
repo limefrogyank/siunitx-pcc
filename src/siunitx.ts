@@ -26,7 +26,6 @@ const methodMap = new Map<string, (parser: TexParser) => void>([
         processQuantity(parser); // doesn't return a node, pushes internally
     }],
     ['\\sisetup', (parser: TexParser): void =>{
-        // TODO: add sisetup
         processSISetup(parser);
     }]
 

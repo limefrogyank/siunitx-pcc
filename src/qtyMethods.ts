@@ -118,14 +118,15 @@ export function processQuantity(parser:TexParser): void {
 	let numDisplay = '';
 	let unitDisplay = '';
 
-	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptionString);	
-	unitDisplay = displayUnits(parser, unitPieces, globalOptions);
+	const isLiteral = (unitString.indexOf('\\') == -1);
+	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptionString, isLiteral);	
+	unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
 
 	if (globalOptions.parseNumbers){
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally
 		if (globalOptions.evaluateExpression){
-			// TO-DO (BIG ONE)
+			// TODO Expression evaluation
 		}
 
 		// refresh global options from default

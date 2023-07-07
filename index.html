@@ -29,9 +29,6 @@ MathJax = {
 		}
 	</style>
 
-$$\color{red} \qty{4}{\kilogram}  \qty[color=blue]{4}{\kilogram} \mathrm{still red} $$
-
-
 <h2>Ang</h2>
 <table id="angTable" class="tableStyle"></table>
 
@@ -225,8 +222,7 @@ String.raw`\displaylines{
 \sisetup{fill-angle-seconds = false}
 }`,
 	String.raw`\ang{6;7;6.5}`,
-	String.raw`
-\sisetup{
+	String.raw`\sisetup{
 	angle-symbol-degree = d ,
 	angle-symbol-minute = m ,
 	angle-symbol-second = s
@@ -257,6 +253,87 @@ for (var i = 0; i<ang.length; i++){
 
 
 var unit = [
+	String.raw`\unit{kg.m/s^2}`,
+	String.raw`\unit{g_{polymer}~mol_{cat}.s^{-1}}`,
+	String.raw`\unit{\kilo\gram\metre\per\square\second}`,
+	String.raw`\unit{\gram\per\cubic\centi\metre}`,
+	String.raw`\unit{\square\volt\cubic\lumen\per\farad}`,
+	String.raw`\unit{\metre\squared\per\gray\cubic\lux}`,
+	String.raw`\unit{\henry\second}`,
+	String.raw`\unit{\square\becquerel}`,
+	String.raw`\unit{\joule\squared\per\lumen}`,
+	String.raw`\unit{\cubic\lux\volt\tesla\cubed}`,
+	String.raw`\unit{\henry\tothe{5}}`,
+	String.raw`\unit{\raiseto{4.5}\radian}`,
+	String.raw`\unit{\joule\per\mole\per\kelvin}`,
+	String.raw`\unit{\joule\per\mole\kelvin}`,
+	String.raw`\unit{\per\henry\tothe{5}}`,
+	String.raw`\unit{\per\square\becquerel}`,
+
+	String.raw`\unit{\kilogram\of{metal}}`,
+	String.raw`\unit[qualifier-mode = bracket]{\milli\mole\of{cat}\per\kilogram\of{prod}}`,
+	String.raw`\unit[per-mode = fraction]{\cancel\kilogram\metre\per\cancel\kilogram\per\second}`,
+	String.raw`\unit{\highlight{red}\kilogram\metre\per\second}`,
+	String.raw`\unit[unit-color = purple]{\highlight{blue}\kilogram\metre\per\second}`,  //TODO: unit-color 
+
+	String.raw`\unit{\farad\squared\lumen\candela}`,
+	String.raw`\unit[inter-unit-product = \cdot ]{\farad\squared\lumen\candela}`,
+	String.raw`\unit{\joule\per\mole\per\kelvin}`,
+	String.raw`\unit{\metre\per\second\squared}`,
+	String.raw`\unit[per-mode = fraction]{\joule\per\mole\per\kelvin}`,
+	String.raw`\unit[per-mode = fraction]{\metre\per\second\squared}`,
+	String.raw`\unit{\ampere\per\mole\second}`,
+	String.raw`\unit[per-mode = power-positive-first]{\ampere\per\mole\second}`,  //BUG: power-positive-first
+	
+	String.raw`\displaylines{
+	\sisetup{per-mode = symbol} \\ 
+	\unit{\joule\per\mole\per\kelvin} \\
+	\unit{\metre\per\second\squared} \\
+	\unit[per-symbol = \ \text{div}\ ]{\joule\per\mole\per\kelvin} \\
+	\unit[bracket-unit-denominator = false]{\joule\per\mole\per\kelvin} \\
+	\sisetup{per-mode = power}
+	}`,  //BUG: brackets in denominator not working
+	String.raw`\unit[per-mode = repeated-symbol]{\joule\per\mole\per\kelvin}`,
+	String.raw`\displaylines{
+	\sisetup{per-mode = single-symbol}
+		\unit{\per\metre} \\
+		\unit{\metre\per\second} \\
+		\unit{\joule\per\mole\per\kelvin}
+	\sisetup{per-mode = power}
+	}`,  //BUG: single-symbol not working... middle one should have per symbol
+	String.raw`\displaylines{
+	\sisetup{per-mode = symbol}%
+	\unit{\cm\cubed\per\gram} \\
+	\unit[per-symbol-script-correction = ]{\cm\cubed\per\gram}
+	\sisetup{per-mode = power}
+	}`,
+
+	String.raw`\unit{\pascal\per\gray\henry}`,
+	String.raw`\unit[sticky-per]{\pascal\per\gray\henry}`,  //BUG: sticky-per not working
+
+	String.raw`\unit{\kilogram\of{pol}\squared\per\mole\of{cat}\per\hour}`,
+	String.raw`\unit[qualifier-mode = bracket]{\kilogram\of{pol}\squared\per\mole\of{cat}\per\hour}`,
+	String.raw`\unit[qualifier-mode = combine]{\deci\bel\of{i}}`,
+
+	String.raw`\displaylines{
+	\sisetup{qualifier-mode = phrase, qualifier-phrase = \ }%
+	\unit{\kilogram\of{pol}\squared\per\mole\of{cat}\per\hour} \\
+	\sisetup{qualifier-phrase = \ \mbox{of}\ }%
+	\unit{\kilogram\of{pol}\squared\per\mole\of{cat}\per\hour}
+	\sisetup{qualifier-mode = subscript, qualifier-phrase = }
+	}`,
+
+	String.raw`\unit{\Hz\tothe{0.5}}`,
+	String.raw`\unit[power-half-as-sqrt]{\Hz\tothe{0.5}}`, 
+	String.raw`\unit[power-half-as-sqrt]{\Hz\tothe{-0.5}}`,
+
+	String.raw`\unit{\MHz}`,
+	String.raw`\unit[parse-units = false]{\MHz}`,
+	String.raw`\MHz`,
+
+	String.raw`\unit{\lumen}`,
+	String.raw`\unit[unit-font-command = \mathit]{\lumen}`,
+
 	String.raw`\unit[per-mode=power]{\kilo\gram\per\second}`,
 	String.raw`\unit[per-mode=power]{\kilo\gram\of{Fe}\per\second}`,
 	String.raw`\unit{kg.m^2.s^{-2}}`,

@@ -87,8 +87,7 @@ function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IA
 
 	// copied directly from parseNumber, this can be applied to degrees only most likely?
 	// TODO: This duplicates some code... clean up?
-	console.log('parse ang');
-	console.log(ang);
+
 	if (!options.retainExplicitDecimalMarker && ang.degrees.decimal != '' && ang.degrees.fractional == '') {
 		ang.degrees.decimal = '';
 	}
@@ -165,7 +164,6 @@ const modeMapping = new Map<string, (ang: IAnglePiece) => void>([
 
 function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 	let displayResult = '';
-	console.log(ang);
 	const degreeValue = +(ang.degrees.whole + (ang.degrees.decimal != '' ? '.' : '') + ang.degrees.fractional);
 	if (ang.degrees.whole == '' && options.fillAngleDegrees) {
 		if (ang.minutes.sign == '-'){
@@ -279,10 +277,7 @@ export function processAngle(parser: TexParser): MmlNode {
 	const options = processOptions(globalOptions, localOptionString);
 	options.forEach((v, k) => globalOptions[k] = v);
 
-	//console.log('global: ' + globalOptions.angleSymbolDegree);
-
 	const text = parser.GetArgument('ang');
-	console.log(text);
 
 	// FIXME:  processOption here twice in processAngle?  
 	//processOptions(globalOptions, localOptionString);  
@@ -295,7 +290,6 @@ export function processAngle(parser: TexParser): MmlNode {
 	modeMapping.get(globalOptions.angleMode)(ang);
 
 	const displayResult = displayAngle(ang, globalOptions);
-	console.log(displayResult);
 
 	const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
 

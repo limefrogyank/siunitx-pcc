@@ -25,19 +25,19 @@ export interface IPrintOptions {
 	resetTextSeries: boolean; 			// not implemented
 	resetTextShape: boolean; 			// not implemented
 	textFamilyToMath: boolean;			// not implemented
-	textFontCommand: string;				// not implemented
+	textFontCommand: string;			// not implemented
 	textSubscriptCommand: string;		// not implemented
 	textSuperscriptCommand: string;		// not implemented
 	textSeriesToMath: boolean;			// not implemented
 	unitColor: string;					// not implemented
-	unitMode: PrintMode;					// not implemented
+	unitMode: PrintMode;				// not implemented
 }
 
 export interface IUnitOptions {
 	interUnitProduct: string;
 	perMode: PerMode;
-	displayPerMode: PerMode;	// not implemented, global setting only
-	inlinePerMode: PerMode;		// not implemented, global setting only
+	displayPerMode: PerMode;		// not implemented, global setting only
+	inlinePerMode: PerMode;			// not implemented, global setting only
 	perSymbol: string;
 	fractionCommand: string;
 	bracketUnitDenominator: boolean;
@@ -46,7 +46,7 @@ export interface IUnitOptions {
 	qualifierMode: QualifierMode;
 	qualifierPhrase: string;
 	powerHalfAsSqrt: boolean;
-	parseUnits: boolean;
+	parseUnits: boolean;			// TODO: not implemented
 	forbidLiteralUnits: boolean;
 	unitFontCommand: string;
 }
