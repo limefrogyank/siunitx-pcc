@@ -136,8 +136,15 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 
 export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, options: IOptions, isLiteral: boolean): string {
 	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
-
+	let closeColor : boolean = false;
 	let texString = '';
+	if (options.unitColor != ''){
+		texString += '{\\color{' + options.unitColor +'}';
+		closeColor = true;
+	} else if (options.color != '') {
+		texString += '{\\color{' + options.color +'}';
+		closeColor = true;
+	}
 	let perForSingle = false;
 	if (unitPieces.length >= 2 && unitPieces.filter((v) => {
 		const power = v.power != null
@@ -172,7 +179,7 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 			latex += latexResult.latex;
 
 		});
-		texString = latex;
+		texString += latex;
 
 	} else {
 		// useful for bracket-unit-denominator with perMode=symbol
@@ -229,16 +236,16 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 					denominator = '(' + denominator + ')';
 				}
 				if (options.perMode === 'fraction') {
-					texString = options.fractionCommand + '{' + numerator + '}{' + denominator + '}';
+					texString += options.fractionCommand + '{' + numerator + '}{' + denominator + '}';
 				}
 				else if (options.perMode === 'repeated-symbol' || options.perMode === 'symbol' || perForSingle || options.perMode === 'single-symbol') {
-					texString = numerator + (lastNumeratorHadSuperscript ? options.perSymbolScriptCorrection : '') + options.perSymbol + denominator;
+					texString += numerator + (lastNumeratorHadSuperscript ? options.perSymbolScriptCorrection : '') + options.perSymbol + denominator;
 				}
 				else {
 					console.log("shouldn't be here");
 				}
 			} else {
-				texString = numerator;
+				texString += numerator;
 			}
 
 		} else {
@@ -270,10 +277,14 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 
 			});
 
-			texString = latex;
+			texString += latex;
 		}
 
 	}
+	if (closeColor){
+		texString += '}';
+	}
+
 	return texString;
 
 }

@@ -15,22 +15,27 @@ export type PrefixMode = 'input' | 'combine-exponent' | 'extract-exponent';
 export type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single';
 
 export interface IPrintOptions {
-	color: string;						// not implemented
-	mode: PrintMode;					// not implemented
-	numberColor: string;				// not implemented
-	numberMode: PrintMode;				// not implemented
-	propagateMathFont: boolean;			// not implemented
-	resetMathVersion: boolean; 			// not implemented
-	resetTextFamily: boolean; 			// not implemented
-	resetTextSeries: boolean; 			// not implemented
-	resetTextShape: boolean; 			// not implemented
+	mode: PrintMode;					// not implemented - MathJax only does math mode, could use \text{} along with textmacros extension?
+	numberMode: PrintMode;				// not implemented - see mode
+	unitMode: PrintMode;				// not implemented - see mode
+	resetTextFamily: boolean; 			// not implemented - see mode
+	resetTextSeries: boolean; 			// not implemented - see mode
+	resetTextShape: boolean; 			// not implemented - see mode
+	
+	
+	propagateMathFont: boolean;			// not implemented - not sure if this can be done either
+	resetMathVersion: boolean; 			// not implemented	
 	textFamilyToMath: boolean;			// not implemented
 	textFontCommand: string;			// not implemented
 	textSubscriptCommand: string;		// not implemented
 	textSuperscriptCommand: string;		// not implemented
 	textSeriesToMath: boolean;			// not implemented
+
+	// WARNING: using MathJax, \\color{blue} will only color everything past that point until the END of the LINE.   
+	color: string;						// not implemented	
+	numberColor: string;				// not implemented		
 	unitColor: string;					// not implemented
-	unitMode: PrintMode;				// not implemented
+	
 }
 
 export interface IUnitOptions {
@@ -139,7 +144,7 @@ export interface IAngleOptions extends INumOptions {
 	numberAngleProduct: string;
 }
 
-export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions, IQuantityOptions { }
+export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions, IQuantityOptions, IPrintOptions { }
 
 export const PrintOptionsDefault: IPrintOptions = {
 	color: '',

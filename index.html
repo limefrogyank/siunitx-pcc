@@ -3,11 +3,11 @@
 <script>
 MathJax = {
 	loader: {
-		load: ['[custom]/siunitx.js', '[tex]/gensymb'], //gensymb is required for \degree and \ohm
+		load: ['[custom]/siunitx.js', '[tex]/gensymb', '[tex]/color'], //gensymb is required for \degree and \ohm
 		paths: {custom: '.'}
 	},
 	tex: {
-		packages: {'[+]': ['siunitx', 'gensymb']},  //gensymb is required for \degree and \ohm
+		packages: {'[+]': ['siunitx', 'gensymb', 'color']},  //gensymb is required for \degree and \ohm
 		inlineMath: {'[+]': [['$', '$']]},
 		/* global options can go here, see IOptions in options.ts for properties */
 		// Uncomment example below: 
@@ -309,7 +309,7 @@ var unit = [
 	}`,
 
 	String.raw`\unit{\pascal\per\gray\henry}`,
-	String.raw`\unit[sticky-per]{\pascal\per\gray\henry}`,  //BUG: sticky-per not working
+	String.raw`\unit[sticky-per]{\pascal\per\gray\henry}`,
 
 	String.raw`\unit{\kilogram\of{pol}\squared\per\mole\of{cat}\per\hour}`,
 	String.raw`\unit[qualifier-mode = bracket]{\kilogram\of{pol}\squared\per\mole\of{cat}\per\hour}`,
@@ -392,7 +392,12 @@ var qty = [
 	String.raw`\qty[uncertainty-mode=separate, separate-uncertainty-units = bracket]{12.3(4)}{\kilo\gram}`,
 	String.raw`\qty[uncertainty-mode=separate, separate-uncertainty-units = repeat]{12.3(4)}{\kilo\gram}`,
 	String.raw`\qty[uncertainty-mode=separate, separate-uncertainty-units = single]{12.3(4)}{\kilo\gram}`,
-	String.raw``,
+	String.raw`\color{red}
+	\mathrm{Some\ text\ }
+	\qty{4}{\kilogram}
+	\ \mathrm{More\ text\ }
+	\qty[color = blue]{4}{\kilogram}
+	\ \mathrm{Still\ red\ here!}`,
 ];
 
 var table = document.getElementById('qtyTable');

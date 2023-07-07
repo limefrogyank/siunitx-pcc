@@ -1,5 +1,5 @@
 import { INumberPiece, IUncertainty } from "./numMethods";
-import { INumOutputOptions } from "./options";
+import { INumOutputOptions, IOptions } from "./options";
 
 function addSpacing(text:string, digitGroupSize:number, minimum: number, spacer:string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number ){
 	if (text.length >= minimum){
@@ -214,15 +214,29 @@ export function displayNumber(piece:INumberPiece, options: INumOutputOptions) : 
 	return output;
 }
 
-export function displayOutput(num:INumberPiece, options: INumOutputOptions):string{
+export function displayOutput(num:INumberPiece, options: IOptions):string{
 
 	let output = '';
+
+	let closeColor : boolean = false;
+	if (options.numberColor != ''){
+		output += '{\\color{' + options.numberColor +'}';
+		closeColor = true;
+	} else if (options.color != '') {
+		output += '{\\color{' + options.color +'}';
+		closeColor = true;
+	}
 	
 	// display any prefix symbol such as less than, greater than, etc.
 	output += num.prefix;
 	
 	// display main number
 	output += displayNumber(num, options);
+
+	if (closeColor){
+		output += '}';
+	}
+
 	
 	return output;
 }
