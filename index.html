@@ -54,11 +54,11 @@ var num = [
 	String.raw`\num{0,1234}`,
 	String.raw`\num{.12345}`,
 	String.raw`\num{3.45d-4}`,
-	String.raw`\num{-e10}`, // BROKEN
+	String.raw`\num{-e10}`,
 	String.raw`\num{9.99(9)}`,
 	String.raw`\num{9.99 +- 0.09}`,
 	String.raw`\num{9.99 \pm 0.09}`,
-	String.raw`\num{123 +- 4.5}`,  	// BROKEN (but just a bad number anyways)
+	String.raw`\num{123 +- 4.5}`,
 	String.raw`\num{12.3 +- 6}`,
 	String.raw`\num{123.4(12)}`,
 	String.raw`\num{123.4(1.2)}`,
@@ -274,7 +274,7 @@ var unit = [
 	String.raw`\unit[qualifier-mode = bracket]{\milli\mole\of{cat}\per\kilogram\of{prod}}`,
 	String.raw`\unit[per-mode = fraction]{\cancel\kilogram\metre\per\cancel\kilogram\per\second}`,
 	String.raw`\unit{\highlight{red}\kilogram\metre\per\second}`,
-	String.raw`\unit[unit-color = purple]{\highlight{blue}\kilogram\metre\per\second}`,  //TODO: unit-color 
+	String.raw`\unit[unit-color = purple]{\highlight{blue}\kilogram\metre\per\second}`,
 
 	String.raw`\unit{\farad\squared\lumen\candela}`,
 	String.raw`\unit[inter-unit-product = \cdot ]{\farad\squared\lumen\candela}`,

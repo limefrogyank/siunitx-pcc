@@ -248,7 +248,8 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 	if (!options.retainExplicitPlus && num.sign == '+') {
 		num.sign = '';
 	}
-	const value = +(num.whole + (num.decimal != '' ? '.' : '') + num.fractional);
+	// adding exponent to value check here.  Without it, exponentials without a base won't stay negative. (-e10)
+	const value = +(num.whole + (num.decimal != '' ? '.' : '') + num.fractional + (num.exponent =='' ? '': 'e' + num.exponentSign + num.exponent));
 	if (value == 0 && !options.retainNegativeZero && num.sign == '-') {
 		num.sign = '';
 	}
@@ -285,10 +286,14 @@ export function processNumber(parser: TexParser): MmlNode {
 		}
 
 		const num = parseNumber(parser, text, globalOptions);
+		console.log(text);
+		console.log(JSON.stringify(num));
 
 		postProcessNumber(num, globalOptions);
+		console.log(JSON.stringify(num));
 
 		const displayResult = displayOutput(num, globalOptions);
+		console.log(displayResult);
 
 		const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
 		return mml;

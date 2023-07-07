@@ -325,6 +325,18 @@ const roundModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions
 
 export function postProcessNumber(num:INumberPiece, options: INumPostOptions){
 	
+	// Post-process special case for uncertainty: 123 +- 4.5
+	// This number is actually 123.0 +- 4.5 or 123.0(4.5) or 123.0(45)
+	// Even if uncertainty is dropped, the original value had a significant zero in the tenths place.
+	// Check fraction length of uncertainty[0] and compare to value fraction length.
+	// Could theoretically check for equal uncertainty precision in the case of two uncertainties...
+	if (num.uncertainty && num.uncertainty.length > 0 && num.uncertainty[0].fractional.length > num.fractional.length){
+		if (num.decimal === ''){
+			num.decimal = '.';
+		}
+		num.fractional = num.fractional.padEnd(num.uncertainty[0].fractional.length, '0');
+	} 
+
 	if (options.dropUncertainty){
 		num.uncertainty.splice(0, num.uncertainty.length);
 	}
