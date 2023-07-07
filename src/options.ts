@@ -5,7 +5,7 @@ import { MathJax } from 'mathjax-full/js/components/global';
 type PrintMode = 'match' | 'math' | 'text';
 type PerMode = 'power' | 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol' | 'perMode';
 export type QualifierMode = 'subscript' | 'bracket' | 'combine' | 'phrase';
-type ExponentMode = 'input' | 'fixed' | 'engineering' | 'scientific';
+type ExponentMode = 'input' | 'fixed' | 'engineering' | 'scientific' | 'threshold';
 type RoundMode = 'none' | 'figures' | 'places' | 'uncertainty';
 type GroupDigits = 'all' | 'none' | 'decimal' | 'integer';
 type UncertaintyMode = 'separate' | 'compact' | 'full' | 'compact-marker';
@@ -80,6 +80,7 @@ export interface INumPostOptions {
 	dropUncertainty: boolean;
 	dropZeroDecimal: boolean;
 	exponentMode: ExponentMode;
+	exponentThesholds: string;
 	fixedExponent: number;
 	minimumIntegerDigits: number;
 	minimumDecimalDigits: number;
@@ -207,6 +208,7 @@ export const NumPostOptionDefaults: INumPostOptions = {
 	dropUncertainty: false,
 	dropZeroDecimal: false,
 	exponentMode: 'input',
+	exponentThesholds: '-3:3',
 	fixedExponent: 0,
 	minimumIntegerDigits: 0,
 	minimumDecimalDigits: 0,

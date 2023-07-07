@@ -92,6 +92,18 @@ var num = [
 	String.raw`\num[exponent-mode = fixed, fixed-exponent=2]{1200}`,
 	String.raw`\num[exponent-mode = fixed, fixed-exponent=0]{0.0100}`,
 	String.raw`\num[exponent-mode = fixed, fixed-exponent=0]{1.00e-2}`,
+	String.raw`\displaylines{
+		\sisetup{exponent-mode = threshold}
+		\num{0.001} \\
+		\num{0.012} \\
+		\num{0.123} \\
+		\num{1} \\
+		\num{12} \\
+		\num{123} \\
+		\num{1234} \\
+		\sisetup{exponent-mode = input}
+	}`,
+
 	String.raw`\num{0.01(2)}`,
 	String.raw`\num[drop-uncertainty]{0.01(2)}`,
 	String.raw`\num{0.01e3}`,

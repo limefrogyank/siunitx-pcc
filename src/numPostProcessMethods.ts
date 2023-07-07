@@ -1,9 +1,11 @@
+import { siunitxError } from "./errors";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { INumOptions, INumPostOptions, IOptions } from "./options";
 import { GlobalParser } from "./siunitx";
 
-function convertToScientific(num:INumberPiece, options: INumPostOptions) : void {
+function convertToScientific(numOriginal:INumberPiece, options: INumPostOptions) : INumberPiece {
 	//convert to actual number and use formating to print scientific
+	let num = JSON.parse(JSON.stringify(numOriginal));
 	const val = (+(num.sign + num.whole + num.decimal + num.fractional + (num.exponent != '' ? ('e' + num.exponentSign + num.exponent): '' ))).toExponential();
 	// parse that back in
 	const newNum = parseNumber(GlobalParser, val, options as IOptions);
@@ -42,6 +44,7 @@ function convertToScientific(num:INumberPiece, options: INumPostOptions) : void 
 	for (const prop in num){
 		num[prop] = newNum[prop];
 	}
+	return num;
 }
 
 function convertToXExponent(num:INumberPiece, targetExponent: number){
@@ -77,7 +80,7 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 	// similar to convertToFixed except we calculate the exponent to be a power of three that keeps the whole number part non-zero.
 		
 	// convert to scientific, then move decimal...
-	convertToScientific(num, options);
+	num = convertToScientific(num, options);
 	let targetExponent = +(num.exponentSign + num.exponent);
 	while (targetExponent % 3 != 0) {
 		targetExponent--;
@@ -89,7 +92,7 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 
 export function convertToFixed(num:INumberPiece, options: INumPostOptions):void {
 	// convert to scientific, then move decimal...
-	convertToScientific(num, options);
+	num = convertToScientific(num, options);
 	
 	convertToXExponent(num, options.fixedExponent);
 }
@@ -99,7 +102,32 @@ const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOpti
 	['input', ():void => { }],  // leave number as-is
 	['fixed', convertToFixed],
 	['engineering', convertToEngineering],
-	['scientific', convertToScientific]
+	['scientific', (num: INumberPiece, options: IOptions) => num = convertToScientific(num,options)],
+	['threshold', (num: INumberPiece, options: IOptions)=>{ 
+		console.log('THRESHOLD!');
+		const minMax = options.exponentThesholds.split(':');
+		console.log(options.exponentThesholds);
+		console.log(minMax);
+		if (minMax.length != 2){
+			throw siunitxError.ExponentThresholdsError(options.exponentThesholds);
+		}
+		// ensure we have a version in scientific form but leave the original alone.
+		const testNum = convertToScientific(num,options);
+		console.log(testNum);
+		const testExponent = +(testNum.exponentSign + testNum.exponent);
+		console.log('Test Exp: ' + testExponent);
+		console.log(+minMax[0]);
+		console.log(+minMax[1]);
+		if ( testExponent > +minMax[0] && testExponent < +minMax[1]){
+			//leave number as-is'
+			console.log('as-is');
+		} else {
+			// copy the scientific form over to the original INumPiece
+			Object.assign(num, testNum);
+			console.log('convert');
+		}
+		
+	}]
 ]);
 
 function shouldRoundUp(toRound:number, firstDrop:number, roundEven:boolean):boolean{

@@ -27,4 +27,8 @@ export class siunitxError {
 		return new TexError('103', macro + ' is detected as a literal units.  These are forbidden globally. Use interpreted units instead (i.e. \\kilo\\gram).');
 	}
 
+	static ExponentThresholdsError(option:string):TexError{
+		return new TexError('104', 'Couldn\'t parse "' + option  + '".  Option "exponent-threshold" must be in the form of "min-number:max-number".');
+	}
+
 }

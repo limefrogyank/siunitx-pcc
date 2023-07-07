@@ -20,7 +20,17 @@
 </script>
 
 <body>
-    $ \num{123 +- 4.5} $
+    $$\displaylines{
+		\sisetup{exponent-mode = threshold}
+        \num{0.001} \\
+		\num{0.012} \\
+		\num{0.123} \\
+		\num{1} \\
+		\num{12} \\
+		\num{123} \\
+		\num{1234} \\
+		\sisetup{exponent-mode = input}
+     } $$
 </body>
 
 </html>
