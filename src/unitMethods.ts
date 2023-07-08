@@ -106,7 +106,7 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 	unitLatex += options.unitFontCommand + '{';
 	//check for square root
 	if (options.powerHalfAsSqrt && unitPiece.power && unitPiece.power == 0.5) {
-		unitLatex += '\\class{MathML-Unit}{\\sqrt{' + unitPiece.prefix + unitPiece.symbol + '}}';
+		unitLatex += '\\sqrt{\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}}';
 		unitPiece.power = null;
 	} else {
 		unitLatex += '\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}';

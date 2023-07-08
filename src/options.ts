@@ -124,7 +124,7 @@ export interface INumOutputOptions {
 export interface INumOptions extends INumParseOptions, INumPostOptions, INumOutputOptions { }
 
 export interface IQuantityOptions extends INumOptions, IUnitOptions {
-	allowQuantityBreaks: boolean;
+	allowQuantityBreaks: boolean; 			// not implemented, // TODO: allowQuantityBreaks: Check that this can't really be done with MathJax
 	extractMassInKilograms: boolean;
 	prefixMode: PrefixMode;
 	quantityProduct: '\\,';

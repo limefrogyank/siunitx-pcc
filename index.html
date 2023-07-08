@@ -399,14 +399,15 @@ var qty = [
 	String.raw`\qty{.23e7}{\candela}`,
 	String.raw`\qty[per-mode = symbol]{1.99}{\per\kilogram}`,
 	String.raw`\qty[per-mode = fraction]{1,345}{\coulomb\per\mole}`,
+	// quantity-product test
 	String.raw`\qty{2.67}{\farad}`,
 	String.raw`\qty[quantity-product = \ ]{2.67}{\farad}`,
 	String.raw`\qty[quantity-product = ]{2.67}{\farad}`,
+	// prefix-mode, extract-mass-in-kilograms test
 	String.raw`\qty{1e3}{\metre\second}`,
-	String.raw`\qty[prefix-mode = combine-exponent]{1e3}{\metre\second}`,
+	String.raw`\qty[prefix-mode = combine-exponent]{1e3}{\metre\second}`, // BUG
 	String.raw`\qty{10}{\kilo\gram\squared\deci\second}`,
-	String.raw`\qty[prefix-mode = extract-exponent]{10}{\kilo\gram\squared\deci\second}`,
-	// NOT WORKING
+	String.raw`\qty[prefix-mode = extract-exponent]{10}{\kilo\gram\squared\deci\second}`, // BUG
 	String.raw`\qty[prefix-mode = extract-exponent]{7.5}{\gram}`,
 	String.raw`\qty[extract-mass-in-kilograms = false]{10}{\kilo\gram\squared\deci\second}`,
 	String.raw`\qty[prefix-mode = extract-exponent, extract-mass-in-kilograms = false]{10}{\kilo\gram\squared\deci\second}`,

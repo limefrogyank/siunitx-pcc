@@ -12,8 +12,9 @@ what we want (because some siunitx features are not appropriate for MathJax)
 - `\DeclareSIUnit`  (which maybe comes anyway before the unit macros)
 - the controls for number formatting (eg 200, 2.0x10² etc)
 - the controls for unit formatting (eg m/s versus m s⁻¹)
-- control over what goes on between a number and a unit (space, dot, etc)
-- going beyond the LaTeX package, having good SRE output for all of this
+- control over what goes on between a number and a unit (space, dot, etc) 
+- going beyond the LaTeX package, having good SRE output for all of this 
+    - modifying MathML output...
 
 ### Tier 2
 - `\DeclareSIQualifier` (eg g_{salt} for "grams of salt")
