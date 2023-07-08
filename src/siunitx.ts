@@ -8,6 +8,9 @@ import { AngleOptionDefaults, findOptions, NumOptionDefaults, PrintOptionsDefaul
 import { processQuantity } from './qtyMethods';
 import { processUnit } from './unitMethods';
 import { userDefinedUnitOptions, userDefinedUnits } from './units';
+import { GetArgumentMML } from "./aria-label";
+import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
+
 
 const methodMap = new Map<string, (parser: TexParser) => void>([
     ['\\num', (parser: TexParser): void => {
@@ -58,7 +61,8 @@ new CommandMap('siunitxMap', {
     unit: ['siunitxToken', 'unit'],
     qty: ['siunitxToken', 'qty'],
     DeclareSIUnit: ['siunitxGlobal', 'DeclareSIUnit'],
-    sisetup: ['siunitxToken', 'sisetup']
+    sisetup: ['siunitxToken', 'sisetup'],
+    arialabel: ['Arialabel', 'arialabel']
 }, {
     siunitxToken: (parser, name) => {
         //console.log(parser.options.perMode);
@@ -79,6 +83,12 @@ new CommandMap('siunitxMap', {
         GlobalParser = parser;
         const options = findOptions(parser);
         declareMap.get(name as string)?.(parser, name as string, options);
+    },
+    Arialabel: (parser: TexParser, name:string) => {
+        let thelabel = parser.GetArgument(name);
+        const arg = GetArgumentMML(parser, name);
+        NodeUtil.setAttribute(arg, 'aria-label', thelabel);
+        parser.Push(arg);
     }
 });
 
@@ -92,6 +102,7 @@ const config = (_config: ParserConfiguration, jax: TeX<any, any, any>) => {
     jax.parseOptions.packageData.set(UserDefinedUnitsKey, userDefinedUnits);
     jax.parseOptions.packageData.set(UserDefinedUnitOptionsKey, userDefinedUnitOptions);
 };
+
 
 Configuration.create('siunitx',
     {
