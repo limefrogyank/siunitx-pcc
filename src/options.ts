@@ -80,7 +80,7 @@ export interface INumPostOptions {
 	dropUncertainty: boolean;
 	dropZeroDecimal: boolean;
 	exponentMode: ExponentMode;
-	exponentThesholds: string;
+	exponentThresholds: string;
 	fixedExponent: number;
 	minimumIntegerDigits: number;
 	minimumDecimalDigits: number;
@@ -208,7 +208,7 @@ export const NumPostOptionDefaults: INumPostOptions = {
 	dropUncertainty: false,
 	dropZeroDecimal: false,
 	exponentMode: 'input',
-	exponentThesholds: '-3:3',
+	exponentThresholds: '-3:3',
 	fixedExponent: 0,
 	minimumIntegerDigits: 0,
 	minimumDecimalDigits: 0,
@@ -316,6 +316,7 @@ export function processSISetup(parser: TexParser): void {
 
 	const options = processOptions(globalOptions, optionsString);
 	options.forEach((v, k) => parser.options[k] = v);
+
 	// We are adding the sisetup options to the parser options.  These are global once the page is loaded.
 	// (the globalOptions variable is just a copy and will reset between each siunitx command)
 

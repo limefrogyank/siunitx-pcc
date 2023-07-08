@@ -80,7 +80,8 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 	// similar to convertToFixed except we calculate the exponent to be a power of three that keeps the whole number part non-zero.
 		
 	// convert to scientific, then move decimal...
-	num = convertToScientific(num, options);
+	const convertedNum = convertToScientific(num, options);
+	Object.assign(num, convertedNum);
 	let targetExponent = +(num.exponentSign + num.exponent);
 	while (targetExponent % 3 != 0) {
 		targetExponent--;
@@ -92,7 +93,8 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 
 export function convertToFixed(num:INumberPiece, options: INumPostOptions):void {
 	// convert to scientific, then move decimal...
-	num = convertToScientific(num, options);
+	const convertedNum = convertToScientific(num, options);
+	Object.assign(num, convertedNum);
 	
 	convertToXExponent(num, options.fixedExponent);
 }
@@ -102,29 +104,23 @@ const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOpti
 	['input', ():void => { }],  // leave number as-is
 	['fixed', convertToFixed],
 	['engineering', convertToEngineering],
-	['scientific', (num: INumberPiece, options: IOptions) => num = convertToScientific(num,options)],
+	['scientific', (num: INumberPiece, options: IOptions) => {
+		const convertedNum = convertToScientific(num,options);
+		Object.assign(num, convertedNum);
+	}],
 	['threshold', (num: INumberPiece, options: IOptions)=>{ 
-		console.log('THRESHOLD!');
-		const minMax = options.exponentThesholds.split(':');
-		console.log(options.exponentThesholds);
-		console.log(minMax);
+		const minMax = options.exponentThresholds.split(':');
 		if (minMax.length != 2){
-			throw siunitxError.ExponentThresholdsError(options.exponentThesholds);
+			throw siunitxError.ExponentThresholdsError(options.exponentThresholds);
 		}
 		// ensure we have a version in scientific form but leave the original alone.
 		const testNum = convertToScientific(num,options);
-		console.log(testNum);
 		const testExponent = +(testNum.exponentSign + testNum.exponent);
-		console.log('Test Exp: ' + testExponent);
-		console.log(+minMax[0]);
-		console.log(+minMax[1]);
 		if ( testExponent > +minMax[0] && testExponent < +minMax[1]){
 			//leave number as-is'
-			console.log('as-is');
 		} else {
 			// copy the scientific form over to the original INumPiece
 			Object.assign(num, testNum);
-			console.log('convert');
 		}
 		
 	}]
@@ -374,9 +370,7 @@ export function postProcessNumber(num:INumberPiece, options: INumPostOptions){
 		num.exponent = '';
 	}
 
-	roundModeMap.get(options.roundMode)(num, options);
-	
-	
+	roundModeMap.get(options.roundMode)(num, options);	
 
 	if (options.dropZeroDecimal && +(num.fractional) == 0){
 		num.fractional = '';

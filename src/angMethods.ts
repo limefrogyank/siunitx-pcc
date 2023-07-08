@@ -99,7 +99,6 @@ function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IA
 		ang.degrees.sign = '';
 	}
 
-
 	return ang;
 }
 
@@ -284,7 +283,7 @@ export function processAngle(parser: TexParser): MmlNode {
 	const ang = parseAngle(parser, text, globalOptions);
 
 	// TODO: consider error checking result
-	// Is there an exponent??  Maybe throw an error.
+	// Is there an exponent??  Throw an error... or ignore it?
 
 	// transform angle format
 	modeMapping.get(globalOptions.angleMode)(ang);

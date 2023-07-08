@@ -20,8 +20,8 @@
 </script>
 
 <body>
-    $$\displaylines{
-		\sisetup{exponent-mode = threshold}
+    $$ \displaylines{
+		\sisetup{exponent-mode = threshold }
         \num{0.001} \\
 		\num{0.012} \\
 		\num{0.123} \\
@@ -30,6 +30,17 @@
 		\num{123} \\
 		\num{1234} \\
 		\sisetup{exponent-mode = input}
+     } $$
+     $$ \displaylines{
+		\sisetup{exponent-mode = threshold, exponent-thresholds = -2:2 }
+        \num{0.001} \\
+		\num{0.012} \\
+		\num{0.123} \\
+		\num{1} \\
+		\num{12} \\
+		\num{123} \\
+		\num{1234} \\
+		\sisetup{exponent-mode = input, exponent-thresholds = -3:3 }
      } $$
 </body>
 

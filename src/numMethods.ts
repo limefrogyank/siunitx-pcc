@@ -286,14 +286,10 @@ export function processNumber(parser: TexParser): MmlNode {
 		}
 
 		const num = parseNumber(parser, text, globalOptions);
-		console.log(text);
-		//console.log(JSON.stringify(num));
-
+		
 		postProcessNumber(num, globalOptions);
-		//console.log(JSON.stringify(num));
 
 		const displayResult = displayOutput(num, globalOptions);
-		console.log(displayResult);
 
 		const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
 		return mml;

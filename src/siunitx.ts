@@ -82,6 +82,10 @@ new CommandMap('siunitxMap', {
     }
 });
 
+//TODO: Consider memoization. If input is the same, may as well return the same value without processing.  
+// Could even split up memoization for \num between parse, post-process, and print.  The options are split 
+// that way, too, so comparing options should be relatively simple.
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const config = (_config: ParserConfiguration, jax: TeX<any, any, any>) => {
