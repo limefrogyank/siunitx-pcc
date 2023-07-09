@@ -10,32 +10,34 @@ import { processUnit } from './unitMethods';
 import { userDefinedUnitOptions, userDefinedUnits } from './units';
 import { GetArgumentMML } from "./aria-label";
 import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
+import {Sre} from 'mathjax-full/js/a11y/sre'
 
+console.log(Sre);
+console.log(Sre.getSpeechGenerator('Color'));
 
-const methodMap = new Map<string, (parser: TexParser) => void>([
-    ['\\num', (parser: TexParser): void => {
+const methodMap: Record<string, (parser: TexParser) => void> = {
+    '\\num': (parser: TexParser): void => {
         const node = processNumber(parser);
         parser.Push(node);
-    }],
-    ['\\ang', (parser: TexParser): void => {
+    },
+    '\\ang': (parser: TexParser): void => {
         const node = processAngle(parser);
         parser.Push(node);
-    }],
-    ['\\unit', (parser: TexParser): void => {
+    },
+    '\\unit': (parser: TexParser): void => {
         const node = processUnit(parser);
         parser.Push(node);
-    }],
-    ['\\qty', (parser: TexParser): void => {
+    },
+    '\\qty': (parser: TexParser): void => {
         processQuantity(parser); // doesn't return a node, pushes internally
-    }],
-    ['\\sisetup', (parser: TexParser): void =>{
+    },
+    '\\sisetup': (parser: TexParser): void => {
         processSISetup(parser);
-    }]
+    }
+};
 
-]);
-
-const declareMap = new Map<string, (parser: TexParser, name: string, options: string) => void>([
-    ['\\DeclareSIUnit', (parser: TexParser, name: string, options: string): void => {
+const declareMap: Record<string, (parser: TexParser, name: string, options: string) => void> = {
+    '\\DeclareSIUnit': (parser: TexParser, name: string, options: string): void => {
         const userDefinedUnits = parser.configuration.packageData.get(UserDefinedUnitsKey) as Map<string, string>;
         const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, string>;
 
@@ -46,9 +48,8 @@ const declareMap = new Map<string, (parser: TexParser, name: string, options: st
         if (options !== undefined) {
             userDefinedUnitOptions.set(newUnitMacro, options);
         }
-    }]
-
-]);
+    }
+};
 
 export let GlobalParser: TexParser;
 
@@ -72,19 +73,19 @@ new CommandMap('siunitxMap', {
         // const testNode = parser.create('node', 'mtext');
         // const testdisplay = isDisplay(testNode);
         // console.log(testdisplay);
-        methodMap.get(name as string)?.(parser);
-        
+        methodMap[name as string]?.(parser);
+
         // console.log(parser);
         // const display = isDisplay(node);
         // console.log(display);    
-        
+
     },
     siunitxGlobal: (parser, name) => {
         GlobalParser = parser;
         const options = findOptions(parser);
-        declareMap.get(name as string)?.(parser, name as string, options);
+        declareMap[name as string]?.(parser, name as string, options);
     },
-    Arialabel: (parser: TexParser, name:string) => {
+    Arialabel: (parser: TexParser, name: string) => {
         let thelabel = parser.GetArgument(name);
         const arg = GetArgumentMML(parser, name);
         NodeUtil.setAttribute(arg, 'aria-label', thelabel);

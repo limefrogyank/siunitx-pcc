@@ -16,7 +16,6 @@ export interface IUnitPiece {
 	highlight?: string; // color
 }
 
-
 interface IUnitMacroProcessResult {
 	type: 'prefix' | 'unit' | 'previous' | 'next';  // either a prefix, unit, or modifier for previous or next unit
 	result: IUnitPiece;
@@ -109,7 +108,7 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 		unitLatex += '\\sqrt{\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}}';
 		unitPiece.power = null;
 	} else {
-		unitLatex += '\\arialabel{test}{\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}}';
+		unitLatex += '\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}';
 	}
 	if (unitPiece.qualifier) {
 		unitLatex += qualiferMethod.get(options.qualifierMode)?.(unitPiece.qualifier, options.qualifierPhrase);

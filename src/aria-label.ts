@@ -1,3 +1,5 @@
+// Modified!
+
 /*************************************************************
  *  Copyright (c) 2020 krautzource UG
  *
@@ -18,9 +20,9 @@
 import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { ParseMethod } from 'mathjax-full/js/input/tex/Types';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap.js';
-import { MmlNode } from 'mathjax-full/js/core/MmlTree/MmlNode.js';
-import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil.js';
+import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
+import { MmlNode } from 'mathjax-full/js/core/MmlTree/MmlNode';
+import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
 
 
 /**
@@ -62,16 +64,3 @@ ArialabelMethods.Arialabel = function (parser: TexParser, name: string) {
 };
 
 
-new CommandMap('aria-label', {
-   'arialabel': ['Arialabel'],
-}, ArialabelMethods);
-
-
-
-// export const configuration = Configuration.create(
-//   'aria-label', {
-//   handler: {
-//     macro: ['aria-label']
-//   }
-// }
-// );
