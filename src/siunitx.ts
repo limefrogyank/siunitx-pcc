@@ -1,6 +1,6 @@
 import { TeX } from 'mathjax-full/js/input/tex';
 import { Configuration, ParserConfiguration } from 'mathjax-full/js/input/tex/Configuration';
-import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
+import { CommandMap, CharacterMap, parseResult } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
@@ -10,10 +10,10 @@ import { processUnit } from './unitMethods';
 import { userDefinedUnitOptions, userDefinedUnits } from './units';
 import { GetArgumentMML } from "./aria-label";
 import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
-import {Sre} from 'mathjax-full/js/a11y/sre'
 
-console.log(Sre);
-console.log(Sre.getSpeechGenerator('Color'));
+import { Symbol } from 'mathjax-full/js/input/tex/Symbol'
+import { TexConstant } from 'mathjax-full/js/input/tex/TexConstants';
+import { TEXCLASS, MmlNode } from 'mathjax-full/js/core/MmlTree/MmlNode';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
@@ -56,6 +56,22 @@ export let GlobalParser: TexParser;
 export const UserDefinedUnitsKey = 'siunitxUnits';
 export const UserDefinedUnitOptionsKey = 'siunitxUnitOptions';
 
+function angleChars(parser: TexParser, mchar: Symbol) {
+    const def = mchar.attributes || {};
+    def.mathvariant = TexConstant.Variant.NORMAL;
+    def.class = 'MathML-Unit';
+    const emptyToken = parser.create('token', 'mi', { 'data-semantic-type': 'empty' });
+    const symbolToken = parser.create('token', 'mi', def, mchar.char);
+    const msupNode = parser.create('node', 'msup', [emptyToken, symbolToken]);
+    parser.Push(msupNode);
+}
+
+new CharacterMap('angchar-symbols', angleChars, {
+    degreeminute: ['\u2032', {}],
+    degreesecond: ['\u2033', {}]
+});
+
+
 new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
     ang: ['siunitxToken', 'ang'],
@@ -63,7 +79,8 @@ new CommandMap('siunitxMap', {
     qty: ['siunitxToken', 'qty'],
     DeclareSIUnit: ['siunitxGlobal', 'DeclareSIUnit'],
     sisetup: ['siunitxToken', 'sisetup'],
-    arialabel: ['Arialabel', 'arialabel']
+    arialabel: ['Arialabel', 'arialabel'],
+    data: ['Dataset', 'data'],
 }, {
     siunitxToken: (parser, name) => {
         //console.log(parser.options.perMode);
@@ -90,12 +107,22 @@ new CommandMap('siunitxMap', {
         const arg = GetArgumentMML(parser, name);
         NodeUtil.setAttribute(arg, 'aria-label', thelabel);
         parser.Push(arg);
+    },
+    // currently not used
+    Dataset: (parser: TexParser, name: string) => {
+        let dataset = parser.GetArgument(name);
+        const arg = GetArgumentMML(parser, name);
+        //parse dataset to get both sides of equal
+        const pair = dataset.split('=');
+        NodeUtil.setAttribute(arg, 'data-' + pair[0], pair[1]);
+        parser.Push(arg);
     }
 });
 
 //TODO: Consider memoization. If input is the same, may as well return the same value without processing.  
 // Could even split up memoization for \num between parse, post-process, and print.  The options are split 
 // that way, too, so comparing options should be relatively simple.
+
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -108,7 +135,7 @@ const config = (_config: ParserConfiguration, jax: TeX<any, any, any>) => {
 Configuration.create('siunitx',
     {
         handler: {
-            macro: ['siunitxMap']
+            macro: ['angchar-symbols', 'siunitxMap']
         },
         options: { ...UnitOptionDefaults, ...NumOptionDefaults, ...AngleOptionDefaults, ...QuantityOptionDefaults, ...PrintOptionsDefault },
         config: config

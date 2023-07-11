@@ -59,7 +59,7 @@ let ArialabelMethods: Record<string, ParseMethod> = {};
 ArialabelMethods.Arialabel = function (parser: TexParser, name: string) {
   let thelabel = parser.GetArgument(name);
   const arg = GetArgumentMML(parser, name);
-  NodeUtil.setAttribute(arg, 'aria-label', thelabel);
+  NodeUtil.setAttribute(arg, 'arialabel', thelabel);
   parser.Push(arg);
 };
 

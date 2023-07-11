@@ -3,11 +3,11 @@
 <script>
 MathJax = {
 	loader: {
-		load: ['[custom]/siunitx.js', '[tex]/gensymb', '[tex]/color'], //gensymb is required for \degree and \ohm
+		load: ['[custom]/siunitx.js', '[tex]/gensymb', '[tex]/color', '[tex]/html'], //gensymb is required for \degree and \ohm
 		paths: {custom: '.'}
 	},
 	tex: {
-		packages: {'[+]': ['siunitx', 'gensymb', 'color']},  //gensymb is required for \degree and \ohm
+		packages: {'[+]': ['siunitx', 'gensymb', 'color', 'html']},  //gensymb is required for \degree and \ohm
 		inlineMath: {'[+]': [['$', '$']]},
 		/* global options can go here, see IOptions in options.ts for properties */
 		// Uncomment example below: 

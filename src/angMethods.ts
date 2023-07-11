@@ -165,35 +165,35 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 	let displayResult = '';
 	const degreeValue = +(ang.degrees.whole + (ang.degrees.decimal != '' ? '.' : '') + ang.degrees.fractional);
 	if (ang.degrees.whole == '' && options.fillAngleDegrees) {
-		if (ang.minutes.sign == '-'){
+		if (ang.minutes.sign == '-') {
 			ang.degrees.sign = '-';
 			ang.minutes.sign = '';
-		} else if (ang.seconds.sign == '-'){
+		} else if (ang.seconds.sign == '-') {
 			ang.degrees.sign = '-';
 			ang.seconds.sign = '';
 		}
 		ang.degrees.whole = '0';
 	}
 	if (degreeValue != 0 || ang.degrees.whole == '0' || options.fillAngleDegrees) {
-		if (options.angleSymbolOverDecimal) {			
+		if (options.angleSymbolOverDecimal) {
 			const number = displayNumber(ang.degrees, options);
 			const split = number.split(options.outputDecimalMarker);
 			if (split.length > 1) {
 				displayResult += split[0];
-				displayResult += '\\rlap{' + options.outputDecimalMarker + '}{\\mathrm{' + options.angleSymbolDegree + '}}';
+				displayResult += '\\rlap{' + options.outputDecimalMarker + '}{\\class{MathML-Unit}{' + options.angleSymbolDegree + '}}';
 				displayResult += split[1];
 			} else {
 				displayResult += number;
 				displayResult += options.numberAngleProduct;
-				displayResult += '\\mathrm{' + options.angleSymbolDegree + '}';
+				displayResult += '\\class{MathML-Unit}{' + options.angleSymbolDegree + '}';
 			}
 		} else {
 
 			displayResult += displayNumber(ang.degrees, options);
 			displayResult += options.numberAngleProduct;
-			displayResult += '\\mathrm{' + options.angleSymbolDegree + '}';
+			displayResult += '' + options.angleSymbolDegree + '';
 		}
-	} 
+	}
 
 
 	if (displayResult != '' && options.angleSeparator != '') {
@@ -202,10 +202,18 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 
 	if (ang.minutes != null) {
 		const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal != '' ? '.' : '') + ang.minutes.fractional);
+		let moddedAngleSymbolMinute = options.angleSymbolMinute;
+		if (moddedAngleSymbolMinute === "''") {
+			// TODO: Localize the degree-seconds
+			if (minutesValue == 1)
+				moddedAngleSymbolMinute = '\\arialabel{degree-minute}{\\degreeminute}';
+			else
+				moddedAngleSymbolMinute = '\\arialabel{degree-minutes}{\\degreeminute}';
+		}
 		if (minutesValue != 0 || ang.minutes.whole == '0' || options.fillAngleMinutes) {
 
 			if (minutesValue == 0 && options.fillAngleMinutes) {
-				if (ang.seconds.sign == '-'){
+				if (ang.seconds.sign == '-') {
 					ang.minutes.sign = '-';
 					ang.seconds.sign = '';
 				}
@@ -217,17 +225,17 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 				const split = number.split(options.outputDecimalMarker);
 				if (split.length > 1) {
 					displayResult += split[0];
-					displayResult += '\\rlap{' + options.outputDecimalMarker + '}{\\mathrm{' + options.angleSymbolMinute + '}}';
+					displayResult += '\\rlap{' + options.outputDecimalMarker + '}{' + moddedAngleSymbolMinute + '}';
 					displayResult += split[1];
 				} else {
 					displayResult += number;
 					displayResult += options.numberAngleProduct;
-					displayResult += '\\mathrm{' + options.angleSymbolMinute + '}';
+					displayResult += moddedAngleSymbolMinute;
 				}
 			} else {
 				displayResult += displayNumber(ang.minutes, options);
 				displayResult += options.numberAngleProduct;
-				displayResult += '\\mathrm{' + options.angleSymbolMinute + '}';
+				displayResult += moddedAngleSymbolMinute;
 			}
 		}
 	}
@@ -237,7 +245,15 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 	}
 	if (ang.seconds != null) {
 		const secondsValue = +(ang.seconds.whole + (ang.seconds.decimal != '' ? '.' : '') + ang.seconds.fractional);
-		if (secondsValue != 0 || ang.seconds.whole == '0'|| options.fillAngleSeconds) {
+		let moddedAngleSymbolSecond = options.angleSymbolSecond;
+		if (moddedAngleSymbolSecond === "''") {
+			// TODO: Localize the degree-seconds
+			if (secondsValue == 1)
+				moddedAngleSymbolSecond = '\\arialabel{degree-second}{\\degreesecond}';
+			else
+				moddedAngleSymbolSecond = '\\arialabel{degree-seconds}{\\degreesecond}';
+		}
+		if (secondsValue != 0 || ang.seconds.whole == '0' || options.fillAngleSeconds) {
 
 			if (secondsValue == 0 && options.fillAngleSeconds) {
 				ang.seconds.whole = '0';
@@ -248,21 +264,22 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 				const split = number.split(options.outputDecimalMarker);
 				if (split.length > 1) {
 					displayResult += split[0];
-					displayResult += '\\rlap{' + options.outputDecimalMarker + '}{\\mathrm{' + options.angleSymbolSecond + '}}';
+					displayResult += '\\rlap{' + options.outputDecimalMarker + '}{' + moddedAngleSymbolSecond + '}';
 					displayResult += split[1];
 				} else {
 					displayResult += number;
 					displayResult += options.numberAngleProduct;
-					displayResult += '\\mathrm{' + options.angleSymbolSecond + '}';
+					displayResult += moddedAngleSymbolSecond;
 				}
 			} else {
 				displayResult += displayNumber(ang.seconds, options);
 				displayResult += options.numberAngleProduct;
-				displayResult += '\\mathrm{' + options.angleSymbolSecond + '}';
+				displayResult += moddedAngleSymbolSecond
 			}
 		}
-	}
 
+	}
+	console.log(displayResult);
 	return displayResult;
 }
 
