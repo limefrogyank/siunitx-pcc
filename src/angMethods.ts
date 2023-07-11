@@ -204,7 +204,7 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 		const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal != '' ? '.' : '') + ang.minutes.fractional);
 		let moddedAngleSymbolMinute = options.angleSymbolMinute;
 		if (moddedAngleSymbolMinute === "''") {
-			// TODO: Localize the degree-seconds
+			// TODO: Localize the degree-minutes
 			if (minutesValue == 1)
 				moddedAngleSymbolMinute = '\\arialabel{degree-minute}{\\degreeminute}';
 			else
