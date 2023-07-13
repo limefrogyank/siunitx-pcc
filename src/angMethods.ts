@@ -203,7 +203,7 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 	if (ang.minutes != null) {
 		const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal != '' ? '.' : '') + ang.minutes.fractional);
 		let moddedAngleSymbolMinute = '\\mathrm{' + options.angleSymbolMinute + '}';
-		if (moddedAngleSymbolMinute === "''") {
+		if (moddedAngleSymbolMinute === "\\mathrm{'}") {
 			// TODO: Localize the degree-minutes
 			if (minutesValue == 1)
 				moddedAngleSymbolMinute = '\\arialabel{degree-minute}{\\degreeminute}';
@@ -246,7 +246,7 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 	if (ang.seconds != null) {
 		const secondsValue = +(ang.seconds.whole + (ang.seconds.decimal != '' ? '.' : '') + ang.seconds.fractional);
 		let moddedAngleSymbolSecond = '\\mathrm{' + options.angleSymbolSecond + '}';
-		if (moddedAngleSymbolSecond === "''") {
+		if (moddedAngleSymbolSecond === "\\mathrm{''}") {
 			// TODO: Localize the degree-seconds
 			if (secondsValue == 1)
 				moddedAngleSymbolSecond = '\\arialabel{degree-second}{\\degreesecond}';
