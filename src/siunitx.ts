@@ -14,6 +14,7 @@ import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
 import { Symbol } from 'mathjax-full/js/input/tex/Symbol'
 import { TexConstant } from 'mathjax-full/js/input/tex/TexConstants';
 import { TEXCLASS, MmlNode } from 'mathjax-full/js/core/MmlTree/MmlNode';
+import { mathmlcompare } from './mathmlcompare';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
@@ -140,3 +141,6 @@ Configuration.create('siunitx',
         options: { ...UnitOptionDefaults, ...NumOptionDefaults, ...AngleOptionDefaults, ...QuantityOptionDefaults, ...PrintOptionsDefault },
         config: config
     });
+
+// simple util to simplify and then compare mathml strings
+(window as any).mathmlcompare = mathmlcompare; 

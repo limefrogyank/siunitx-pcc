@@ -170,13 +170,13 @@ function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 	// if uncertainty exists, no rounding at all!
 	if (num.uncertainty.length == 0) {
 		if (num.fractional.length > options.roundPrecision ) {			
-			//console.log(num.whole + num.decimal + num.fractional);
 			const firstDrop = +num.fractional.slice(options.roundPrecision, options.roundPrecision+1);
 			const toRound = +num.fractional.slice(options.roundPrecision - 1, options.roundPrecision);
 			
+			const wholeLength = num.whole === '0' ? 0 : num.whole.length;
 			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
-				const result = roundUp(num.whole + num.fractional, num.whole.length + options.roundPrecision - 1);
-				const wholeLength = num.whole.length;
+				const result = roundUp(num.whole + num.fractional, wholeLength + options.roundPrecision - 1);
+				//const wholeLength = num.whole.length;
 				num.whole = result.slice(0,wholeLength);
 				num.fractional = result.slice(wholeLength, result.length);
 			} else {
@@ -199,13 +199,14 @@ function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 	// if uncertainty exists, no rounding at all!
 	if (num.uncertainty.length == 0) {
-		const combined = num.whole + num.fractional;
+		// whole can't be '0', and converting fractional to number and back to string gets rid of leading zeros.
+		const combined = num.whole === '0' ? (+num.fractional).toString() : num.whole + (+num.fractional).toString();   
 		if (combined.length > options.roundPrecision ) {			
 			//console.log(num.whole + num.decimal + num.fractional);
 			const firstDrop = +combined.slice(options.roundPrecision, options.roundPrecision+1);
 			const toRound = +combined.slice(options.roundPrecision - 1, options.roundPrecision);
 			
-			let roundingResult;
+			let roundingResult:string;
 			// round up or down
 			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
 				roundingResult = roundUp(combined, options.roundPrecision - 1);
@@ -213,12 +214,20 @@ function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 				roundingResult = combined.slice(0, options.roundPrecision);
 			}
 			// split the result back into whole and fractional parts
-			if (roundingResult.length >= num.whole.length){
-				num.fractional = roundingResult.slice(num.whole.length, roundingResult.length);
+			const wholeLength = num.whole === '0' ? 0 : num.whole.length;
+			if (roundingResult.length >= wholeLength){
+				// need to add leading zeroes to fractional part maybe
+				// if whole was zero, check if original fractional had leading zeroes
+				if (wholeLength == 0){
+					num.fractional = ''.padEnd(num.fractional.length - (+num.fractional).toString().length, '0');
+				} else {
+					num.fractional = '';
+				}
+				num.fractional += roundingResult.slice(wholeLength, roundingResult.length);
 			} else {
 				num.fractional = '';
 				num.decimal = '';
-				const addZeros = num.whole.length - roundingResult.length;
+				const addZeros = wholeLength - roundingResult.length;
 				num.whole = roundingResult;
 				for (let i = 0; i<addZeros;i++){  
 					num.whole += '0';  	// This adds zeros to whole numbers when rounding in the mantissa. 

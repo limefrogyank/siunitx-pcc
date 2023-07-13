@@ -50,6 +50,8 @@ function convertUncertaintyToPlusMinus(uncertainty: IUncertainty, piece: INumber
 			// add zeros, move whole to fraction part, and potentially add decimal and whole
 			const diff = piece.fractional.length - uncertainty.whole.length;
 			if (diff >= 0) {
+				//move whole value uncertainty to fractional part and pad left with zeros if needed
+				// i.e. 12.455(4) ==> 12.455 +- 0.004  (diff = 2)
 				for (let i = 0; i < diff; i++) {
 					uncertainty.fractional += "0";
 				}
@@ -57,8 +59,14 @@ function convertUncertaintyToPlusMinus(uncertainty: IUncertainty, piece: INumber
 				uncertainty.whole = '0';
 				uncertainty.decimal = options.outputDecimalMarker;
 			} else {
-				// uncertainty is bigger than fraction.  Need to add a decimal!
-				// TO DO
+				// uncertainty is bigger than fraction.  Need to split uncertainty to whole and fractional.
+				// i.e. 123.4(12) ==> 123.4 +- 1.2  (diff = -1)
+				// i.e. 123.4(144) ==> 123.4 +- 14.4 (diff = -2)
+				// i.e. 123.45(144) ==> 123.45 +- 1.44 (diff = -1)
+				uncertainty.fractional = uncertainty.whole.slice(Math.abs(diff));
+				uncertainty.decimal = options.outputDecimalMarker;
+				uncertainty.whole = uncertainty.whole.slice(0,Math.abs(diff));
+				
 			}
 
 		}
@@ -67,12 +75,21 @@ function convertUncertaintyToPlusMinus(uncertainty: IUncertainty, piece: INumber
 
 export function convertUncertaintyToBracket(uncertainty: IUncertainty, piece: INumberPiece, options: INumOutputOptions): void {
 	if (uncertainty.type == 'bracket') {
-		// check to make sure that uncertainty doesn't need a decimal point via 'compact marker'
-		const diff = uncertainty.whole.length - piece.fractional.length;
-		if (diff > 0 && options.uncertaintyMode == 'compact-marker') {
-			uncertainty.fractional = uncertainty.whole.slice(diff, uncertainty.whole.length);
-			uncertainty.whole = uncertainty.whole.slice(0, diff);
-			uncertainty.decimal = options.outputDecimalMarker;
+		// check to make sure that uncertainty doesn't need a decimal point via 'compact marker' or 'full' (full adds zeros to fractional only uncertainty!)
+		// should only be checked if there is NOT already a decimal point
+		if (uncertainty.decimal === '' && (options.uncertaintyMode === 'compact-marker' || options.uncertaintyMode === 'full')){
+			const diff = uncertainty.whole.length - piece.fractional.length;
+			if (diff > 0 ) {
+				uncertainty.fractional = uncertainty.whole.slice(diff, uncertainty.whole.length);
+				uncertainty.whole = uncertainty.whole.slice(0, diff);
+				if (uncertainty.fractional !== ''){
+					uncertainty.decimal = options.outputDecimalMarker;
+				}
+			} else if (diff < 0 && options.uncertaintyMode === 'full'){
+				uncertainty.fractional = ''.padEnd(Math.abs(diff),'0') + uncertainty.whole;
+				uncertainty.whole = '0';
+				uncertainty.decimal = options.outputDecimalMarker;
+			} 
 		}
 
 	} else {
@@ -99,7 +116,7 @@ function displayUncertaintyBracket(uncertainty: IUncertainty, options: INumOutpu
 	let output = options.uncertaintySeparator;
 	output += options.outputOpenUncertainty;
 	output += uncertainty.whole;
-	output += options.uncertaintyMode == 'compact-marker' && uncertainty.decimal != '' ? options.outputDecimalMarker : '';
+	output += (options.uncertaintyMode === 'compact-marker' || options.uncertaintyMode === 'full') && uncertainty.decimal != '' ? options.outputDecimalMarker : '';
 	output += uncertainty.fractional;
 	output += options.outputCloseUncertainty;
 	return output;
@@ -141,10 +158,11 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 			output += '(';
 		}
 	} else {
+		// brackets remove extra spacing intended for math equation
 		if (options.printImplicitPlus && piece.sign == '') {
-			output += '+';
+			output += '{+}';
 		} else {
-			output += piece.sign;
+			output += '{' + piece.sign + '}';
 		}
 	}
 
@@ -179,7 +197,11 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 			output += options.outputExponentMarker;
 			output += '0';
 		} else {
-			output += options.exponentProduct;
+			if (options.tightSpacing){
+				output += '{' + options.exponentProduct + '}';
+			} else {
+				output += options.exponentProduct;
+			}
 			output += options.exponentBase;
 			output += '^{0}';
 		}
@@ -194,7 +216,11 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 					output += options.outputExponentMarker;
 					output += piece.exponentSign + piece.exponent;
 				} else {
-					output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
+					if (options.tightSpacing){
+						output += (piece.whole != '' || piece.fractional != '') ? '{'+options.exponentProduct + '}': '';
+					} else {
+						output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
+					}
 					output += options.exponentBase;
 					output += '^{' + piece.exponentSign + piece.exponent + '}';
 				}
@@ -228,8 +254,9 @@ export function displayOutput(num: INumberPiece, options: IOptions): string {
 	}
 
 	// display any prefix symbol such as less than, greater than, etc.
-	output += num.prefix;
-
+	// brackets will remove the extra space that normally occurs with symbol
+	output += '{' + num.prefix + '}';
+	
 	// display main number
 	output += displayNumber(num, options);
 

@@ -32,11 +32,11 @@ function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 		}
 	}
 	// set new prefix
-	console.log(JSON.parse(JSON.stringify(units)));
-	console.log(targetExponent);
+	//console.log(JSON.parse(JSON.stringify(units)));
+	//console.log(targetExponent);
 	firstUnit.prefix = prefixPower.revGet(targetExponent);
-	console.log(firstUnit.prefix);
-	console.log(JSON.parse(JSON.stringify(units)));
+	//console.log(firstUnit.prefix);
+	//console.log(JSON.parse(JSON.stringify(units)));
 	const newExponent = targetExponent - exponent;
 	num.exponent = (Math.abs(newExponent)).toString();
 	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
@@ -156,13 +156,13 @@ export function processQuantity(parser: TexParser): void {
 
 		const num = parseNumber(parser, numString, globalOptions);
 
-		console.log(JSON.parse(JSON.stringify(unitPieces)));
+		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 		// convert number and unit if necessary
 		prefixModeMap.get(globalOptions.prefixMode)?.(num, unitPieces, globalOptions);
-		console.log(JSON.parse(JSON.stringify(unitPieces)));
+		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 
 		postProcessNumber(num, globalOptions);
-		console.log(JSON.parse(JSON.stringify(unitPieces)));
+		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 
 		numDisplay = displayOutput(num, globalOptions);
 

@@ -180,18 +180,18 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 			const split = number.split(options.outputDecimalMarker);
 			if (split.length > 1) {
 				displayResult += split[0];
-				displayResult += '\\rlap{' + options.outputDecimalMarker + '}{\\class{MathML-Unit}{' + options.angleSymbolDegree + '}}';
+				displayResult += '\\rlap{' + options.outputDecimalMarker + '}{\\class{MathML-Unit}{\\mathrm{' + options.angleSymbolDegree + '}}}';
 				displayResult += split[1];
 			} else {
 				displayResult += number;
 				displayResult += options.numberAngleProduct;
-				displayResult += '\\class{MathML-Unit}{' + options.angleSymbolDegree + '}';
+				displayResult += '\\class{MathML-Unit}{\\mathrm{' + options.angleSymbolDegree + '}}';
 			}
 		} else {
 
 			displayResult += displayNumber(ang.degrees, options);
 			displayResult += options.numberAngleProduct;
-			displayResult += '' + options.angleSymbolDegree + '';
+			displayResult += '\\mathrm{' + options.angleSymbolDegree + '}';
 		}
 	}
 
@@ -202,7 +202,7 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 
 	if (ang.minutes != null) {
 		const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal != '' ? '.' : '') + ang.minutes.fractional);
-		let moddedAngleSymbolMinute = options.angleSymbolMinute;
+		let moddedAngleSymbolMinute = '\\mathrm{' + options.angleSymbolMinute + '}';
 		if (moddedAngleSymbolMinute === "''") {
 			// TODO: Localize the degree-minutes
 			if (minutesValue == 1)
@@ -245,7 +245,7 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 	}
 	if (ang.seconds != null) {
 		const secondsValue = +(ang.seconds.whole + (ang.seconds.decimal != '' ? '.' : '') + ang.seconds.fractional);
-		let moddedAngleSymbolSecond = options.angleSymbolSecond;
+		let moddedAngleSymbolSecond = '\\mathrm{' + options.angleSymbolSecond + '}';
 		if (moddedAngleSymbolSecond === "''") {
 			// TODO: Localize the degree-seconds
 			if (secondsValue == 1)
@@ -279,7 +279,7 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 		}
 
 	}
-	console.log(displayResult);
+	//console.log(displayResult);
 	return displayResult;
 }
 

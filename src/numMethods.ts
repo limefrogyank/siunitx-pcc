@@ -276,13 +276,17 @@ export function processNumber(parser: TexParser): MmlNode {
 	options.forEach((v,k)=> globalOptions[k] = v);
 
 
-	const text = parser.GetArgument('num');
+	let text = parser.GetArgument('num');
 
 	if (globalOptions.parseNumbers) {
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally
 		if (globalOptions.evaluateExpression) {
-			// TO-DO (BIG ONE)
+			// TODO Sanitize Evaluate Expression!
+			let expression = globalOptions.expression
+			expression = expression.replace('#1', text);
+			let result = eval(expression);
+			text= result.toString();
 		}
 
 		const num = parseNumber(parser, text, globalOptions);

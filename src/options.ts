@@ -93,6 +93,7 @@ export interface INumPostOptions {
 }
 
 export interface INumOutputOptions {
+	bracketAmbiguousNumbers: boolean; // TODO: (bracketAmbiguousNumbers) not implemented yet
 	bracketNegativeNumbers: boolean;
 	digitGroupSize: number;
 	digitGroupFirstSize: number;
@@ -111,10 +112,10 @@ export interface INumOutputOptions {
 	printUnityMantissa: boolean;
 	printZeroExponent: boolean;
 	printZeroInteger: boolean;
-	tightSpacing: boolean;									// not implemented
-	uncertaintyDescriptorMode: UncertaintyDescriptorMode; 	// not implemented
-	uncertaintyDescriptorSeparator: string;					// not implemented
-	uncertaintyDescriptors: string;							// not implemented
+	tightSpacing: boolean;									// TODO: not implemented
+	uncertaintyDescriptorMode: UncertaintyDescriptorMode; 	// TODO: not implemented
+	uncertaintyDescriptorSeparator: string;					// TODO: not implemented
+	uncertaintyDescriptors: string;							// TODO: not implemented
 	uncertaintyMode: UncertaintyMode;
 	uncertaintySeparator: string;
 	zeroDecimalAsSymbol: boolean;
@@ -221,6 +222,7 @@ export const NumPostOptionDefaults: INumPostOptions = {
 };
 
 export const NumOutputOptionDefaults: INumOutputOptions = {
+	bracketAmbiguousNumbers: true,
 	bracketNegativeNumbers: false,
 	digitGroupSize: 3,
 	digitGroupFirstSize: -1,  	// These should be -1 so we can detect when they've been explicitly set.
