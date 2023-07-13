@@ -13,8 +13,6 @@ import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
 
 import { Symbol } from 'mathjax-full/js/input/tex/Symbol'
 import { TexConstant } from 'mathjax-full/js/input/tex/TexConstants';
-import { TEXCLASS, MmlNode } from 'mathjax-full/js/core/MmlTree/MmlNode';
-import { mathmlcompare } from './mathmlcompare';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
@@ -31,6 +29,28 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
     },
     '\\qty': (parser: TexParser): void => {
         processQuantity(parser); // doesn't return a node, pushes internally
+    },
+    '\\qtylist': (parser: TexParser): void => {
+        //TODO: qtylist
+    },
+    '\\qtyproduct': (parser: TexParser): void => {
+        //TODO: qtyproduct
+    },
+    '\\qtyrange': (parser: TexParser): void => {
+        //TODO: qtyrange
+    },
+    '\\complexnum': (parser: TexParser): void => {
+        //TODO: complexnum
+    },
+    '\\complexqty': (parser: TexParser): void => {
+        //TODO: complexqty
+    },
+    '@{}S': (parser: TexParser): void => {
+        //TODO: NOT IMPLEMENTED
+        // no tabular in MathJax, but maybe use \\begin{array} ?  or pure html somehow
+    },
+    '\\tablenum': (parser: TexParser): void => {
+        //TODO: NOT IMPLEMENTED
     },
     '\\sisetup': (parser: TexParser): void => {
         processSISetup(parser);
@@ -141,6 +161,3 @@ Configuration.create('siunitx',
         options: { ...UnitOptionDefaults, ...NumOptionDefaults, ...AngleOptionDefaults, ...QuantityOptionDefaults, ...PrintOptionsDefault },
         config: config
     });
-
-// simple util to simplify and then compare mathml strings
-(window as any).mathmlcompare = mathmlcompare; 

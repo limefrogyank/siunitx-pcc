@@ -131,7 +131,7 @@ export function processQuantity(parser: TexParser): void {
 
 	const localOptionString = findOptions(parser);
 
-	const numString = parser.GetArgument('num');
+	let numString = parser.GetArgument('num');
 	const unitString = parser.GetArgument('unit');
 
 	let numDisplay = '';
@@ -144,7 +144,11 @@ export function processQuantity(parser: TexParser): void {
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally
 		if (globalOptions.evaluateExpression) {
-			// TODO Expression evaluation
+			// TODO Sanitize Evaluate Expression!
+			let expression = globalOptions.expression
+			expression = expression.replace('#1', numString);
+			let result = eval(expression);
+			numString = result.toString();
 		}
 
 		// refresh global options from default

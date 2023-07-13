@@ -1,6 +1,5 @@
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { MathJax } from 'mathjax-full/js/components/global';
 
 type PrintMode = 'match' | 'math' | 'text';
 type PerMode = 'power' | 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol' | 'perMode';
