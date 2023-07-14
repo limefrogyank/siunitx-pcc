@@ -19,7 +19,7 @@ export interface IUnitPiece {
 interface IUnitMacroProcessResult {
 	type: 'prefix' | 'unit' | 'previous' | 'next';  // either a prefix, unit, or modifier for previous or next unit
 	result: IUnitPiece;
-	options?: string;
+	options?: Partial<IOptions>;
 }
 
 const modifierMacros: Array<string> = new Array<string>(
@@ -49,7 +49,7 @@ function processUnitMacro(macro: string, parser: TexParser): IUnitMacroProcessRe
 	const userDefinedUnits = parser.configuration.packageData.get(UserDefinedUnitsKey) as Map<string, string>;
 	if (userDefinedUnits.has('\\' + macro)) {
 		const result = userDefinedUnits.get('\\' + macro);
-		const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, string>;
+		const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, Partial<IOptions>>;
 		const options = userDefinedUnitOptions.get('\\' + macro);
 		return { type: 'unit', result: { symbol: result as string, prefix: '' }, options: options };
 	}
@@ -288,7 +288,7 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 
 }
 
-export function parseUnit(parser: TexParser, text: string, globalOptions: IOptions, localOptionString: string, isLiteral: boolean): Array<IUnitPiece> {
+export function parseUnit(parser: TexParser, text: string, globalOptions: IOptions, localOptions: Partial<IOptions>, isLiteral: boolean): Array<IUnitPiece> {
 	const unitPieces: Array<IUnitPiece> = new Array<IUnitPiece>();
 
 	// argument contains either macros or it's just plain text
@@ -302,14 +302,17 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 			// check for user defined options
 			if (processedMacro.options !== undefined) {
 				//processOptions(globalOptions, processedMacro.options);
-				const options = processOptions(globalOptions, processedMacro.options);
-				options.forEach((v, k) => globalOptions[k] = v);
+				//const options = processOptions(globalOptions, processedMacro.options);
+				//options.forEach((v, k) => globalOptions[k] = v);
+				Object.assign(globalOptions, processedMacro.options);
 			}
 			// apply immediate options here
 			//processOptions(globalOptions, localOptionString);
-			const options = processOptions(globalOptions, localOptionString);
+			//const options = processOptions(globalOptions, localOptionString);
+			//const options = {...globalOptions, ...localOptions};
 			//console.log(options);
-			options.forEach((v, k) => globalOptions[k] = v);
+			Object.assign(globalOptions, localOptions);
+			//localOptions.forEach((v, k) => globalOptions[k] = v);
 			//console.log(globalOptions.perMode);
 
 			switch (processedMacro.type) {
@@ -362,9 +365,9 @@ export function processUnit(parser: TexParser): MmlNode {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
 	// TODO: may be better done a different way. double check.
-	const localOptionString = findOptions(parser);
+	const localOptions = findOptions(parser);
 
-	//processOptions(globalOptions, localOptionString);
+	//const localOptions = optionStringToObject(localOptionString);
 
 	const text = parser.GetArgument('unit');
 
@@ -380,7 +383,7 @@ export function processUnit(parser: TexParser): MmlNode {
 		throw siunitxError.LiteralUnitsForbidden(text);
 	}
 
-	const unitPieces = parseUnit(parser, text, globalOptions, localOptionString, isLiteral);
+	const unitPieces = parseUnit(parser, text, globalOptions, localOptions, isLiteral);
 
 	const texString = displayUnits(parser, unitPieces, globalOptions, isLiteral);
 

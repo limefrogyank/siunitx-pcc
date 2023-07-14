@@ -269,12 +269,12 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 export function processNumber(parser: TexParser): MmlNode {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
-	const localOptionString = findOptions(parser);
+	const localOptions = findOptions(parser);
 
 	//processOptions(globalOptions, localOptionString);
-	const options = processOptions(globalOptions, localOptionString);
-	options.forEach((v,k)=> globalOptions[k] = v);
-
+	//const options = processOptions(globalOptions, localOptionString);
+	//options.forEach((v,k)=> globalOptions[k] = v);
+	Object.assign(globalOptions, localOptions);
 
 	let text = parser.GetArgument('num');
 

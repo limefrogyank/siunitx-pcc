@@ -4,7 +4,7 @@ import { CommandMap, CharacterMap, parseResult } from 'mathjax-full/js/input/tex
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
-import { AngleOptionDefaults, findOptions, NumOptionDefaults, PrintOptionsDefault, processSISetup, QuantityOptionDefaults, UnitOptionDefaults } from './options';
+import { AngleOptionDefaults, findOptions, IOptions, NumOptionDefaults, PrintOptionsDefault, processSISetup, QuantityOptionDefaults, UnitOptionDefaults } from './options';
 import { processQuantity } from './qtyMethods';
 import { processUnit } from './unitMethods';
 import { userDefinedUnitOptions, userDefinedUnits } from './units';
@@ -57,10 +57,10 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
     }
 };
 
-const declareMap: Record<string, (parser: TexParser, name: string, options: string) => void> = {
-    '\\DeclareSIUnit': (parser: TexParser, name: string, options: string): void => {
+const declareMap: Record<string, (parser: TexParser, name: string, options: Partial<IOptions>) => void> = {
+    '\\DeclareSIUnit': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
         const userDefinedUnits = parser.configuration.packageData.get(UserDefinedUnitsKey) as Map<string, string>;
-        const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, string>;
+        const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, Partial<IOptions>>;
 
         const newUnitMacro = parser.GetArgument(name);
         const newSymbol = parser.GetArgument(name);
@@ -104,19 +104,8 @@ new CommandMap('siunitxMap', {
     data: ['Dataset', 'data'],
 }, {
     siunitxToken: (parser, name) => {
-        //console.log(parser.options.perMode);
         GlobalParser = parser;
-        //const options = processOptions(parser.options as IOptions, findOptions(parser));
-        //hack to get display mode (display or inline)
-        // const testNode = parser.create('node', 'mtext');
-        // const testdisplay = isDisplay(testNode);
-        // console.log(testdisplay);
         methodMap[name as string]?.(parser);
-
-        // console.log(parser);
-        // const display = isDisplay(node);
-        // console.log(display);    
-
     },
     siunitxGlobal: (parser, name) => {
         GlobalParser = parser;

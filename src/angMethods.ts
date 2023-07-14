@@ -288,10 +288,11 @@ export function processAngle(parser: TexParser): MmlNode {
 
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
-	const localOptionString = findOptions(parser);
+	const localOptions = findOptions(parser);
 
-	const options = processOptions(globalOptions, localOptionString);
-	options.forEach((v, k) => globalOptions[k] = v);
+	//const options = processOptions(globalOptions, localOptions);
+	//options.forEach((v, k) => globalOptions[k] = v);
+	Object.assign(globalOptions, localOptions);
 
 	const text = parser.GetArgument('ang');
 

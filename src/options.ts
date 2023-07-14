@@ -1,5 +1,6 @@
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
+import { defaultOptions } from "mathjax-full/js/util/Options";
 
 type PrintMode = 'match' | 'math' | 'text';
 type PerMode = 'power' | 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol' | 'perMode';
@@ -278,9 +279,10 @@ export const AngleOptionDefaults: IAngleOptions = {
 
 // Needed a new version of TexParser.GetBrackets because it wanted to parse the internal macros automatically.  
 // This method just gets the bracketed option string only.
-export function findOptions(parser: TexParser): string {
+export function findOptions(parser: TexParser): Partial<IOptions> {
+
 	if (parser.GetNext() !== '[') {
-		return '';
+		return {};
 	}
 	const j = ++parser.i;
 	let depth = 0;
@@ -290,7 +292,8 @@ export function findOptions(parser: TexParser): string {
 		else if (parser.string.charAt(parser.i) == ']' && depth == 0) {
 			const result = parser.string.slice(j, parser.i);
 			parser.i++;
-			return result;
+			const options = optionStringToObject(result);
+			return options;
 		}
 		parser.i++;
 	}
@@ -324,6 +327,96 @@ export function processSISetup(parser: TexParser): void {
 	// TODO: Figure out a how to limit these to grouping curly braces. 
 	// For now, you'll have to reset the options manually with another sisetup command.	
 
+}
+
+function optionStringToObject( optionString: string):Partial<IOptions>{
+	const options : Partial<IOptions> = {};
+
+	if (optionString != null) {
+		// check if wrapped in curly braces and remove them
+		while (optionString.startsWith('{') && optionString.endsWith('}')) {
+			optionString = optionString.slice(1, optionString.length - 1);
+		}
+		let prop = '';
+		let onValue = false;
+		let depth = 0;
+		let escaped = false;
+		let value = '';
+		for (const c of optionString) {
+			if (c == '{') {
+				if (onValue) {
+					value += c;
+				} else {
+					prop += c;
+				}
+				depth++;
+			}
+			else if (c == '}') {
+				depth--;
+				if (onValue) {
+					value += c;
+				} else {
+					prop += c;
+				}
+			}
+			else if (c == '\\') {
+				escaped = true;
+				if (onValue) {
+					value += c;
+				} else {
+					prop += c;
+				}
+			}
+			else if (c == ',' && depth == 0 && !escaped) {
+				prop = dashToCamel(prop.trim());
+				if (value == '') {
+					options[prop] = true;
+				}
+				else if (typeof defaultOptions[prop] === 'number') {
+					options[prop] = +(value.trim());
+				} else if (typeof defaultOptions[prop] === 'boolean') {
+					options[prop] = (value.trim() === 'true');
+				} else {
+					if (value.indexOf('\\') == -1) {
+						value = value.trim();
+					}
+					options[prop] = value;
+				}
+				prop = '';
+				value = '';
+				onValue = false;
+			}
+			else if (c == '=' && depth == 0) {
+				onValue = true;
+			}
+			else {
+				if (onValue) {
+					if (c == ' ' && escaped) {
+						escaped = false;
+					}
+					value += c;
+				} else {
+					prop += c;
+				}
+			}
+		}
+
+		prop = dashToCamel(prop.trim());
+		if (value == '') {
+			options[prop] = true;
+		}
+		else if (typeof defaultOptions[prop] === 'number') {
+			options[prop] = +(value.trim());
+		} else if (typeof defaultOptions[prop] === 'boolean') {
+			options[prop] = (value.trim() === 'true');
+		} else {
+			if (value.indexOf('\\') == -1) {
+				value = value.trim();
+			}
+			options[prop] = value;
+		}
+	}
+	return options;
 }
 
 // LaTeX commands (in the value portion) MUST end with a space before using a comma to add another option
