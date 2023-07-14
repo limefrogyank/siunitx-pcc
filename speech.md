@@ -1,6 +1,8 @@
 # Speech
 
-MathJax with Speech-Rule-Engine do a fantastic job of creating speech in multiple 
+## Units problem
+
+MathJax with Speech-Rule-Engine does a fantastic job of creating speech in multiple 
 languages for equations.  There is *some* support for units by adding the `MathML-Unit` 
 class to the `<mi>` tag (via \class{} in LaTeX format).  However, it's limited.  
 Not every unit is represented.  One option would be to expand the unit list in the
@@ -27,5 +29,19 @@ unit three times,  yet formatted three different ways.  While the interpreted La
 can be written different, it can also be written exactly the same way but adjusted
 via options.  
 
-1. Is the formatting purely visual or does it provide meaning?  Would the author's 
-initial interpreted LaTeX give the best meaning?
+- Is the formatting purely visual or does it provide meaning?  
+- Would the author's initial interpreted LaTeX give the best meaning?  
+- Can directly use the interpreted LaTeX as a shortcut for creating speech?  (localization would be needed of course)
+
+## Numbers problem
+
+In siunitx, numbers are formatted in many ways as well.  For ease of reading, the default
+is to apply small spacing between groups of three numbers when the number is longer than 4 digits.
+However, the speech generator treats the space as starting a new number.  But there are other problems
+
+- Spacing treated as new numbers
+- Uncertainty with parentheses vs +- 
+- Exponential notation
+- Negative numbers as bracketed numbers
+
+
