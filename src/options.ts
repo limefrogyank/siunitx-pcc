@@ -277,6 +277,8 @@ export const AngleOptionDefaults: IAngleOptions = {
 	numberAngleProduct: ''
 }
 
+export const siunitxDefaults = {...UnitOptionDefaults, ...NumOptionDefaults, ...AngleOptionDefaults, ...QuantityOptionDefaults, ...PrintOptionsDefault};
+
 // Needed a new version of TexParser.GetBrackets because it wanted to parse the internal macros automatically.  
 // This method just gets the bracketed option string only.
 export function findOptions(parser: TexParser): Partial<IOptions> {
@@ -372,9 +374,9 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 				if (value == '') {
 					options[prop] = true;
 				}
-				else if (typeof defaultOptions[prop] === 'number') {
+				else if (typeof siunitxDefaults[prop] === 'number') {
 					options[prop] = +(value.trim());
-				} else if (typeof defaultOptions[prop] === 'boolean') {
+				} else if (typeof siunitxDefaults[prop] === 'boolean') {
 					options[prop] = (value.trim() === 'true');
 				} else {
 					if (value.indexOf('\\') == -1) {
@@ -405,9 +407,9 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 		if (value == '') {
 			options[prop] = true;
 		}
-		else if (typeof defaultOptions[prop] === 'number') {
+		else if (typeof siunitxDefaults[prop] === 'number') {
 			options[prop] = +(value.trim());
-		} else if (typeof defaultOptions[prop] === 'boolean') {
+		} else if (typeof siunitxDefaults[prop] === 'boolean') {
 			options[prop] = (value.trim() === 'true');
 		} else {
 			if (value.indexOf('\\') == -1) {

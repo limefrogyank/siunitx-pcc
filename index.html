@@ -3,11 +3,11 @@
 <script>
 	MathJax = {
 		loader: {
-			load: ['[custom]/siunitx.js', '[tex]/gensymb', '[tex]/color', '[tex]/html'], //gensymb is required for \degree and \ohm
+			load: ['[custom]/siunitx.js', '[tex]/gensymb', '[tex]/color', '[tex]/html', '[tex]/cancel'], //gensymb is required for \degree and \ohm
 			paths: { custom: '.' }
 		},
 		tex: {
-			packages: { '[+]': ['siunitx', 'gensymb', 'color', 'html'] },  //gensymb is required for \degree and \ohm
+			packages: { '[+]': ['siunitx', 'gensymb', 'color', 'html', 'cancel'] },  //gensymb is required for \degree and \ohm
 			inlineMath: { '[+]': [['$', '$']] },
 			/* global options can go here, see IOptions in options.ts for properties */
 			// Uncomment example below: 
@@ -16,33 +16,24 @@
 		startup: {
 			ready: () => {
 				MathJax.startup.defaultReady();
-				function fillTable(name, arr){
+				function fillTableWithSpeech(name, arr) {
 					var table = document.getElementById(name);
-					for (var j = 0; j < num.length; j++){
+					for (var j = 0; j < num.length; j++) {
 						const capt = j;
-						MathJax.tex2mmlPromise(arr[capt],{}).then(mml=>{
-							table.rows[capt].cells[2].innerText = mml;
+						MathJax.tex2mmlPromise(arr[capt], {}).then(mml => {
+							var regex = /(?:data-semantic-speech=")(.*?)(?:")/g;
+							var matches = [...mml.matchAll(regex)];
+							table.rows[capt + 1].cells[2].innerText = matches[0][1];
+						}, err => {
+							// not sure why this is erroring
+							console.log(err);
 						});
 					}
 				}
-				fillTable('angTable', ang);
-				fillTable('numTable', num);
-				fillTable('unitTable', unit);
-				fillTable('qtyTable', qty);
-		
-				// for (var j = 0; j<ang.length; j++){
-				// 	var orig = ang[j][0]
-				// 	var compareTo = ang[j][1];
-				// 	MathJax.tex2mmlPromise(orig).then(mml1=>{
-				// 		MathJax.tex2mmlPromise(compareTo).then(mml2 =>{
-				// 			console.log(orig);
-				// 			console.log(compareTo);
-				// 			console.log(mml1);
-				// 			console.log(mml2);
-				// 			console.log(window.mathmlcompare(mml1,mml2));
-				// 		});
-				// 	});
-				// }
+				fillTableWithSpeech('angTable', ang);
+				fillTableWithSpeech('numTable', num);
+				fillTableWithSpeech('unitTable', unit);
+				fillTableWithSpeech('qtyTable', qty);
 			}
 		}
 	};
@@ -80,6 +71,32 @@
 	<table id="declareSIUnitTable" class="tableStyle"></table>
 
 	<script>
+		function fillTable(name, arr) {
+			var table = document.getElementById(name);
+			var tr = document.createElement('tr');
+			table.appendChild(tr);
+			var th = document.createElement('th');
+			th.innerText = 'LaTeX';
+			tr.appendChild(th);
+			th = document.createElement('th');
+			th.innerText = 'SVG';
+			tr.appendChild(th);
+			th = document.createElement('th');
+			th.innerText = 'Speech';
+			tr.appendChild(th);
+			for (var i = 0; i < arr.length; i++) {
+				tr = document.createElement('tr');
+				table.appendChild(tr);
+				var td = document.createElement('td');
+				td.innerText = arr[i];
+				tr.appendChild(td);
+				td = document.createElement('td');
+				td.innerText = "$ " + arr[i] + " $";
+				tr.appendChild(td);
+				td = document.createElement('td');
+				tr.appendChild(td);
+			}
+		}
 		var num = [
 			String.raw`\num{0}`,
 			String.raw`\num{1234}`,
@@ -276,19 +293,21 @@
 
 
 		];
-		var table = document.getElementById('numTable');
-		for (var i = 0; i < num.length; i++) {
-			var tr = document.createElement('tr');
-			table.appendChild(tr);
-			var td = document.createElement('td');
-			td.innerText = num[i];
-			tr.appendChild(td);
-			td = document.createElement('td');
-			td.innerText = "$ " + num[i] + " $";
-			tr.appendChild(td);
-			td = document.createElement('td');
-			tr.appendChild(td);
-		}
+
+		fillTable('numTable', num);
+		// var table = document.getElementById('numTable');
+		// for (var i = 0; i < num.length; i++) {
+		// 	var tr = document.createElement('tr');
+		// 	table.appendChild(tr);
+		// 	var td = document.createElement('td');
+		// 	td.innerText = num[i];
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	td.innerText = "$ " + num[i] + " $";
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	tr.appendChild(td);
+		// }
 
 		var ang = [
 			String.raw`\ang{10}`,
@@ -352,26 +371,28 @@
 			String.raw`\ang[angle-symbol-over-decimal]{6;7;6.5}`,
 		];
 
-		var table = document.getElementById('angTable');
-		// var tr = document.createElement('tr');
-		// table.appendChild(tr);
-		// var th = document.createElement('th');
-		// th.innerText = 'LaTeX';
-		// tr.appendChild(th);
-		// th = document.createElement('th');
-		// th.innerText = 
-		for (var i = 0; i < ang.length; i++) {
-			var tr = document.createElement('tr');
-			table.appendChild(tr);
-			var td = document.createElement('td');
-			td.innerText = ang[i];
-			tr.appendChild(td);
-			td = document.createElement('td');
-			td.innerText = "$ " + ang[i] + " $";
-			tr.appendChild(td);
-			td = document.createElement('td');
-			tr.appendChild(td);
-		}
+		fillTable('angTable', ang);
+
+		// var table = document.getElementById('angTable');
+		// // var tr = document.createElement('tr');
+		// // table.appendChild(tr);
+		// // var th = document.createElement('th');
+		// // th.innerText = 'LaTeX';
+		// // tr.appendChild(th);
+		// // th = document.createElement('th');
+		// // th.innerText = 
+		// for (var i = 0; i < ang.length; i++) {
+		// 	var tr = document.createElement('tr');
+		// 	table.appendChild(tr);
+		// 	var td = document.createElement('td');
+		// 	td.innerText = ang[i];
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	td.innerText = "$ " + ang[i] + " $";
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	tr.appendChild(td);
+		// }
 
 		var unit = [
 			String.raw`\unit{kg.m/s^2}`,
@@ -480,20 +501,21 @@
 			String.raw`\unit{\kWh}`
 		]
 
-		var table = document.getElementById('unitTable');
-		for (var i = 0; i < unit.length; i++) {
-			var tr = document.createElement('tr');
-			table.appendChild(tr);
-			var td = document.createElement('td');
-			td.innerText = unit[i];
-			tr.appendChild(td);
-			td = document.createElement('td');
-			td.innerText = "$ " + unit[i] + " $";
-			tr.appendChild(td);
-			td = document.createElement('td');
-			tr.appendChild(td);
+		fillTable('unitTable', unit);
+		// var table = document.getElementById('unitTable');
+		// for (var i = 0; i < unit.length; i++) {
+		// 	var tr = document.createElement('tr');
+		// 	table.appendChild(tr);
+		// 	var td = document.createElement('td');
+		// 	td.innerText = unit[i];
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	td.innerText = "$ " + unit[i] + " $";
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	tr.appendChild(td);
 
-		}
+		// }
 
 		var qty = [
 			String.raw`\qty{1.23}{J.mol^{-1}.K^{-1}}`,
@@ -525,20 +547,22 @@
 	\ \mathrm{Still\ red\ here!}`,
 		];
 
-		var table = document.getElementById('qtyTable');
-		for (var i = 0; i < qty.length; i++) {
-			var tr = document.createElement('tr');
-			table.appendChild(tr);
-			var td = document.createElement('td');
-			td.innerText = qty[i];
-			tr.appendChild(td);
-			td = document.createElement('td');
-			td.innerText = "$ " + qty[i] + " $";
-			tr.appendChild(td);
-			td = document.createElement('td');
-			tr.appendChild(td);
+		fillTable('qtyTable', qty);
 
-		}
+		// var table = document.getElementById('qtyTable');
+		// for (var i = 0; i < qty.length; i++) {
+		// 	var tr = document.createElement('tr');
+		// 	table.appendChild(tr);
+		// 	var td = document.createElement('td');
+		// 	td.innerText = qty[i];
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	td.innerText = "$ " + qty[i] + " $";
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	tr.appendChild(td);
+
+		// }
 
 		var declareSIUnit = [
 			String.raw`\DeclareSIUnit[inter-unit-product = \times]{\hello}{FakeUnit} \unit{\hello\kg\second}`,
@@ -551,20 +575,21 @@
 
 		];
 
-		var table = document.getElementById('declareSIUnitTable');
-		for (var i = 0; i < declareSIUnit.length; i++) {
-			var tr = document.createElement('tr');
-			table.appendChild(tr);
-			var td = document.createElement('td');
-			td.innerText = declareSIUnit[i];
-			tr.appendChild(td);
-			td = document.createElement('td');
-			td.innerText = "$ " + declareSIUnit[i] + " $";
-			tr.appendChild(td);
-			td = document.createElement('td');
-			tr.appendChild(td);
+		fillTable('declareSIUnitTable', declareSIUnit);
+		// var table = document.getElementById('declareSIUnitTable');
+		// for (var i = 0; i < declareSIUnit.length; i++) {
+		// 	var tr = document.createElement('tr');
+		// 	table.appendChild(tr);
+		// 	var td = document.createElement('td');
+		// 	td.innerText = declareSIUnit[i];
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	td.innerText = "$ " + declareSIUnit[i] + " $";
+		// 	tr.appendChild(td);
+		// 	td = document.createElement('td');
+		// 	tr.appendChild(td);
 
-		}
+		// }
 
 	</script>
 

@@ -4,7 +4,7 @@ import { CommandMap, CharacterMap, parseResult } from 'mathjax-full/js/input/tex
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
-import { AngleOptionDefaults, findOptions, IOptions, NumOptionDefaults, PrintOptionsDefault, processSISetup, QuantityOptionDefaults, UnitOptionDefaults } from './options';
+import { AngleOptionDefaults, findOptions, IOptions, NumOptionDefaults, PrintOptionsDefault, processSISetup, QuantityOptionDefaults, siunitxDefaults, UnitOptionDefaults } from './options';
 import { processQuantity } from './qtyMethods';
 import { processUnit } from './unitMethods';
 import { userDefinedUnitOptions, userDefinedUnits } from './units';
@@ -147,6 +147,6 @@ Configuration.create('siunitx',
         handler: {
             macro: ['angchar-symbols', 'siunitxMap']
         },
-        options: { ...UnitOptionDefaults, ...NumOptionDefaults, ...AngleOptionDefaults, ...QuantityOptionDefaults, ...PrintOptionsDefault },
+        options: siunitxDefaults,
         config: config
     });

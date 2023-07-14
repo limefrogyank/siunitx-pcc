@@ -170,7 +170,7 @@ function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 		if (num.fractional.length > options.roundPrecision ) {			
 			const firstDrop = +num.fractional.slice(options.roundPrecision, options.roundPrecision+1);
 			const toRound = +num.fractional.slice(options.roundPrecision - 1, options.roundPrecision);
-			
+
 			const wholeLength = num.whole === '0' ? 0 : num.whole.length;
 			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
 				const result = roundUp(num.whole + num.fractional, wholeLength + options.roundPrecision - 1);
