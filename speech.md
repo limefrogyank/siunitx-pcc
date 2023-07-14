@@ -37,7 +37,7 @@ via options.
 
 In siunitx, numbers are formatted in many ways as well.  For ease of reading, the default
 is to apply small spacing between groups of three numbers when the number is longer than 4 digits.
-However, the speech generator treats the space as starting a new number.  But there are other problems
+However, the speech generator treats the space as starting a new number.  But there are other problems:
 
 - Spacing treated as new numbers
 - Uncertainty with parentheses vs +- 
