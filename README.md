@@ -1,23 +1,10 @@
 # siunitx extension for MathJax v3
 
 ## Demo
-https://limefrogyank.github.io/siunitx/
+https://limefrogyank.github.io/siunitx-pcc/
 
-## Scope
-what we want (because some siunitx features are not appropriate for MathJax)
+## In-Progress!
 
-### Tier 1
-- `\num`, `\ang`, `\unit`, `\qty`
-- the unit and prefix macros (tables 1–4 in the current documentation)
-- `\DeclareSIUnit`  (which maybe comes anyway before the unit macros)
-- the controls for number formatting (eg 200, 2.0x10² etc)
-- the controls for unit formatting (eg m/s versus m s⁻¹)
-- control over what goes on between a number and a unit (space, dot, etc) 
-- going beyond the LaTeX package, having good SRE output for all of this 
-    - modifying MathML output...
+This is a project being funded by Portland Community College to be completed end of summer 2023.  I'm happy to take suggestions and pull-requests, but please don't use this in production code yet.  The goal is to make it free and open-source, but licensing is currently pending.  The intent is for it to be used in authoring online, OER (open educational resource), _accessible_ textbooks.  
 
-### Tier 2
-- `\DeclareSIQualifier` (eg g_{salt} for "grams of salt")
-- `\DeclareSIPower` (eg \square,\cubic,\squared,\cubed)
-- ranges, products, and lists
-- the number parsing features
+

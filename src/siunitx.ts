@@ -69,7 +69,13 @@ const declareMap: Record<string, (parser: TexParser, name: string, options: Part
         if (options !== undefined) {
             userDefinedUnitOptions.set(newUnitMacro, options);
         }
-    }
+    },
+    '\\DeclareSIQualifier': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
+        //TODO: DeclareSIQualifier (eg g_{salt} for "grams of salt")
+    },
+    '\\DeclareSIPower': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
+        //TODO: DeclareSIPower  (eg \square,\cubic,\squared,\cubed)
+    },
 };
 
 export let GlobalParser: TexParser;
