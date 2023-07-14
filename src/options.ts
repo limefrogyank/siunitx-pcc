@@ -51,7 +51,7 @@ export interface IUnitOptions {
 	qualifierMode: QualifierMode;
 	qualifierPhrase: string;
 	powerHalfAsSqrt: boolean;
-	parseUnits: boolean;			// TODO: not implemented
+	parseUnits: boolean;
 	forbidLiteralUnits: boolean;
 	unitFontCommand: string;
 }

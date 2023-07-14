@@ -87,8 +87,7 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 		targetExponent--;
 	}
 		
-	convertToXExponent(num, targetExponent);
-	
+	convertToXExponent(num, targetExponent);	
 }
 
 export function convertToFixed(num:INumberPiece, options: INumPostOptions):void {
@@ -122,7 +121,6 @@ const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOpti
 			// copy the scientific form over to the original INumPiece
 			Object.assign(num, testNum);
 		}
-		
 	}]
 ]);
 

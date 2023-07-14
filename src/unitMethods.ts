@@ -135,13 +135,13 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 
 export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, options: IOptions, isLiteral: boolean): string {
 	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
-	let closeColor : boolean = false;
+	let closeColor: boolean = false;
 	let texString = '';
-	if (options.unitColor != ''){
-		texString += '{\\color{' + options.unitColor +'}';
+	if (options.unitColor != '') {
+		texString += '{\\color{' + options.unitColor + '}';
 		closeColor = true;
 	} else if (options.color != '') {
-		texString += '{\\color{' + options.color +'}';
+		texString += '{\\color{' + options.color + '}';
 		closeColor = true;
 	}
 	let perForSingle = false;
@@ -193,8 +193,8 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 			}
 		}, 0);
 
-		if (options.perMode == 'fraction' || options.perMode == 'symbol' 
-		|| options.perMode == 'repeated-symbol' || perForSingle || (options.perMode === 'single-symbol' && denominatorCount == 1 && numeratorCount > 0)) {
+		if (options.perMode == 'fraction' || options.perMode == 'symbol'
+			|| options.perMode == 'repeated-symbol' || perForSingle || (options.perMode === 'single-symbol' && denominatorCount == 1 && numeratorCount > 0)) {
 			let numerator = '';
 			let denominator = '';
 			let lastNumeratorHadSuperscript = false;
@@ -280,7 +280,7 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 		}
 
 	}
-	if (closeColor){
+	if (closeColor) {
 		texString += '}';
 	}
 
@@ -339,7 +339,7 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 							processedMacro.result = Object.assign(processedMacro.result, nextModifier);
 							// TODO: WHY IS THIS parser.options and not globaloptions???
 							// Is this even needed?  repeated-symbol is a display option, not a parsing option.
-							if ((parser.options as IOptions).perMode === 'repeated-symbol' || globalOptions.stickyPer ) {
+							if ((parser.options as IOptions).perMode === 'repeated-symbol' || globalOptions.stickyPer) {
 								const denom = nextModifier.position == 'denominator';
 								nextModifier = null;
 								if (denom) {
@@ -367,27 +367,30 @@ export function processUnit(parser: TexParser): MmlNode {
 	// TODO: may be better done a different way. double check.
 	const localOptions = findOptions(parser);
 
-	//const localOptions = optionStringToObject(localOptionString);
+	if ((localOptions.parseUnits === undefined || localOptions.parseUnits === true) &&
+		globalOptions.parseUnits === true
+	) {
 
-	const text = parser.GetArgument('unit');
+		const text = parser.GetArgument('unit');
 
-	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
-	//let globalOptions: IOptions = {...parser.options as IOptions};
+		// There are no switches to change internally that indicates the unit was literal vs interpreted. 
+		// If literal, we do NOT apply per-mode settings.
+		// We'll check if text had backslashes and pass that result to the next functions.
 
-	// There are no switches to change internally that indicates the unit was literal vs interpreted.  If literal, we do NOT apply per-mode settings.
-	// We'll check if text had backslashes and pass that result to the next functions.
+		const isLiteral = (text.indexOf('\\') == -1);
+		// This will only be a global option.  
+		if (globalOptions.forbidLiteralUnits) {
+			throw siunitxError.LiteralUnitsForbidden(text);
+		}
 
-	const isLiteral = (text.indexOf('\\') == -1);
-	// This will only be a global option.  
-	if (globalOptions.forbidLiteralUnits) {
-		throw siunitxError.LiteralUnitsForbidden(text);
+		const unitPieces = parseUnit(parser, text, globalOptions, localOptions, isLiteral);
+
+		const texString = displayUnits(parser, unitPieces, globalOptions, isLiteral);
+		return (new TexParser(texString, parser.stack.env, parser.configuration)).mml();
+	} else {
+		return parser.mml();
 	}
 
-	const unitPieces = parseUnit(parser, text, globalOptions, localOptions, isLiteral);
-
-	const texString = displayUnits(parser, unitPieces, globalOptions, isLiteral);
-
-	return (new TexParser(texString, parser.stack.env, parser.configuration)).mml();
 }
 
 function joinValues(values: IterableIterator<string>, joinString: string): string {
