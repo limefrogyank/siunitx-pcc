@@ -123,6 +123,7 @@ export const unitSymbol = new Map<string,string>([
 	['neper', 'Np'],
 	['tonne', 't']
 ]);
+export const unitNameLookup = new TwoWayMap<string,string>(unitSymbol);
 
 export const unitSymbolsWithShortcuts = new Map<string, string>([
 	...unitSymbol,

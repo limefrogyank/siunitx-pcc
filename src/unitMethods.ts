@@ -4,7 +4,7 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./errors";
 import { findOptions, IOptions, IUnitOptions, processOptions, QualifierMode } from "./options";
 import { UserDefinedUnitOptionsKey, UserDefinedUnitsKey } from "./siunitx";
-import { prefixSymbol, unitSymbol, unitSymbolsWithShortcuts } from "./units";
+import { prefixSymbol, unitNameLookup, unitSymbol, unitSymbolsWithShortcuts } from "./units";
 
 export interface IUnitPiece {
 	symbol?: string;
@@ -100,15 +100,15 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 		unitLatex += '\\cancel{';
 	}
 	if (unitPiece.highlight) {
-		unitLatex += '{\\color{' + unitPiece.highlight + '}';
+		unitLatex += `{\\color{${unitPiece.highlight}}`;
 	}
 	unitLatex += options.unitFontCommand + '{';
 	//check for square root
 	if (options.powerHalfAsSqrt && unitPiece.power && unitPiece.power == 0.5) {
-		unitLatex += '\\sqrt{\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}}';
+		unitLatex += `\\sqrt{\\class{MathML-Unit}{${unitPiece.prefix}${unitPiece.symbol}}}`;
 		unitPiece.power = null;
 	} else {
-		unitLatex += '\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}';
+		unitLatex += `\\class{MathML-Unit}{${unitPiece.prefix}${unitPiece.symbol}}`;
 	}
 	if (unitPiece.qualifier) {
 		unitLatex += qualiferMethod.get(options.qualifierMode)?.(unitPiece.qualifier, options.qualifierPhrase);
@@ -138,10 +138,10 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 	let closeColor: boolean = false;
 	let texString = '';
 	if (options.unitColor != '') {
-		texString += '{\\color{' + options.unitColor + '}';
+		texString += `{\\color{${options.unitColor}}`;
 		closeColor = true;
 	} else if (options.color != '') {
-		texString += '{\\color{' + options.color + '}';
+		texString += `{\\color{${options.color}}`;
 		closeColor = true;
 	}
 	let perForSingle = false;
