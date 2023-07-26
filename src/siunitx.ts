@@ -16,8 +16,10 @@ import { TexConstant } from 'mathjax-full/js/input/tex/TexConstants';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
-        const node = processNumber(parser);
-        parser.Push(node);
+        const nodes = processNumber(parser);
+        nodes.forEach(v=>{
+            parser.Push(v);
+        })
     },
     '\\ang': (parser: TexParser): void => {
         const node = processAngle(parser);

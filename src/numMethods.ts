@@ -266,7 +266,7 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 	return num;
 }
 
-export function processNumber(parser: TexParser): MmlNode {
+export function processNumber(parser: TexParser): MmlNode[] {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
 	const localOptions = findOptions(parser);
@@ -293,16 +293,16 @@ export function processNumber(parser: TexParser): MmlNode {
 		
 		postProcessNumber(num, globalOptions);
 
-		const displayResult = displayOutput(num, globalOptions);
+		//const displayResult = displayOutput(num, globalOptions);
 
-		//const mmlResult = displayOutputMml(num, parser,  globalOptions);
+		const mmlNodes = displayOutputMml(num, parser,  globalOptions);
 
-		const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
-		return mml;
+		//const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
+		return mmlNodes;
 
 	} else {
 		const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();
-		return mml;
+		return [mml];
 	}
 
 }

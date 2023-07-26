@@ -56,6 +56,30 @@ I'm not sure what else I can try, but it seems that ideally we would have
 spaces between numbers in plain <mn> tags be treated the same way
 commas are treated.
 
+## Bracketed uncertainty issue
+
+Brackets in MathML seem to default to multiplication in SRE.  For an 
+uncertainty written in the form: 
+
+`8.35(4)`
+
+This means that the last digit (5) has an uncertainty of plus or 
+minus 4. 
+
+i.e. `8.35 +- 0.04`
+
+While MathSpeak just literally announces the brackets after the main number,
+ClearSpeak uses the word "times" which is incorrect.
+
+One possible solution is to wrap the uncertainty section in an <mrow> 
+then define a class like "Bracketed-Uncertainty" 
+(or something similar to "MathML-Unit") that could identify the 
+start of the uncertainty so that it is interpreted correctly in SRE.
+
+Ideally, this would change the operator that separates the number and 
+the leading bracket for the uncertainty from multiplication to something 
+else.
+
 ## Units problem
 
 MathJax with Speech-Rule-Engine does a fantastic job of creating speech in multiple 

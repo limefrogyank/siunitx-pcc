@@ -14,27 +14,24 @@
 			//perMode: 'fraction'
 		},
 		startup: {
-			ready: () => {
+			ready: async () => {
 				MathJax.startup.defaultReady();
-				function fillTableWithSpeech(name, arr) {
+				async function fillTableWithSpeech(name, arr) {
 					var table = document.getElementById(name);
-					for (var j = 0; j < num.length; j++) {
+					for (var j = 0; j < arr.length; j++) {
 						const capt = j;
-						MathJax.tex2mmlPromise(arr[capt], {}).then(mml => {
-							var regex = /(?:data-semantic-speech=")(.*?)(?:")/g;
-							var matches = [...mml.matchAll(regex)];
-							table.rows[capt + 1].cells[2].innerText = matches[0][1];
-						}, err => {
-							// not sure why this is erroring
-							console.log(err);
-						});
+						const mml = await MathJax.tex2mmlPromise(arr[capt], {});
+						var regex = /(?:data-semantic-speech=")(.*?)(?:")/g;
+						var matches = [...mml.matchAll(regex)];
+						table.rows[capt + 1].cells[2].innerText = matches[0][1];
+						
 					}
 				}
-				fillTableWithSpeech('angTable', ang);
-				fillTableWithSpeech('numTable', num);
-				fillTableWithSpeech('unitTable', unit);
-				fillTableWithSpeech('qtyTable', qty);
-				fillTableWithSpeech('declareSIUnitTable', declareSIUnit);
+				await fillTableWithSpeech('angTable', ang);
+				await fillTableWithSpeech('numTable', num);
+				await fillTableWithSpeech('unitTable', unit);
+				await fillTableWithSpeech('qtyTable', qty);
+				await fillTableWithSpeech('declareSIUnitTable', declareSIUnit);
 			}
 		}
 	};
@@ -300,20 +297,8 @@
 		];
 
 		fillTable('numTable', num);
-		// var table = document.getElementById('numTable');
-		// for (var i = 0; i < num.length; i++) {
-		// 	var tr = document.createElement('tr');
-		// 	table.appendChild(tr);
-		// 	var td = document.createElement('td');
-		// 	td.innerText = num[i];
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	td.innerText = "$ " + num[i] + " $";
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	tr.appendChild(td);
-		// }
 
+		
 		var ang = [
 			String.raw`\ang{10}`,
 			String.raw`\ang{12.3}`,
@@ -377,27 +362,6 @@
 		];
 
 		fillTable('angTable', ang);
-
-		// var table = document.getElementById('angTable');
-		// // var tr = document.createElement('tr');
-		// // table.appendChild(tr);
-		// // var th = document.createElement('th');
-		// // th.innerText = 'LaTeX';
-		// // tr.appendChild(th);
-		// // th = document.createElement('th');
-		// // th.innerText = 
-		// for (var i = 0; i < ang.length; i++) {
-		// 	var tr = document.createElement('tr');
-		// 	table.appendChild(tr);
-		// 	var td = document.createElement('td');
-		// 	td.innerText = ang[i];
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	td.innerText = "$ " + ang[i] + " $";
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	tr.appendChild(td);
-		// }
 
 		var unit = [
 			String.raw`\unit{kg.m/s^2}`,
@@ -507,20 +471,7 @@
 		]
 
 		fillTable('unitTable', unit);
-		// var table = document.getElementById('unitTable');
-		// for (var i = 0; i < unit.length; i++) {
-		// 	var tr = document.createElement('tr');
-		// 	table.appendChild(tr);
-		// 	var td = document.createElement('td');
-		// 	td.innerText = unit[i];
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	td.innerText = "$ " + unit[i] + " $";
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	tr.appendChild(td);
 
-		// }
 
 		var qty = [
 			String.raw`\qty{1.23}{J.mol^{-1}.K^{-1}}`,
@@ -554,21 +505,6 @@
 
 		fillTable('qtyTable', qty);
 
-		// var table = document.getElementById('qtyTable');
-		// for (var i = 0; i < qty.length; i++) {
-		// 	var tr = document.createElement('tr');
-		// 	table.appendChild(tr);
-		// 	var td = document.createElement('td');
-		// 	td.innerText = qty[i];
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	td.innerText = "$ " + qty[i] + " $";
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	tr.appendChild(td);
-
-		// }
-
 		var declareSIUnit = [
 			String.raw`\DeclareSIUnit[inter-unit-product = \times]{\hello}{FakeUnit} \unit{\hello\kg\second}`,
 			String.raw`\unit{\kg\second}`,
@@ -581,20 +517,7 @@
 		];
 
 		fillTable('declareSIUnitTable', declareSIUnit);
-		// var table = document.getElementById('declareSIUnitTable');
-		// for (var i = 0; i < declareSIUnit.length; i++) {
-		// 	var tr = document.createElement('tr');
-		// 	table.appendChild(tr);
-		// 	var td = document.createElement('td');
-		// 	td.innerText = declareSIUnit[i];
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	td.innerText = "$ " + declareSIUnit[i] + " $";
-		// 	tr.appendChild(td);
-		// 	td = document.createElement('td');
-		// 	tr.appendChild(td);
-
-		// }
+	
 
 	</script>
 
