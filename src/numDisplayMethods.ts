@@ -2,8 +2,25 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { INumberPiece, IUncertainty } from "./numMethods";
 import { INumOutputOptions, IOptions } from "./options";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
+import { GlobalParser } from "./siunitx";
+
+const spacerMap : Record<string, string> = {
+	'\\,': '\u2009',	// \, 3/18 quad
+	'\\ ': ' ',			// space
+	'\\quad': '\u2001', // em quad
+	'\\qquad': '\u2001\u2001', // double em quad
+	'\\:': '\u2005', 	// \: is actually bigger than \, 4/18 quad
+	'\\;': '\u2004'		// \; is actually bigger than \: 5/18 quad
+};
 
 function addSpacing(text: string, digitGroupSize: number, minimum: number, spacer: string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number) {
+	let mmlSpacer = spacerMap[spacer];
+	if (mmlSpacer === undefined){
+		// instead of copying spacer, 
+		// should auto parse latex and extract unicode from mml
+		mmlSpacer = spacer;
+	}
+	
 	if (text.length >= minimum) {
 		const arr = text.split('');
 		let adjusted = 0;
@@ -11,14 +28,14 @@ function addSpacing(text: string, digitGroupSize: number, minimum: number, space
 		let fluidCount = firstCount;
 		if (reverse) {
 			for (let i = firstCount; i < arr.length; i += fluidCount) {
-				text = text.slice(0, i + adjusted) + spacer + text.slice(i + adjusted, text.length + adjusted);
-				adjusted += spacer.length;
+				text = text.slice(0, i + adjusted) + mmlSpacer + text.slice(i + adjusted, text.length + adjusted);
+				adjusted += mmlSpacer.length;
 				fluidCount = (digitGroupOtherSize != -1 && digitGroupOtherSize != undefined) ? digitGroupOtherSize : digitGroupSize;
 			}
 		} else {
 			for (let i = arr.length - firstCount; i >= 0; i -= fluidCount) {
-				text = text.slice(0, i) + spacer + text.slice(i, text.length + adjusted);
-				adjusted += spacer.length;
+				text = text.slice(0, i) + mmlSpacer + text.slice(i, text.length + adjusted);
+				adjusted += mmlSpacer.length;
 				fluidCount = (digitGroupOtherSize != -1 && digitGroupOtherSize != undefined) ? digitGroupOtherSize : digitGroupSize;
 			}
 		}
@@ -114,7 +131,7 @@ export function convertUncertaintyToBracket(uncertainty: IUncertainty, piece: IN
 	}
 }
 
-function displayUncertaintyBracket(uncertainty: IUncertainty, options: INumOutputOptions): string {
+function displayUncertaintyBracket(uncertainty: IUncertainty, options: INumOutputOptions): MmlNode {
 	let output = options.uncertaintySeparator;
 	output += options.outputOpenUncertainty;
 	output += uncertainty.whole;
@@ -124,32 +141,34 @@ function displayUncertaintyBracket(uncertainty: IUncertainty, options: INumOutpu
 	return output;
 }
 
-function displayUncertaintyPlusMinus(uncertainty: IUncertainty, options: INumOutputOptions): string {
-	return '\\pm' + displayNumber(uncertainty, options);
+function displayUncertaintyPlusMinus(uncertainty: IUncertainty, options: INumOutputOptions): MmlNode {
+	return '\\mmlToken{mo}{\u00B1}' + displayNumber(uncertainty,options);
+	//return '\\pm' + displayNumber(uncertainty, options);
 }
 
-const uncertaintyModeMapping = new Map<string, (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions) => string>([
-	['separate', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
+const uncertaintyModeMapping = new Map<string, (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions) => MmlNode>([
+	['separate', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): MmlNode => {
 		convertUncertaintyToPlusMinus(uncertainty, value, options);
 		return displayUncertaintyPlusMinus(uncertainty, options);
 	}],
-	['compact', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
+	['compact', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): MmlNode => {
 		convertUncertaintyToBracket(uncertainty, value, options);
 		return displayUncertaintyBracket(uncertainty, options);
 	}],
-	['full', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
+	['full', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): MmlNode => {
 		convertUncertaintyToBracket(uncertainty, value, options);
 		return displayUncertaintyBracket(uncertainty, options);
 	}],
-	['compact-marker', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
+	['compact-marker', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): MmlNode => {
 		convertUncertaintyToBracket(uncertainty, value, options);
 		return displayUncertaintyBracket(uncertainty, options);
 	}],
 ])
 
 
-export function displayNumber(piece: INumberPiece, options: INumOutputOptions): string {
+export function displayNumber(piece: INumberPiece, options: INumOutputOptions): MmlNode {
 	let output = '';
+	let mmlString = '';
 	groupNumbersMap.get(options.groupDigits)?.(piece, options);
 
 	if (options.negativeColor != '') {
@@ -162,9 +181,13 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 	} else {
 		// brackets remove extra spacing intended for math equation
 		if (options.printImplicitPlus && piece.sign == '') {
-			output += '{+}';
+			//output += '\\mmlToken{mrow}{\\mmlToken{mo}{+}}';
+			output += '\\mmlToken{mo}[rspace="0em", lspace="0em"]{+}';
 		} else {
-			output += '{' + piece.sign + '}';
+			if (piece.sign !== ''){
+				//output += `\\mmlToken{mrow}{\\mmlToken{mo}{${piece.sign}}}`;
+				output += `\\mmlToken{mo}[rspace="0em", lspace="0em"]{${piece.sign}}`;
+			}
 		}
 	}
 
@@ -172,23 +195,28 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 	if (piece.whole == '1' && piece.fractional == '' && !options.printUnityMantissa) {
 		// don't do anything UNLESS exponent is also zero and printZeroExponent is false
 		if (!options.printZeroExponent && (piece.exponent == '' || (piece.exponent == '1' && piece.exponentSign != '-'))) {
-			output += '1';
+			mmlString += '1';
 		}
 	} else {
 		if ((piece.whole == '' && piece.fractional) || piece.whole == '0') {
 			if (options.printZeroInteger) {
-				output += '0';
+				mmlString += '0';
 			}
 		} else {
-			output += piece.whole;
+			mmlString += piece.whole;
 		}
-		output += (piece.decimal != '' ? options.outputDecimalMarker : '');
+		mmlString += (piece.decimal != '' ? options.outputDecimalMarker : '');
 		if (options.zeroDecimalAsSymbol && +(piece.fractional) == 0) {
-			output += options.zeroSymbol;
+			// hack: insert searchable identifier
+			mmlString += options.zeroSymbol;
 		} else {
-			output += piece.fractional;
+			mmlString += piece.fractional;
 		}
 	}
+
+	output += `\\mmlToken{mn}{${mmlString}}`;
+	mmlString = '';
+
 	// display uncertanties (if not null)
 	piece.uncertainty?.forEach(v => {
 		output += uncertaintyModeMapping.get(options.uncertaintyMode)?.(v, piece, options);
@@ -239,7 +267,10 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 		output += '}';
 	}
 
-	return output;
+	const mml = (new TexParser(output, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+	// resume hack: find zero symbol replacement
+
+	return mml;
 }
 
 export function displayOutputMml(num: INumberPiece, parser: TexParser, options: IOptions) : MmlNode{
@@ -296,7 +327,6 @@ export function displayOutput(num: INumberPiece, options: IOptions): string {
 	if (closeColor) {
 		output += '}';
 	}
-
 
 	return output;
 }

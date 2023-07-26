@@ -102,7 +102,7 @@ export interface INumOutputOptions {
 	exponentProduct: string;
 	groupDigits: GroupDigits;
 	groupMinimumDigits: number;
-	groupSeparator: string;
+	groupSeparator: string; // can be LaTeX spacers, but Unicode is better!
 	negativeColor: string;
 	outputCloseUncertainty: string;
 	outputDecimalMarker: string;
