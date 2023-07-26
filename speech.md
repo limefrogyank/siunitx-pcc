@@ -7,21 +7,22 @@ is not always followed in certain specialized applications such as
 engineering drawings, financial statements and scripts to be 
 *read by a computer*."
 
-The International System of Units (PDF) (9th ed.). International 
+[The International System of Units (PDF) (9th ed.)](https://www.bipm.org/utils/common/pdf/si-brochure/SI-Brochure-9.pdf). International 
 Bureau of Weights and Measures. 2019. p. 150. ISBN 978-92-822-2272-0.
 
-Adding spaces to the number using Unicode character 2009 (slimspace) 
+Adding spaces to the number using Unicode character x2009 (slimspace) 
 causes speech-rule-engine (SRE) to add spaces to the number causing a 
 number like 12345 (which looks like 12&#x2009;345) to be read 
-as "twelve three hundred and fourty-five".
+as "twelve three hundred and fourty-five" instead of "twelve thousand 
+three hundred and forty-five".  Adding literal commas in 
+place of the spaces will generate the correct reading, but using 
+commas is not correct according to the SI rules.
 
 This happens when:
 - MathJax parses LaTeX:  `12\,345`
 - MathML is generated manually (\u2009 is unicode slimspace):
 ```
-    <mrow>
-        <mn>12\u2009345</mn>
-    </mrow>
+    <mn>12\u2009345</mn>
 ```
 - Alternative MathML:
 ```
@@ -31,6 +32,10 @@ This happens when:
         <mn>345</mn>
     </mrow>
 ```
+
+Pure MathML using `<mn>12\u2009345</mn>` is the best because this 
+does not generate any `<mo>` multiplication in MathSpeak.  However,
+it is still not read properly. 
 
 
 ## Units problem

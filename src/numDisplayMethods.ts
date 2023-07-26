@@ -263,7 +263,7 @@ export function displayOutputMml(num: INumberPiece, parser: TexParser, options: 
 		console.log(num.whole);
 		
 		let num1 = parser.create('node', 'mn', [], {}, parser.create('text', "12"));
-		let space1 = parser.create('node', 'mo', [], {separator: true}, parser.create('text', "\u2009"));
+		let space1 = parser.create('node', 'mo', [], {separator: true, "semantic-type": "ignore"}, parser.create('text', "\u2009"));
 		let num2 = parser.create('node', 'mn', [], {}, parser.create('text', "345"));
 		currentNode = parser.create('node', 'mstyle',[num1, space1, num2], {mathcolor: options.negativeColor});
 		mml.appendChild(currentNode);
