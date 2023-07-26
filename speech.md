@@ -12,7 +12,7 @@ Bureau of Weights and Measures. 2019. p. 150. ISBN 978-92-822-2272-0.
 
 Adding spaces to the number using Unicode character 2009 (slimspace) 
 causes speech-rule-engine (SRE) to add spaces to the number causing a 
-number like 12345 (which looks like 12\u2009345) to be read 
+number like 12345 (which looks like 12&#2009;345) to be read 
 as "twelve two hundred and fourty-five".
 
 This happens when:
