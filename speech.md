@@ -2,6 +2,9 @@
 
 ## Number spacing issue
 
+First, this is from the International System of Units spec concerning 
+separating digits with spaces (emphasis mine):
+
 "The practice of grouping digits in this way is a matter of choice; it 
 is not always followed in certain specialized applications such as 
 engineering drawings, financial statements and scripts to be 
@@ -10,10 +13,14 @@ engineering drawings, financial statements and scripts to be
 [The International System of Units (PDF) (9th ed.)](https://www.bipm.org/utils/common/pdf/si-brochure/SI-Brochure-9.pdf). International 
 Bureau of Weights and Measures. 2019. p. 150. ISBN 978-92-822-2272-0.
 
+I take this to mean that the spacing has no meaning and is only to make
+it easier to read at a glance. Spoken numbers have natural separators like
+"thousand" and "million".
+
 Adding spaces to the number using Unicode character x2009 (slimspace) 
 causes speech-rule-engine (SRE) to add spaces to the number causing a 
 number like 12345 (which looks like 12&#x2009;345) to be read 
-as "twelve three hundred and fourty-five" instead of "twelve thousand 
+as "twelve three hundred and forty-five" instead of "twelve thousand 
 three hundred and forty-five".  Adding literal commas in 
 place of the spaces will generate the correct reading, but using 
 commas is not correct according to the SI rules.
@@ -32,11 +39,22 @@ This happens when:
         <mn>345</mn>
     </mrow>
 ```
+- Alternative MathML v2:
+```
+    <mrow>
+        <mn>12</mn>
+        <mspace width="thinspace" />
+        <mn>345</mn>
+    </mrow>
+```
 
 Pure MathML using `<mn>12\u2009345</mn>` is the best because this 
 does not generate any `<mo>` multiplication in MathSpeak.  However,
-it is still not read properly. 
+it is still not read properly in ClearSpeak.
 
+I'm not sure what else I can try, but it seems that ideally we would have
+spaces between numbers in plain <mn> tags be treated the same way
+commas are treated.
 
 ## Units problem
 
