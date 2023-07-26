@@ -1,5 +1,27 @@
 # Speech
 
+## Number spacing issue
+
+"The practice of grouping digits in this way is a matter of choice; it 
+is not always followed in certain specialized applications such as 
+engineering drawings, financial statements and scripts to be 
+*read by a computer*."
+
+The International System of Units (PDF) (9th ed.). International 
+Bureau of Weights and Measures. 2019. p. 150. ISBN 978-92-822-2272-0.
+
+Adding spaces to the number using Unicode character 2009 (slimspace) 
+causes speech-rule-engine (SRE) to add spaces to the number causing a 
+number like 12345 to be read as "twelve two hundred and fourty-five".
+
+This happens when:
+- MathJax parses LaTeX:  `12\,345`
+- MathML is generated manually:
+```
+    <mrow>
+    </mrow>
+```
+
 ## Units problem
 
 MathJax with Speech-Rule-Engine does a fantastic job of creating speech in multiple 

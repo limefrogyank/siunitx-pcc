@@ -1,5 +1,7 @@
+import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { INumberPiece, IUncertainty } from "./numMethods";
 import { INumOutputOptions, IOptions } from "./options";
+import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 
 function addSpacing(text: string, digitGroupSize: number, minimum: number, spacer: string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number) {
 	if (text.length >= minimum) {
@@ -238,6 +240,37 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 	}
 
 	return output;
+}
+
+export function displayOutputMml(num: INumberPiece, parser: TexParser, options: IOptions) : MmlNode{
+	let mml = parser.create('node', 'mrow');
+	let currentNode: MmlNode;
+	if (options.numberColor != '') {
+		currentNode = parser.create('node', 'mstyle', options.numberColor  );
+		mml.appendChild(currentNode);
+		//output += '{\\color{' + options.numberColor + '}';
+		//closeColor = true;
+	} else if (options.color != '') {
+		currentNode = parser.create('node', 'mstyle',[],options.color  )
+		mml.appendChild(currentNode);
+		//output += '{\\color{' + options.color + '}';
+		//closeColor = true;
+	}
+
+	//groupNumbersMap.get(options.groupDigits)?.(num, options);
+
+	if (options.negativeColor != '') {
+		console.log(num.whole);
+		
+		let num1 = parser.create('node', 'mn', [], {}, parser.create('text', "12"));
+		let space1 = parser.create('node', 'mo', [], {separator: true}, parser.create('text', "\u2009"));
+		let num2 = parser.create('node', 'mn', [], {}, parser.create('text', "345"));
+		currentNode = parser.create('node', 'mstyle',[num1, space1, num2], {mathcolor: options.negativeColor});
+		mml.appendChild(currentNode);
+	}
+
+	
+	return mml;
 }
 
 export function displayOutput(num: INumberPiece, options: IOptions): string {

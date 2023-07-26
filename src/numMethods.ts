@@ -1,7 +1,7 @@
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { displayOutput } from "./numDisplayMethods";
+import { displayOutput, displayOutputMml } from "./numDisplayMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
 import { findOptions, INumOptions, INumParseOptions, IOptions, processOptions } from "./options";
 
@@ -293,10 +293,12 @@ export function processNumber(parser: TexParser): MmlNode {
 		
 		postProcessNumber(num, globalOptions);
 
-		const displayResult = displayOutput(num, globalOptions);
+		//const displayResult = displayOutput(num,  globalOptions);
 
-		const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
-		return mml;
+		const mmlResult = displayOutputMml(num, parser,  globalOptions);
+
+		//const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
+		return mmlResult;
 
 	} else {
 		const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();
