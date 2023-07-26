@@ -16,11 +16,19 @@ number like 12345 to be read as "twelve two hundred and fourty-five".
 
 This happens when:
 - MathJax parses LaTeX:  `12\,345`
-- MathML is generated manually:
+- MathML is generated manually (\u2009 is unicode slimspace):
 ```
     <mrow>
+        <mn>12\u2009345</mn>
     </mrow>
 ```
+- Alternative MathML:
+```
+    <mrow>
+        <mn>12</mn><mo separator='true'>\u2009</mo><mn>345</mn>
+    </mrow>
+```
+
 
 ## Units problem
 
