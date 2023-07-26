@@ -1,8 +1,9 @@
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { INumberPiece, IUncertainty } from "./numMethods";
 import { INumOutputOptions, IOptions } from "./options";
-import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
+import { AbstractMmlTokenNode, MmlNode, TextNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import { GlobalParser } from "./siunitx";
+import NodeUtil from "mathjax-full/js/input/tex/NodeUtil";
 
 const spacerMap: Record<string, string> = {
 	'\\,': '\u2009',	// \, 3/18 quad
@@ -13,12 +14,26 @@ const spacerMap: Record<string, string> = {
 	'\\;': '\u2004'		// \; is actually bigger than \: 5/18 quad
 };
 
+// Naive function that assumes there is only one child for each node with children
+function findInnerText(node: MmlNode):string{
+	let inner = node;
+	while (!inner.isToken && inner.childNodes.length > 0){
+		inner = inner.childNodes[0] as MmlNode;
+	}
+	if (inner.isToken){
+		return NodeUtil.getText(inner as TextNode);
+	} else {
+		return "";
+	}
+}
+
 function addSpacing(text: string, digitGroupSize: number, minimum: number, spacer: string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number) {
-	let mmlSpacer = spacerMap[spacer];
+	let mmlSpacer = spacerMap[spacer.trimStart()];
 	if (mmlSpacer === undefined) {
 		// instead of copying spacer, 
 		// should auto parse latex and extract unicode from mml
-		mmlSpacer = spacer;
+		const spacerNode = (new TexParser(spacer, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+		mmlSpacer = findInnerText(spacerNode);
 	}
 
 	if (text.length >= minimum) {
