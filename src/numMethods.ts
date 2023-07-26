@@ -293,12 +293,12 @@ export function processNumber(parser: TexParser): MmlNode {
 		
 		postProcessNumber(num, globalOptions);
 
-		//const displayResult = displayOutput(num,  globalOptions);
+		const displayResult = displayOutput(num, globalOptions);
 
-		const mmlResult = displayOutputMml(num, parser,  globalOptions);
+		//const mmlResult = displayOutputMml(num, parser,  globalOptions);
 
-		//const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
-		return mmlResult;
+		const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
+		return mml;
 
 	} else {
 		const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();
