@@ -1,10 +1,12 @@
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { displayOutput } from "./numDisplayMethods";
+import { displayOutput, displayOutputMml, findInnerText, spacerMap } from "./numDisplayMethods";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { convertToFixed, postProcessNumber } from "./numPostProcessMethods";
 import { findOptions, IOptions, IQuantityOptions, PrefixMode, processOptions, SeparateUncertaintyUnits } from "./options";
 import { displayUnits, IUnitPiece, parseUnit } from "./unitMethods";
 import { prefixPower } from "./units";
+import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
+import { GlobalParser } from "./siunitx";
 
 function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
 	if (num.exponent == '' || (units == null || units.length == 0)) {
@@ -100,6 +102,77 @@ const prefixModeMap = new Map<PrefixMode, (num: INumberPiece, units: IUnitPiece[
 	['extract-exponent', extractExponent]
 ]);
 
+function findUncertaintyNode(root: MmlNode): MmlNode | null {
+	for (const x of root.childNodes) {
+		const mmlNode = x as MmlNode;
+		if (mmlNode) {
+			if (mmlNode.attributes != null) {
+				const names = mmlNode.attributes.getExplicitNames();
+				if (names.indexOf('data-siunitx-uncertainty') != -1) {
+					return mmlNode;
+				}
+			}
+			const result = findUncertaintyNode(mmlNode);
+			if (result != null) {
+				return result;
+			}
+		}
+	}
+	return null;
+}
+
+const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions) => MmlNode[]>([
+	['single', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions): MmlNode[] => {
+
+		return [...num, quantityProduct, units];
+	}],
+	['bracket', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions): MmlNode[] => {
+		let uncertaintyNode: MmlNode = null;
+		for (const x of num) {
+			const result = findUncertaintyNode(x);
+			if (result != null) {
+				uncertaintyNode = result;
+				break;
+			}
+		}
+
+		if (uncertaintyNode != null) {
+			const leftBracket = parser.create('token', 'mo', {}, options.outputOpenUncertainty);
+			const rightBracket = parser.create('token', 'mo', {}, options.outputCloseUncertainty);
+			return [leftBracket, ...num, rightBracket, quantityProduct, units];
+
+		} else {
+			return [...num, quantityProduct, units];
+		}
+	}],
+	['repeat', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions): MmlNode[] => {
+		let uncertaintyNode: MmlNode = null;
+		for (const x of num) {
+			const result = findUncertaintyNode(x);
+			if (result != null) {
+				uncertaintyNode = result;
+				break;
+			}
+		}
+		if (uncertaintyNode != null) {
+			const parent = uncertaintyNode.parent;
+			const uncertaintyPosition = parent.childNodes.indexOf(uncertaintyNode);
+			parent.childNodes.splice(uncertaintyPosition, 0, quantityProduct, units);
+
+			// To make it match the MathML structure of the previous insert,
+			// we should insert the 2nd unit at the same depth.
+			// However, SRE seems to rearrange it all anyways.
+			parent.appendChild(quantityProduct);
+			parent.appendChild(units);
+
+			return [...num];
+
+		} else {
+			return [...num, quantityProduct, units];
+		}
+	}]
+]);
+
 const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: string, units: string, options: IQuantityOptions) => string>([
 	['single', (num: string, units: string, options: IQuantityOptions): string => {
 		return num + options.quantityProduct + units;
@@ -135,7 +208,7 @@ export function processQuantity(parser: TexParser): void {
 	let numString = parser.GetArgument('num');
 	const unitString = parser.GetArgument('unit');
 
-	let numDisplay = '';
+
 	let unitDisplay = '';
 
 	const isLiteral = (unitString.indexOf('\\') == -1);
@@ -167,22 +240,56 @@ export function processQuantity(parser: TexParser): void {
 		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 
 		postProcessNumber(num, globalOptions);
+
 		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 
-		numDisplay = displayOutput(num, globalOptions);
+		const numDisplay = displayOutputMml(num, parser, globalOptions);
+
+		// Need to process this after number because some options alter unit prefixes
+		unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
+		const unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
+
+		// for (const num of numDisplay){
+		// 	parser.Push(num);
+		// }
+		// parser.Push(unitNode);
+		// uncertainty will already be separated.
+		let quantityProductNode = null;
+		const trimmedQuantityProduct = globalOptions.quantityProduct.trimStart();
+		if (trimmedQuantityProduct !== '') {
+			let quantityProduct = spacerMap[trimmedQuantityProduct];
+			if (quantityProduct === undefined) {
+				// instead of copying quantityProduct, 
+				// should auto parse latex and extract unicode from mml
+				const spacerNode = (new TexParser(quantityProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+				quantityProduct = findInnerText(spacerNode);
+			}
+			quantityProductNode = parser.create('token', 'mo', {}, quantityProduct);
+		}
+
+		const qtyDisplay = separateUncertaintyUnitsMmlMap.get(globalOptions.separateUncertaintyUnits)(numDisplay, unitNode, quantityProductNode, parser, globalOptions);
+		for (const piece of qtyDisplay) {
+			parser.Push(piece);
+		}
 
 	} else {
 		// can't do any conversions with number since processing is off
-		numDisplay = numString;
+		const numDisplay = numString;
+
+		// Need to process this after number because some options alter unit prefixes
+		unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
+
+		const qtyDisplay = separateUncertaintyUnitsMap.get(globalOptions.separateUncertaintyUnits)(numDisplay, unitDisplay, globalOptions);
+		const qtyNode = (new TexParser(qtyDisplay, parser.stack.env, parser.configuration)).mml();
+		parser.Push(qtyNode);
 	}
 
-	// Need to process this after number because some options alter unit prefixes
-	unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
 
-	const qtyDisplay = separateUncertaintyUnitsMap.get(globalOptions.separateUncertaintyUnits)(numDisplay, unitDisplay, globalOptions);
 
-	
-	const qtyNode = (new TexParser(qtyDisplay, parser.stack.env, parser.configuration)).mml();
-	parser.Push(qtyNode);
+
+
+
+
+
 
 }

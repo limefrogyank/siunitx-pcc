@@ -5,7 +5,7 @@ import { AbstractMmlTokenNode, MmlNode, TextNode } from "mathjax-full/js/core/Mm
 import { GlobalParser } from "./siunitx";
 import NodeUtil from "mathjax-full/js/input/tex/NodeUtil";
 
-const spacerMap: Record<string, string> = {
+export const spacerMap: Record<string, string> = {
 	'\\,': '\u2009',	// \, 3/18 quad
 	'\\ ': ' ',			// space
 	'\\quad': '\u2001', // em quad
@@ -15,7 +15,7 @@ const spacerMap: Record<string, string> = {
 };
 
 // Naive function that assumes there is only one child for each node with children
-function findInnerText(node: MmlNode):string{
+export function findInnerText(node: MmlNode):string{
 	let inner = node;
 	while (!inner.isToken && inner.childNodes.length > 0){
 		inner = inner.childNodes[0] as MmlNode;
@@ -178,7 +178,7 @@ function displayUncertaintyPlusMinus(uncertainty: IUncertainty, options: INumOut
 function displayUncertaintyPlusMinusMml(uncertainty: IUncertainty, parser: TexParser, options: INumOutputOptions): MmlNode {
 	const numberNode = displayNumberMml(uncertainty, parser, options as IOptions);
 	const plusMinusNode = parser.create('token', 'mo', {}, '\u00b1'); // plus-minus sign 
-	const mrow = parser.create('node', 'mrow', [plusMinusNode, numberNode]);
+	const mrow = parser.create('node', 'mrow', [plusMinusNode, numberNode], {'data-siunitx-uncertainty':true});
 	return mrow;
 }
 
