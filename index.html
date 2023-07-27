@@ -13,6 +13,12 @@
 			// Uncomment example below: 
 			//perMode: 'fraction'
 		},
+		options:{
+			enableEnrichment:true,
+			sre: {
+				domain: 'clearspeak'
+			}
+		},
 		startup: {
 			ready: async () => {
 				MathJax.startup.defaultReady();
@@ -53,8 +59,8 @@
 		}
 	</style>
 
-	<p>If you don't see the Speech column fill up, right click on any MathJax rendered item, go to the Accessibility menu and check the Activate option.  
-		Then reload the entire page.  This column will just preview approximately what a screenreader will say.</p>
+	<!-- <p>If you don't see the Speech column fill up, right click on any MathJax rendered item, go to the Accessibility menu and check the Activate option.  
+		Then reload the entire page.  This column will just preview approximately what a screenreader will say.</p> -->
 
 	<h2>Ang</h2>
 	<table id="angTable" class="tableStyle"></table>
@@ -83,7 +89,7 @@
 			th.innerText = 'SVG';
 			tr.appendChild(th);
 			th = document.createElement('th');
-			th.innerText = 'Speech';
+			th.innerText = 'ClearSpeak';
 			tr.appendChild(th);
 			for (var i = 0; i < arr.length; i++) {
 				tr = document.createElement('tr');
