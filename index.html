@@ -41,6 +41,7 @@
 				await fillTableWithSpeech('complexnumTable', complexnum);
 				await fillTableWithSpeech('unitTable', unit);
 				await fillTableWithSpeech('qtyTable', qty);
+				await fillTableWithSpeech('listTable', listStuff);
 				await fillTableWithSpeech('declareSIUnitTable', declareSIUnit);
 			}
 		}
@@ -80,6 +81,9 @@
 
 	<h2>qty</h2>
 	<table id="qtyTable" class="tableStyle"></table>
+
+	<h2>numlist, qtylist, numproduct, qtyproduct,</h2>
+	<table id="listTable" class="tableStyle"></table>
 
 	<h2>DeclareSIUnit</h2>
 	<table id="declareSIUnitTable" class="tableStyle"></table>
@@ -550,6 +554,39 @@
 		];
 
 		fillTable('qtyTable', qty);
+
+		var listStuff = [
+		String.raw`\numlist{0.1;0.2;0.3}`,
+		String.raw`\numlist[list-separator = {; }]{0.1;0.2;0.3}`,
+		String.raw`\numlist[list-final-separator = {, }]{0.1;0.2;0.3}`,
+		String.raw`\numlist[
+			list-separator = { and },
+			list-final-separator = { and finally }
+			]{0.1;0.2;0.3}`,
+		String.raw`\numlist{0.1;0.2}`,
+		String.raw`\numlist[list-pair-separator = {, and }]{0.1;0.2}`,
+		String.raw`\numlist{5e3;7e3;9e3;1e4}`,
+		String.raw`
+		\displaylines{
+			\sisetup{list-exponents = combine-bracket ,
+					product-exponents = combine-bracket ,
+					range-exponents = combine-bracket
+			}
+			\numlist{5e3;7e3;9e3;1e4} \\
+
+			\sisetup{list-exponents = combine-bracket ,
+					product-exponents = combine-bracket ,
+					range-exponents = combine-bracket
+			}
+			\numlist{5e3;7e3;9e3;1e4} \\
+		}
+		`,
+
+		];
+
+		fillTable('listTable', listStuff);
+
+
 
 		var declareSIUnit = [
 			String.raw`\DeclareSIUnit[inter-unit-product = \times]{\hello}{FakeUnit} \unit{\hello\kg\second}`,

@@ -7,9 +7,10 @@ import { IAngleOptions, AngleOptionDefaults } from "./angleOptions";
 import { IQuantityOptions, QuantityOptionDefaults } from "./quantityOptions";
 import { IPrintOptions, PrintOptionsDefault } from "./printOptions";
 import { IComplexNumberOptions, ComplexNumberOptionsDefault } from "./complexNumberOptions";
+import { IListOptions, ListOptionDefaults } from "./listOptions";
 
 
-export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions, IQuantityOptions, IComplexNumberOptions, IPrintOptions { }
+export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions, IQuantityOptions, IComplexNumberOptions, IPrintOptions, IListOptions { }
 
 export const siunitxDefaults = {
 	...UnitOptionDefaults, 
@@ -17,7 +18,8 @@ export const siunitxDefaults = {
 	...AngleOptionDefaults, 
 	...QuantityOptionDefaults, 
 	...ComplexNumberOptionsDefault, 
-	...PrintOptionsDefault
+	...PrintOptionsDefault,
+	...ListOptionDefaults
 };
 
 // Needed a new version of TexParser.GetBrackets because it wanted to parse the internal macros automatically.  
@@ -74,7 +76,6 @@ export function processSISetup(parser: TexParser): void {
 
 function optionStringToObject( optionString: string):Partial<IOptions>{
 	const options : Partial<IOptions> = {};
-
 	if (optionString != null) {
 		// check if wrapped in curly braces and remove them
 		while (optionString.startsWith('{') && optionString.endsWith('}')) {
@@ -122,6 +123,8 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 				} else {
 					if (value.indexOf('\\') == -1) {
 						value = value.trim();
+						// finally, remove curly brackets around value if present
+						value = value.replace(/^{(.*)}$/g, '$1');
 					}
 					options[prop] = value;
 				}
@@ -143,8 +146,8 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 				}
 			}
 		}
-
 		prop = dashToCamel(prop.trim());
+		
 		if (value == '') {
 			options[prop] = true;
 		}
@@ -155,6 +158,8 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 		} else {
 			if (value.indexOf('\\') == -1) {
 				value = value.trim();
+				// finally, remove curly brackets around value if present
+				value = value.replace(/^{(.*)}$/g, '$1');
 			}
 			options[prop] = value;
 		}
@@ -217,6 +222,8 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 				} else {
 					if (value.indexOf('\\') == -1) {
 						value = value.trim();
+						// finally, remove curly brackets around value if present
+						value = value.replace(/^{(.*)}$/g, '$1');
 					}
 					//globalOptions[prop] = value;
 					options.set(prop, value);
@@ -255,6 +262,8 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 		} else {
 			if (value.indexOf('\\') == -1) {
 				value = value.trim();
+				// finally, remove curly brackets around value if present
+				value = value.replace(/^{(.*)}$/g, '$1');
 			}
 			//globalOptions[prop] = value;
 			options.set(prop, value);

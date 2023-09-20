@@ -14,6 +14,7 @@ import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
 import { Symbol } from 'mathjax-full/js/input/tex/Symbol'
 import { TexConstant } from 'mathjax-full/js/input/tex/TexConstants';
 import { processComplexNumber, processComplexQuantity } from './complexMethods';
+import { processNumberList } from './listMethods';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
@@ -33,11 +34,17 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\qty': (parser: TexParser): void => {
         processQuantity(parser); // doesn't return a node, pushes internally
     },
+    '\\numlist': (parser: TexParser): void => {
+        processNumberList(parser);
+    },
     '\\qtylist': (parser: TexParser): void => {
         //TODO: qtylist
     },
     '\\qtyproduct': (parser: TexParser): void => {
         //TODO: qtyproduct
+    },
+    '\\numrange': (parser: TexParser): void => {
+        //TODO: numrange
     },
     '\\qtyrange': (parser: TexParser): void => {
         //TODO: qtyrange
@@ -112,6 +119,7 @@ new CommandMap('siunitxMap', {
     unit: ['siunitxToken', 'unit'],
     qty: ['siunitxToken', 'qty'],
     complexqty: ['siunitxToken', 'complexqty'],
+    numlist: ['siunitxToken', 'numlist'],
     DeclareSIUnit: ['siunitxGlobal', 'DeclareSIUnit'],
     sisetup: ['siunitxToken', 'sisetup'],
     arialabel: ['Arialabel', 'arialabel'],

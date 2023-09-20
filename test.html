@@ -20,7 +20,15 @@
 </script>
 
 <body>
-    $$ \complexnum[complex-mode = cartesian, round-mode = places]{1:45} $$
+    $$ \numlist{0.1;0.2;0.3} $$
+    $$ \numlist[list-separator = {; }]{0.1;0.2;0.3} $$
+    $$\numlist[list-final-separator = {, }]{0.1;0.2;0.3} $$
+    $$ \numlist[
+    list-separator = { and },
+    list-final-separator = { and finally }
+    ]{0.1;0.2;0.3} $$
+    $$ \numlist{0.1;0.2} $$
+    $$ \numlist[list-pair-separator = {, and }]{0.1;0.2} $$
 </body>
 
 </html>
