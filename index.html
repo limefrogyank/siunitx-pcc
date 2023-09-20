@@ -7,7 +7,10 @@
 			paths: { custom: '.' }
 		},
 		tex: {
-			packages: { '[+]': ['siunitx', 'gensymb', 'color', 'html', 'cancel'] },  //gensymb is required for \degree and \ohm
+			packages: { '[+]': ['siunitx', 'gensymb', 'color', 'html', 'cancel'] },  
+			//gensymb is required for \degree and \ohm
+			//color is required for color options
+			//cancel is required for cancelation of units
 			inlineMath: { '[+]': [['$', '$']] },
 			/* global options can go here, see IOptions in options.ts for properties */
 			// Uncomment example below: 
@@ -16,7 +19,7 @@
 		options:{
 			enableEnrichment:true,
 			sre: {
-				domain: 'clearspeak'
+				domain: 'clearspeak'  // better for speaking compound units vs mathspeak
 			}
 		},
 		startup: {
@@ -35,6 +38,7 @@
 				}
 				await fillTableWithSpeech('angTable', ang);
 				await fillTableWithSpeech('numTable', num);
+				await fillTableWithSpeech('complexnumTable', complexnum);
 				await fillTableWithSpeech('unitTable', unit);
 				await fillTableWithSpeech('qtyTable', qty);
 				await fillTableWithSpeech('declareSIUnitTable', declareSIUnit);
@@ -62,16 +66,19 @@
 	<!-- <p>If you don't see the Speech column fill up, right click on any MathJax rendered item, go to the Accessibility menu and check the Activate option.  
 		Then reload the entire page.  This column will just preview approximately what a screenreader will say.</p> -->
 
-	<h2>Ang</h2>
+	<h2>ang</h2>
 	<table id="angTable" class="tableStyle"></table>
 
-	<h2>Num</h2>
+	<h2>num</h2>
 	<table id="numTable" class="tableStyle"></table>
 
-	<h2>Unit</h2>
+	<h2>complexnum & complexqty</h2>
+	<table id="complexnumTable" class="tableStyle"></table>
+
+	<h2>unit</h2>
 	<table id="unitTable" class="tableStyle"></table>
 
-	<h2>Qty</h2>
+	<h2>qty</h2>
 	<table id="qtyTable" class="tableStyle"></table>
 
 	<h2>DeclareSIUnit</h2>
@@ -303,6 +310,39 @@
 		];
 
 		fillTable('numTable', num);
+
+		var complexnum = [
+			String.raw`\complexnum{1 + i}`,
+			String.raw`\complexnum{1:45}`,
+			String.raw`\complexnum{2i}`,
+			String.raw`\complexnum{2}`,
+			String.raw`\complexnum[complex-mode = cartesian]{1 + i}`,
+			String.raw`\complexnum[complex-mode = cartesian, round-mode = places]{1:45}`,
+			String.raw`\complexnum[complex-mode = polar, round-mode = places, round-precision = 3, round-pad = false]{1 + 1i}`,
+			String.raw`\complexnum[complex-mode = polar]{1:45}`,
+			//input-complex-root 
+			String.raw`\complexnum{9.99 + 88.8i}`,
+			String.raw`\complexnum{9.99 + i88.8}`,
+			//output-complex-root
+			String.raw`\complexnum[output-complex-root = i]{1+2i}`,
+			String.raw`\complexnum[output-complex-root = j]{1+2i}`,
+			//complex-root-position
+			String.raw`\complexnum{67-0.9i}`,
+			String.raw`\complexnum[complex-root-position = before-number]{67-0.9i}`,
+			String.raw`\complexnum[complex-root-position = after-number]{67-0.9i}`,
+			//complex-angle-unit
+			//complex-symbol-angle
+			//complex-symbol-degree
+			String.raw`\complexqty{1:1}{\ohm}`,
+			String.raw`\complexqty[complex-angle-unit = radians]{1:1}{\ohm}`,
+			String.raw`\complexqty[complex-symbol-angle = \mathrm{A}]{1:1}{\ohm}`,
+			String.raw`\complexqty[complex-symbol-degree = d]{1:1}{\ohm}`,
+			//print-complex-unity 
+			String.raw`\complexqty{1i}{\ohm}`,
+			String.raw`\complexqty[print-complex-unity]{1i}{\ohm}`,
+
+		];
+		fillTable('complexnumTable', complexnum)
 
 		
 		var ang = [

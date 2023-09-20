@@ -1,8 +1,9 @@
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { displayOutput, displayOutputMml, findInnerText, spacerMap } from "./numDisplayMethods";
+import { displayOutputMml, findInnerText, spacerMap } from "./numDisplayMethods";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { convertToFixed, postProcessNumber } from "./numPostProcessMethods";
-import { findOptions, IOptions, IQuantityOptions, PrefixMode, processOptions, SeparateUncertaintyUnits } from "./options";
+import { findOptions, IOptions } from "./options/options";
+import { IQuantityOptions, PrefixMode, SeparateUncertaintyUnits } from "./options/quantityOptions";
 import { displayUnits, IUnitPiece, parseUnit } from "./unitMethods";
 import { prefixPower } from "./units";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
@@ -95,7 +96,7 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 	}
 }
 
-const prefixModeMap = new Map<PrefixMode, (num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions) => void>([
+export const prefixModeMap = new Map<PrefixMode, (num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions) => void>([
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	['input', (): void => { }],
 	['combine-exponent', combineExponent],

@@ -4,7 +4,7 @@ import { CommandMap, CharacterMap, parseResult } from 'mathjax-full/js/input/tex
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
-import { AngleOptionDefaults, findOptions, IOptions, NumOptionDefaults, PrintOptionsDefault, processSISetup, QuantityOptionDefaults, siunitxDefaults, UnitOptionDefaults } from './options';
+import { findOptions, IOptions, processSISetup, siunitxDefaults, } from './options/options';
 import { processQuantity } from './qtyMethods';
 import { processUnit } from './unitMethods';
 import { userDefinedUnitOptions, userDefinedUnits } from './units';
@@ -13,11 +13,12 @@ import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
 
 import { Symbol } from 'mathjax-full/js/input/tex/Symbol'
 import { TexConstant } from 'mathjax-full/js/input/tex/TexConstants';
+import { processComplexNumber, processComplexQuantity } from './complexMethods';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
         const nodes = processNumber(parser);
-        nodes.forEach(v=>{
+        nodes.forEach(v => {
             parser.Push(v);
         })
     },
@@ -42,10 +43,13 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
         //TODO: qtyrange
     },
     '\\complexnum': (parser: TexParser): void => {
-        //TODO: complexnum
+        const nodes = processComplexNumber(parser);
+        nodes.forEach(v => {
+            parser.Push(v);
+        })
     },
     '\\complexqty': (parser: TexParser): void => {
-        //TODO: complexqty
+        processComplexQuantity(parser);
     },
     '@{}S': (parser: TexParser): void => {
         //TODO: NOT IMPLEMENTED
@@ -104,8 +108,10 @@ new CharacterMap('angchar-symbols', angleChars, {
 new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
     ang: ['siunitxToken', 'ang'],
+    complexnum: ['siunitxToken', 'complexnum'],
     unit: ['siunitxToken', 'unit'],
     qty: ['siunitxToken', 'qty'],
+    complexqty: ['siunitxToken', 'complexqty'],
     DeclareSIUnit: ['siunitxGlobal', 'DeclareSIUnit'],
     sisetup: ['siunitxToken', 'sisetup'],
     arialabel: ['Arialabel', 'arialabel'],

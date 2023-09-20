@@ -1,7 +1,8 @@
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { INumberPiece, IUncertainty } from "./numMethods";
-import { INumOutputOptions, IOptions } from "./options";
-import { AbstractMmlTokenNode, MmlNode, TextNode } from "mathjax-full/js/core/MmlTree/MmlNode";
+import { IOptions } from "./options/options";
+import { INumOutputOptions } from "./options/numberOptions";
+import { MmlNode, TextNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import { GlobalParser } from "./siunitx";
 import NodeUtil from "mathjax-full/js/input/tex/NodeUtil";
 
@@ -15,12 +16,12 @@ export const spacerMap: Record<string, string> = {
 };
 
 // Naive function that assumes there is only one child for each node with children
-export function findInnerText(node: MmlNode):string{
+export function findInnerText(node: MmlNode): string {
 	let inner = node;
-	while (!inner.isToken && inner.childNodes.length > 0){
+	while (!inner.isToken && inner.childNodes.length > 0) {
 		inner = inner.childNodes[0] as MmlNode;
 	}
-	if (inner.isToken){
+	if (inner.isToken) {
 		return NodeUtil.getText(inner as TextNode);
 	} else {
 		return "";
@@ -178,7 +179,7 @@ function displayUncertaintyPlusMinus(uncertainty: IUncertainty, options: INumOut
 function displayUncertaintyPlusMinusMml(uncertainty: IUncertainty, parser: TexParser, options: INumOutputOptions): MmlNode {
 	const numberNode = displayNumberMml(uncertainty, parser, options as IOptions);
 	const plusMinusNode = parser.create('token', 'mo', {}, '\u00b1'); // plus-minus sign 
-	const mrow = parser.create('node', 'mrow', [plusMinusNode, numberNode], {'data-siunitx-uncertainty':true});
+	const mrow = parser.create('node', 'mrow', [plusMinusNode, numberNode], { 'data-siunitx-uncertainty': true });
 	return mrow;
 }
 
@@ -425,18 +426,18 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 		if (num.whole == '1' && num.fractional == '' && !options.printUnityMantissa) {
 			currentNode.appendChild(exponential);
 		} else {
-			if (num.exponentMarker != ''){
+			if (num.exponentMarker != '') {
 				if (options.outputExponentMarker != '') {
 					const customExponentMarker = (new TexParser(options.outputExponentMarker, GlobalParser.stack.env, GlobalParser.configuration)).mml();
 					//const customExponentMarker = parser.create('token', 'mi', { }, options.outputExponentMarker);
 					currentNode.appendChild(customExponentMarker);
 					currentNode.appendChild(supPart);
 				} else {
-					if (num.whole != '' || num.fractional != ''){
-						if (options.tightSpacing){
+					if (num.whole != '' || num.fractional != '') {
+						if (options.tightSpacing) {
 							exponentProductNode.attributes.set('lspace', '0em');
 							exponentProductNode.attributes.set('rspace', '0em');
-						}					
+						}
 						currentNode.appendChild(exponentProductNode);
 					}
 					currentNode.appendChild(exponential);
@@ -465,12 +466,12 @@ export function displayOutputMml(num: INumberPiece, parser: TexParser, options: 
 		currentNode = parser.create('node', 'mstyle', [], { mathcolor: options.color });
 		rootNodes.push(currentNode);
 	}
-		
+
 	if (num.prefix !== '') {
 		const prefix = (new TexParser(num.prefix, GlobalParser.stack.env, GlobalParser.configuration)).mml();
 		prefix.attributes.set('rspace', '0em');
 		prefix.attributes.set('lspace', '0em');
-		if (currentNode == null){
+		if (currentNode == null) {
 			rootNodes.push(prefix);
 		} else {
 			currentNode.appendChild(prefix);
@@ -478,7 +479,7 @@ export function displayOutputMml(num: INumberPiece, parser: TexParser, options: 
 	}
 
 	const numberNode = displayNumberMml(num, parser, options);
-	if (currentNode == null){
+	if (currentNode == null) {
 		rootNodes.push(numberNode);
 	} else {
 		currentNode.appendChild(numberNode);
@@ -487,6 +488,7 @@ export function displayOutputMml(num: INumberPiece, parser: TexParser, options: 
 	return rootNodes;
 }
 
+// OBSOLETE
 export function displayOutput(num: INumberPiece, options: IOptions): string {
 
 	let output = '';

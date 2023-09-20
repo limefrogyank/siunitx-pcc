@@ -2,7 +2,8 @@ import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./errors";
-import { findOptions, IOptions, IUnitOptions, processOptions, QualifierMode } from "./options";
+import { findOptions, IOptions, processOptions } from "./options/options";
+import { IUnitOptions, QualifierMode } from "./options/unitOptions";
 import { UserDefinedUnitOptionsKey, UserDefinedUnitsKey } from "./siunitx";
 import { prefixSymbol, unitNameLookup, unitSymbol, unitSymbolsWithShortcuts } from "./units";
 

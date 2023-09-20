@@ -1,6 +1,8 @@
 import { siunitxError } from "./errors";
 import { INumberPiece, parseNumber } from "./numMethods";
-import { INumOptions, INumPostOptions, IOptions } from "./options";
+import { INumOptions, INumPostOptions } from "./options/numberOptions";
+import {  IOptions } from "./options/options";
+
 import { GlobalParser } from "./siunitx";
 
 function convertToScientific(numOriginal:INumberPiece, options: INumPostOptions) : INumberPiece {
@@ -170,10 +172,9 @@ function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 		if (num.fractional.length > options.roundPrecision ) {			
 			const firstDrop = +num.fractional.slice(options.roundPrecision, options.roundPrecision+1);
 			const toRound = +num.fractional.slice(options.roundPrecision - 1, options.roundPrecision);
-
 			const wholeLength = num.whole === '0' ? 0 : num.whole.length;
 			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
-				const result = roundUp(num.whole + num.fractional, wholeLength + options.roundPrecision - 1);
+				const result = roundUp((num.whole === '0' ? '' : num.whole) + num.fractional, wholeLength + options.roundPrecision - 1);
 				//const wholeLength = num.whole.length;
 				num.whole = result.slice(0,wholeLength);
 				num.fractional = result.slice(wholeLength, result.length);
@@ -182,8 +183,12 @@ function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 			}		
 
 		} else if (num.fractional.length < options.roundPrecision && options.roundPad) {
-			for (let i = 0; i < options.roundPrecision-num.fractional.length; i++){
+			const toAdd = options.roundPrecision-num.fractional.length;
+			for (let i = 0; i < toAdd; i++){
 				num.fractional += '0';  // pad with zeros
+			}
+			if (num.decimal === ''){
+				num.decimal = (options as INumOptions).outputDecimalMarker;
 			}
 		} else {
 			//no rounding needed.

@@ -1,9 +1,10 @@
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { displayOutput, displayOutputMml } from "./numDisplayMethods";
+import { displayOutputMml } from "./numDisplayMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
-import { findOptions, INumOptions, INumParseOptions, IOptions, processOptions } from "./options";
+import { findOptions, IOptions } from "./options/options";
+import { INumOptions, INumParseOptions } from "./options/numberOptions";
 
 
 
@@ -26,7 +27,7 @@ export interface IUncertainty extends INumberPiece {
 
 export declare type CharNumFunction = (text: string, numPiece: INumberPiece) => void;
 
-const NumberPieceDefault: INumberPiece = {
+export const NumberPieceDefault: INumberPiece = {
 	prefix: '',
 	sign: '',
 	whole: '',
@@ -49,6 +50,25 @@ export function generateNumberPiece(): INumberPiece {
 	const piece = { ...NumberPieceDefault };
 	piece.uncertainty = new Array<IUncertainty>();
 	return piece;
+}
+
+export function pieceToNumber(piece:INumberPiece): number {
+	let build = piece.sign + piece.whole;
+	if (piece.fractional !== ''){
+		build += '.' + piece.fractional;
+	}  
+	if (piece.exponent !== ''){
+		build += 'e'+piece.exponentSign + piece.exponent; 
+	}
+	try {
+		let result = Number.parseFloat(build);
+		if (Number.isNaN(result)){
+			result = 0;
+		}
+		return result;
+	} catch {
+		return 0;
+	}
 }
 
 function parseDigits(text: string, numPiece: INumberPiece) {
@@ -249,7 +269,7 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 		num.sign = '';
 	}
 	// adding exponent to value check here.  Without it, exponentials without a base won't stay negative. (-e10)
-	const value = +(num.whole + (num.decimal != '' ? '.' : '') + num.fractional + (num.exponent =='' ? '': 'e' + num.exponentSign + num.exponent));
+	const value = +(num.whole + (num.decimal != '' ? '.' : '') + num.fractional + (num.exponent == '' ? '' : 'e' + num.exponentSign + num.exponent));
 	if (value == 0 && !options.retainNegativeZero && num.sign == '-') {
 		num.sign = '';
 	}
@@ -286,16 +306,16 @@ export function processNumber(parser: TexParser): MmlNode[] {
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', text);
 			let result = eval(expression);
-			text= result.toString();
+			text = result.toString();
 		}
 
 		const num = parseNumber(parser, text, globalOptions);
-		
+
 		postProcessNumber(num, globalOptions);
 
 		//const displayResult = displayOutput(num, globalOptions);
 
-		const mmlNodes = displayOutputMml(num, parser,  globalOptions);
+		const mmlNodes = displayOutputMml(num, parser, globalOptions);
 
 		//const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
 		return mmlNodes;

@@ -3,8 +3,8 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./errors";
 import { displayNumber } from "./numDisplayMethods";
 import { CharNumFunction, generateNumberMapping, generateNumberPiece, INumberPiece } from "./numMethods";
-import { findOptions, IAngleOptions, INumOptions, IOptions, processOptions } from "./options";
-import { MathJax } from "mathjax-full/js/components/global";
+import { findOptions, IOptions } from "./options/options";
+import { IAngleOptions } from "./options/angleOptions";
 
 interface IAnglePiece {
 	degrees: INumberPiece;
