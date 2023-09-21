@@ -82,7 +82,7 @@
 	<h2>qty</h2>
 	<table id="qtyTable" class="tableStyle"></table>
 
-	<h2>numlist, qtylist, numproduct, qtyproduct,</h2>
+	<h2>numlist, qtylist, numproduct, qtyproduct, numrange, qtyrange</h2>
 	<table id="listTable" class="tableStyle"></table>
 
 	<h2>DeclareSIUnit</h2>
@@ -565,7 +565,15 @@
 			]{0.1;0.2;0.3}`,
 		String.raw`\numlist{0.1;0.2}`,
 		String.raw`\numlist[list-pair-separator = {, and }]{0.1;0.2}`,
+		String.raw`\numproduct{5 x 100 x 2}`,
+		String.raw`\numproduct[product-symbol = \cdot]{5 x 100 x 2}`,
+		String.raw`\numproduct[product-mode = phrase]{5 x 100 x 2}`,
+		String.raw`\numproduct[product-mode = phrase, product-phrase = { BY }]{5 x 100 x 2}`,
+		String.raw`\numrange{5}{100}`,
+		String.raw`\numrange[range-phrase = --]{5}{100}`,
 		String.raw`\numlist{5e3;7e3;9e3;1e4}`,
+		String.raw`\numproduct{5e3 x 7e3 x 9e3 x 1e4}`,
+		String.raw`\numrange{5e3}{7e3}`,
 		String.raw`
 		\displaylines{
 			\sisetup{list-exponents = combine-bracket ,
@@ -573,15 +581,31 @@
 					range-exponents = combine-bracket
 			}
 			\numlist{5e3;7e3;9e3;1e4} \\
+			\numproduct{5e3 x 7e3 x 9e3 x 1e4} \\
+			\numrange{5e3}{7e3} \\
 
 			\sisetup{list-exponents = combine ,
 					product-exponents = combine ,
 					range-exponents = combine
 			}
 			\numlist{5e3;7e3;9e3;1e4} \\
+			\numproduct{5e3 x 7e3 x 9e3 x 1e4} \\
+			\numrange{5e3}{7e3} \\
 		}
 		`,
-
+		String.raw`\qtylist{2;4;6;8}{\tesla}`,
+		String.raw`\qtylist[list-units = bracket]{2;4;6;8}{\tesla}`,
+		String.raw`\qtylist[list-units = repeat]{2;4;6;8}{\tesla}`,
+		String.raw`\qtylist[list-units = single]{2;4;6;8}{\tesla}`,
+		String.raw`\qtyrange{2}{4}{\degreeCelsius}`,
+		String.raw`\qtyrange[range-units = bracket]{2}{4}{\degreeCelsius}`,
+		String.raw`\qtyrange[range-units = repeat]{2}{4}{\degreeCelsius}`,
+		String.raw`\qtyrange[range-units = single]{2}{4}{\degreeCelsius}`,
+		String.raw`\qtyproduct{2 x 4}{\metre}`,
+		String.raw`\qtyproduct[product-units = bracket-power]{2 x 4}{\metre}`,
+		String.raw`\qtyproduct[product-units = power]{2 x 4}{\metre}`,
+		String.raw`\qtyproduct[product-units = bracket-power]{2 x 4 x 6}{\metre}`,
+		String.raw`\qtyproduct[product-units = bracket-power]{2 x 4}{\metre\squared}`,
 		];
 
 		fillTable('listTable', listStuff);

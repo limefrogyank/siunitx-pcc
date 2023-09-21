@@ -200,6 +200,22 @@ const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: stri
 	}]
 ]);
 
+export function createQuantityProductMml(parser:TexParser, options:IOptions):MmlNode|null{
+	let quantityProductNode = null;
+		const trimmedQuantityProduct = options.quantityProduct.trimStart();
+		if (trimmedQuantityProduct !== '') {
+			let quantityProduct = spacerMap[trimmedQuantityProduct];
+			if (quantityProduct === undefined) {
+				// instead of copying quantityProduct, 
+				// should auto parse latex and extract unicode from mml
+				const spacerNode = (new TexParser(quantityProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+				quantityProduct = findInnerText(spacerNode);
+			}
+			quantityProductNode = parser.create('token', 'mo', {}, quantityProduct);
+		}
+	return quantityProductNode;
+}
+
 export function processQuantity(parser: TexParser): void {
 	let globalOptions: IOptions = { ...parser.options as IOptions };
 
@@ -255,18 +271,18 @@ export function processQuantity(parser: TexParser): void {
 		// }
 		// parser.Push(unitNode);
 		// uncertainty will already be separated.
-		let quantityProductNode = null;
-		const trimmedQuantityProduct = globalOptions.quantityProduct.trimStart();
-		if (trimmedQuantityProduct !== '') {
-			let quantityProduct = spacerMap[trimmedQuantityProduct];
-			if (quantityProduct === undefined) {
-				// instead of copying quantityProduct, 
-				// should auto parse latex and extract unicode from mml
-				const spacerNode = (new TexParser(quantityProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-				quantityProduct = findInnerText(spacerNode);
-			}
-			quantityProductNode = parser.create('token', 'mo', {}, quantityProduct);
-		}
+		let quantityProductNode = createQuantityProductMml(parser, globalOptions);
+		// const trimmedQuantityProduct = globalOptions.quantityProduct.trimStart();
+		// if (trimmedQuantityProduct !== '') {
+		// 	let quantityProduct = spacerMap[trimmedQuantityProduct];
+		// 	if (quantityProduct === undefined) {
+		// 		// instead of copying quantityProduct, 
+		// 		// should auto parse latex and extract unicode from mml
+		// 		const spacerNode = (new TexParser(quantityProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+		// 		quantityProduct = findInnerText(spacerNode);
+		// 	}
+		// 	quantityProductNode = parser.create('token', 'mo', {}, quantityProduct);
+		// }
 
 		const qtyDisplay = separateUncertaintyUnitsMmlMap.get(globalOptions.separateUncertaintyUnits)(numDisplay, unitNode, quantityProductNode, parser, globalOptions);
 		for (const piece of qtyDisplay) {

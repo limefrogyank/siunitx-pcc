@@ -5,59 +5,26 @@ import { postProcessNumber } from "./numPostProcessMethods";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import { createExponentMml, displayOutputMml } from "./numDisplayMethods";
 import { ExponentsMode } from "./options/listOptions";
+import { exponentListModeMap } from "./numlistMethods";
 
-interface IExponentModeOutput{
-    leading?: MmlNode;
-    numbers: INumberPiece[];
-    trailing?: MmlNode[];
-}
-
-const exponentModeMap = new Map<ExponentsMode, (nums:INumberPiece[], parser: TexParser, options: IOptions)=>IExponentModeOutput>([
-    ['individual',(nums: INumberPiece[], parser: TexParser, options: IOptions) => {
-        // do nothing
-        return {numbers: nums};
-    }],
-    ['combine', (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
-        const exponentNodes = createExponentMml(nums[0], parser, options);
-        return {numbers: nums, trailing: exponentNodes};
-    }],
-    ['combine-bracket', (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
-        
-        const exponentNodes = createExponentMml(nums[0], parser, options);
-
-        return { numbers: nums, trailing: exponentNodes};
-    }]
-]);
 
 const listNumberMap = new Map<number, (nums:INumberPiece[], parser: TexParser, options: IOptions)=>MmlNode[]>([
 	[1, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
         return displayOutputMml(nums[0], parser, options);
     }],  
-	[2, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
-        const exponentMapItem = exponentModeMap.get(options.listExponents);
-        const exponentResult = exponentMapItem(nums, parser, options);
-        const first = displayOutputMml(exponentResult.numbers[0], parser, options);
-        const separator = (new TexParser(`\\text{${options.listPairSeparator}}`, parser.stack.env, parser.configuration)).mml();
-        const second = displayOutputMml(exponentResult.numbers[1], parser, options);
-        let total = first.concat(separator).concat(second);
-        if (exponentResult.trailing){
-            total = total.concat(exponentResult.trailing);
-        }
-        return total;
-    }],
 	[3, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
-        const exponentMapItem = exponentModeMap.get(options.listExponents);
+        const exponentMapItem = exponentListModeMap.get(options.listExponents);
         const exponentResult = exponentMapItem(nums, parser, options);
-        let total = displayOutputMml(exponentResult.numbers[0], parser, options);
-        for (let i=1; i< nums.length-1; i++){
-            const separator = (new TexParser(`\\text{${options.listSeparator}}`, parser.stack.env, parser.configuration)).mml();
+        let total = [];
+        if (exponentResult.leading){
+            total.push(exponentResult.leading);
+        }
+        total = total.concat(displayOutputMml(exponentResult.numbers[0], parser, options));
+        for (let i=1; i< nums.length; i++){
+            const separator = (new TexParser(options.productMode === 'symbol' ? options.productSymbol : `\\text{${options.productPhrase}}`, parser.stack.env, parser.configuration)).mml();
             const next = displayOutputMml(exponentResult.numbers[i], parser, options);
             total = total.concat(separator).concat(next);
         }
-
-        const finalSeparator = (new TexParser(`\\text{${options.listFinalSeparator}}`, parser.stack.env, parser.configuration)).mml();
-        const last = displayOutputMml(exponentResult.numbers[exponentResult.numbers.length-1], parser, options);
-        total = total.concat(finalSeparator).concat(last);
         if (exponentResult.trailing){
             total = total.concat(exponentResult.trailing);
         }
@@ -65,15 +32,15 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], parser: TexParser, o
     }]
 ]);
 
-function parseList(parser:TexParser, input : string, options:IOptions): INumberPiece[] {
-    const values = input.split(';');
+export function parseProductList(parser:TexParser, input : string, options:IOptions): INumberPiece[] {
+    const values = input.split('x');
     const nums = values.map(v=>{
         return parseNumber(parser, v, options);
     });
     return nums;
 }
 
-export function processNumberList(parser: TexParser): void {
+export function processNumberProduct(parser: TexParser): void {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
 	const localOptions = findOptions(parser);
@@ -93,8 +60,8 @@ export function processNumberList(parser: TexParser): void {
 			text = result.toString();
 		}
 
-		const numlist = parseList(parser, text, globalOptions);
-        if (globalOptions.listExponents === 'individual'){
+		const numlist = parseProductList(parser, text, globalOptions);
+        if (globalOptions.productExponents === 'individual'){
             numlist.forEach(v=>{
                 postProcessNumber(v, globalOptions);
             });
