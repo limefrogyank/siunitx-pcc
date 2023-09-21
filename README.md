@@ -8,7 +8,7 @@ https://limefrogyank.github.io/siunitx-pcc/
 
 This is a project being funded by Portland Community College to be completed end of summer 2023.  The goal is to make it free and open-source, but licensing is currently pending.  The intent is for it to be used in authoring online, OER (open educational resource), _accessible_ textbooks.
 
-This is a port of (Joseph Wright's siunitx package for LaTeX)[https://github.com/josephwright/siunitx] that will work with the (MathJax)[https://www.mathjax.org/] v3+ extension system.  As a result it is written entirely in TypeScript.  His siunitx pdf documents were used to make this port as close as possible to the original with some caveats: 
+This is a port of [Joseph Wright's siunitx package for LaTeX](https://github.com/josephwright/siunitx) that will work with the [MathJax](https://www.mathjax.org/) v3+ extension system.  As a result it is written entirely in TypeScript.  His siunitx pdf documents were used to make this port as close as possible to the original with some caveats: 
 
 * MathJax is math mode only, so features like tables won't work and are not implemented
 * The evaluate function is running on a javascript engine instead of the LaTeX compiler so beware the differences
