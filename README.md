@@ -19,7 +19,7 @@ This is a port of (Joseph Wright's siunitx package for LaTeX)[https://github.com
 
 This will hopefully be added into the MathJax package.  Until then, you can mimic the [demo page source code](https://github.com/limefrogyank/siunitx-pcc/blob/main/index.html).
 
-1. Add the [siunitx.js](https://github.com/limefrogyank/siunitx-pcc/blob/main/siunitx.js) compiled file to your web page in any directory.
+1. Add the [siunitx.js](https://github.com/limefrogyank/siunitx-pcc/blob/main/siunitx.js) compiled file to your web server in any directory.
 
 2. To any page that needs MathJax with **siunitx**, add a named path in the config file for MathJax in the `paths` object which is in the `loader` object.  If siunitx.js is in the same directory, you can use `.`, otherwise use a relative path.  (i.e. `./somefolder`,  `../folderbehindpagefolder`, etc.)  This example uses the name "custom" for the named path, but you can use any name for it.
 
