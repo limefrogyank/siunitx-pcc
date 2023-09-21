@@ -330,6 +330,67 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 	return output;
 }
 
+export function createExponentMml(num:INumberPiece, parser: TexParser, options: IOptions):MmlNode[]{
+	const nodes = [];
+	const exponentProductNode = (new TexParser(options.exponentProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+	const exponentBaseNode = (new TexParser(options.exponentBase, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+	if (options.printZeroExponent && (num.exponent == '' || (num.exponent == '0'))) {
+		const zeroNode = parser.create('token', 'mn', {}, '0');
+		if (options.outputExponentMarker != '') {
+			const customExponentMarker = parser.create('token', 'mi', { mathvariant: 'normal' }, options.outputExponentMarker);
+			nodes.push(customExponentMarker);
+			nodes.push(zeroNode);
+			//currentNode.appendChild(customExponentMarker);
+			//currentNode.appendChild(zeroNode);
+		} else {
+			if (options.tightSpacing) {
+				exponentProductNode.attributes.set('lspace', '0em');
+				exponentProductNode.attributes.set('rspace', '0em');
+			}
+			const exponential = parser.create('node', 'msup', [exponentBaseNode, zeroNode]);
+			nodes.push(exponentProductNode);
+			nodes.push(exponential);
+			// currentNode.appendChild(exponentProductNode);
+			// currentNode.appendChild(exponential);
+		}
+	} else if (num.exponent != '' && num.exponent != '0') {
+		const exponentSignNode = parser.create('token', 'mo', {}, num.exponentSign);
+		const exponentValueNode = parser.create('token', 'mn', {}, num.exponent);
+		const supPart = num.exponentSign === '-'
+			? parser.create('node', 'mrow', [exponentSignNode, exponentValueNode])
+			: exponentValueNode;
+		const exponential = parser.create('node', 'msup', [exponentBaseNode, supPart]);
+		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
+		if (num.whole == '1' && num.fractional == '' && !options.printUnityMantissa) {
+			//currentNode.appendChild(exponential);
+			nodes.push(exponential);
+		} else {
+			if (num.exponentMarker != '') {
+				if (options.outputExponentMarker != '') {
+					const customExponentMarker = (new TexParser(options.outputExponentMarker, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+					//const customExponentMarker = parser.create('token', 'mi', { }, options.outputExponentMarker);
+					nodes.push(customExponentMarker);
+					nodes.push(supPart);
+					// currentNode.appendChild(customExponentMarker);
+					// currentNode.appendChild(supPart);
+				} else {
+					if (num.whole != '' || num.fractional != '') {
+						if (options.tightSpacing) {
+							exponentProductNode.attributes.set('lspace', '0em');
+							exponentProductNode.attributes.set('rspace', '0em');
+						}
+						nodes.push(exponentProductNode);
+						// currentNode.appendChild(exponentProductNode);
+					}
+					nodes.push(exponential);
+					// currentNode.appendChild(exponential);
+				}
+			}
+		}
+	}
+	return nodes;
+}
+
 export function displayNumberMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
 	let rootNode: MmlNode;
 	let currentNode: MmlNode;
@@ -398,53 +459,57 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 		currentNode.appendChild(uncertaintyNode);
 	});
 
-	const exponentProductNode = (new TexParser(options.exponentProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-	const exponentBaseNode = (new TexParser(options.exponentBase, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-	if (options.printZeroExponent && (num.exponent == '' || (num.exponent == '0'))) {
-		const zeroNode = parser.create('token', 'mn', {}, '0');
-		if (options.outputExponentMarker != '') {
-			const customExponentMarker = parser.create('token', 'mi', { mathvariant: 'normal' }, options.outputExponentMarker);
-			currentNode.appendChild(customExponentMarker);
-			currentNode.appendChild(zeroNode);
-		} else {
-			if (options.tightSpacing) {
-				exponentProductNode.attributes.set('lspace', '0em');
-				exponentProductNode.attributes.set('rspace', '0em');
-			}
-			const exponential = parser.create('node', 'msup', [exponentBaseNode, zeroNode]);
-			currentNode.appendChild(exponentProductNode);
-			currentNode.appendChild(exponential);
-		}
-	} else if (num.exponent != '' && num.exponent != '0') {
-		const exponentSignNode = parser.create('token', 'mo', {}, num.exponentSign);
-		const exponentValueNode = parser.create('token', 'mn', {}, num.exponent);
-		const supPart = num.exponentSign === '-'
-			? parser.create('node', 'mrow', [exponentSignNode, exponentValueNode])
-			: exponentValueNode;
-		const exponential = parser.create('node', 'msup', [exponentBaseNode, supPart]);
-		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
-		if (num.whole == '1' && num.fractional == '' && !options.printUnityMantissa) {
-			currentNode.appendChild(exponential);
-		} else {
-			if (num.exponentMarker != '') {
-				if (options.outputExponentMarker != '') {
-					const customExponentMarker = (new TexParser(options.outputExponentMarker, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-					//const customExponentMarker = parser.create('token', 'mi', { }, options.outputExponentMarker);
-					currentNode.appendChild(customExponentMarker);
-					currentNode.appendChild(supPart);
-				} else {
-					if (num.whole != '' || num.fractional != '') {
-						if (options.tightSpacing) {
-							exponentProductNode.attributes.set('lspace', '0em');
-							exponentProductNode.attributes.set('rspace', '0em');
-						}
-						currentNode.appendChild(exponentProductNode);
-					}
-					currentNode.appendChild(exponential);
-				}
-			}
-		}
-	}
+	const exponentNodes = createExponentMml( num, parser, options);
+	exponentNodes.forEach(v=>{
+		currentNode.appendChild(v);
+	});
+	// const exponentProductNode = (new TexParser(options.exponentProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+	// const exponentBaseNode = (new TexParser(options.exponentBase, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+	// if (options.printZeroExponent && (num.exponent == '' || (num.exponent == '0'))) {
+	// 	const zeroNode = parser.create('token', 'mn', {}, '0');
+	// 	if (options.outputExponentMarker != '') {
+	// 		const customExponentMarker = parser.create('token', 'mi', { mathvariant: 'normal' }, options.outputExponentMarker);
+	// 		currentNode.appendChild(customExponentMarker);
+	// 		currentNode.appendChild(zeroNode);
+	// 	} else {
+	// 		if (options.tightSpacing) {
+	// 			exponentProductNode.attributes.set('lspace', '0em');
+	// 			exponentProductNode.attributes.set('rspace', '0em');
+	// 		}
+	// 		const exponential = parser.create('node', 'msup', [exponentBaseNode, zeroNode]);
+	// 		currentNode.appendChild(exponentProductNode);
+	// 		currentNode.appendChild(exponential);
+	// 	}
+	// } else if (num.exponent != '' && num.exponent != '0') {
+	// 	const exponentSignNode = parser.create('token', 'mo', {}, num.exponentSign);
+	// 	const exponentValueNode = parser.create('token', 'mn', {}, num.exponent);
+	// 	const supPart = num.exponentSign === '-'
+	// 		? parser.create('node', 'mrow', [exponentSignNode, exponentValueNode])
+	// 		: exponentValueNode;
+	// 	const exponential = parser.create('node', 'msup', [exponentBaseNode, supPart]);
+	// 	// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
+	// 	if (num.whole == '1' && num.fractional == '' && !options.printUnityMantissa) {
+	// 		currentNode.appendChild(exponential);
+	// 	} else {
+	// 		if (num.exponentMarker != '') {
+	// 			if (options.outputExponentMarker != '') {
+	// 				const customExponentMarker = (new TexParser(options.outputExponentMarker, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+	// 				//const customExponentMarker = parser.create('token', 'mi', { }, options.outputExponentMarker);
+	// 				currentNode.appendChild(customExponentMarker);
+	// 				currentNode.appendChild(supPart);
+	// 			} else {
+	// 				if (num.whole != '' || num.fractional != '') {
+	// 					if (options.tightSpacing) {
+	// 						exponentProductNode.attributes.set('lspace', '0em');
+	// 						exponentProductNode.attributes.set('rspace', '0em');
+	// 					}
+	// 					currentNode.appendChild(exponentProductNode);
+	// 				}
+	// 				currentNode.appendChild(exponential);
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	if (options.bracketNegativeNumbers) {
 		if (num.sign == '-') {

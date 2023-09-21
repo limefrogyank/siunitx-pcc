@@ -2,7 +2,7 @@ import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { IOptions, findOptions } from "./options";
 
-type ExponentsMode = 'individual' | 'combine-bracket' | 'combine';
+export type ExponentsMode = 'individual' | 'combine-bracket' | 'combine';
 type UnitsMode = 'repeat' | 'bracket' | 'single';
 
 export interface IListOptions{
