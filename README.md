@@ -15,7 +15,7 @@ This is a port of (Joseph Wright's siunitx package for LaTeX)[https://github.com
 
 ## To Use
 
-** This is not production ready code yet!  Use at your own risk! ** Be patient, it should be ready before the end of 2023 after some code review.
+**This is not production ready code yet!  Use at your own risk!** Be patient, it should be ready before the end of 2023 after some code review.
 
 This will hopefully be added into the MathJax package.  Until then, you can mimic the [demo page source code](https://github.com/limefrogyank/siunitx-pcc/blob/main/index.html).
 
