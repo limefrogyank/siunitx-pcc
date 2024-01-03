@@ -22,28 +22,9 @@ export const siunitxDefaults = {
 	...ListOptionDefaults
 };
 
-// Needed a new version of TexParser.GetBrackets because it wanted to parse the internal macros automatically.  
-// This method just gets the bracketed option string only.
+// originally this function contained a manual version of getting options inside brackets... not necessary anymore
 export function findOptions(parser: TexParser): Partial<IOptions> {
-
-	if (parser.GetNext() !== '[') {
-		return {};
-	}
-	const j = ++parser.i;
-	let depth = 0;
-	while (parser.i < parser.string.length) {
-		if (parser.string.charAt(parser.i) == '{') depth++;
-		else if (parser.string.charAt(parser.i) == '}') depth--;
-		else if (parser.string.charAt(parser.i) == ']' && depth == 0) {
-			const result = parser.string.slice(j, parser.i);
-			parser.i++;
-			const options = optionStringToObject(result);
-			return options;
-		}
-		parser.i++;
-	}
-	throw new TexError('MissingCloseBracket',
-		'Could not find closing \']\' for argument to %1', parser.currentCS);
+	return optionStringToObject(parser.GetBrackets(parser.currentCS));
 }
 
 // from https://stackoverflow.com/a/10425344/1938624
