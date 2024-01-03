@@ -35,6 +35,7 @@ function dashToCamel(input: string): string {
 }
 
 // from https://stackoverflow.com/a/47932848/1938624
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function camelToDash(str: string): string {
 	return str.replace(/([A-Z])/g, ($1) => { return "-" + $1.toLowerCase(); });
 }
@@ -45,8 +46,7 @@ export function processSISetup(parser: TexParser): void {
 	const optionsString = parser.GetArgument('sisetup');
 
 	const options = processOptions(globalOptions, optionsString);
-	options.forEach((v, k) => parser.options[k] = v);
-
+	Object.assign(parser.options, options);
 	// We are adding the sisetup options to the parser options.  These are global once the page is loaded.
 	// (the globalOptions variable is just a copy and will reset between each siunitx command)
 
