@@ -104,7 +104,7 @@ function angleChars(parser: TexParser, mchar: TexSymbol) {
     const def = mchar.attributes || {};
     def.mathvariant = TexConstant.Variant.NORMAL;
     def.class = 'MathML-Unit';
-    const emptyToken = parser.create('token', 'mi', { 'data-semantic-type': 'empty' });
+    const emptyToken = parser.create('token', 'mi');
     const symbolToken = parser.create('token', 'mi', def, mchar.char);
     const msupNode = parser.create('node', 'msup', [emptyToken, symbolToken]);
     parser.Push(msupNode);
