@@ -1,6 +1,6 @@
 import { TeX } from 'mathjax-full/js/input/tex';
 import { Configuration, ParserConfiguration } from 'mathjax-full/js/input/tex/Configuration';
-import { CommandMap, CharacterMap, parseResult } from 'mathjax-full/js/input/tex/SymbolMap';
+import { CommandMap, CharacterMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
@@ -11,7 +11,7 @@ import { userDefinedUnitOptions, userDefinedUnits } from './units';
 import { GetArgumentMML } from "./aria-label";
 import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
 
-import { Symbol } from 'mathjax-full/js/input/tex/Symbol'
+import { Symbol as TexSymbol } from 'mathjax-full/js/input/tex/Symbol'
 import { TexConstant } from 'mathjax-full/js/input/tex/TexConstants';
 import { processComplexNumber, processComplexQuantity } from './complexMethods';
 import { processNumberList } from './numlistMethods';
@@ -23,18 +23,13 @@ import { processQuantityProduct } from './qtyproductMethods';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
-        const nodes = processNumber(parser);
-        nodes.forEach(v => {
-            parser.Push(v);
-        })
+        processNumber(parser).forEach(v => parser.Push(v));
     },
     '\\ang': (parser: TexParser): void => {
-        const node = processAngle(parser);
-        parser.Push(node);
+        parser.Push(processAngle(parser));
     },
     '\\unit': (parser: TexParser): void => {
-        const node = processUnit(parser);
-        parser.Push(node);
+        parser.Push(processUnit(parser));
     },
     '\\qty': (parser: TexParser): void => {
         processQuantity(parser); // doesn't return a node, pushes internally
@@ -58,18 +53,17 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
         processQuantityRange(parser);
     },
     '\\complexnum': (parser: TexParser): void => {
-        const nodes = processComplexNumber(parser);
-        nodes.forEach(v => {
-            parser.Push(v);
-        })
+        processComplexNumber(parser).forEach(v => parser.Push(v));
     },
     '\\complexqty': (parser: TexParser): void => {
         processComplexQuantity(parser);
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     '@{}S': (parser: TexParser): void => {
         //TODO: NOT IMPLEMENTED
         // no tabular in MathJax, but maybe use \\begin{array} ?  or pure html somehow
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     '\\tablenum': (parser: TexParser): void => {
         //TODO: NOT IMPLEMENTED
     },
@@ -91,9 +85,11 @@ const declareMap: Record<string, (parser: TexParser, name: string, options: Part
             userDefinedUnitOptions.set(newUnitMacro, options);
         }
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     '\\DeclareSIQualifier': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
         //TODO: DeclareSIQualifier (eg g_{salt} for "grams of salt")
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     '\\DeclareSIPower': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
         //TODO: DeclareSIPower  (eg \square,\cubic,\squared,\cubed)
     },
@@ -104,7 +100,7 @@ export let GlobalParser: TexParser;
 export const UserDefinedUnitsKey = 'siunitxUnits';
 export const UserDefinedUnitOptionsKey = 'siunitxUnitOptions';
 
-function angleChars(parser: TexParser, mchar: Symbol) {
+function angleChars(parser: TexParser, mchar: TexSymbol) {
     const def = mchar.attributes || {};
     def.mathvariant = TexConstant.Variant.NORMAL;
     def.class = 'MathML-Unit';
@@ -148,14 +144,14 @@ new CommandMap('siunitxMap', {
         declareMap[name as string]?.(parser, name as string, options);
     },
     Arialabel: (parser: TexParser, name: string) => {
-        let thelabel = parser.GetArgument(name);
+        const thelabel = parser.GetArgument(name);
         const arg = GetArgumentMML(parser, name);
         NodeUtil.setAttribute(arg, 'aria-label', thelabel);
         parser.Push(arg);
     },
     // currently not used
     Dataset: (parser: TexParser, name: string) => {
-        let dataset = parser.GetArgument(name);
+        const dataset = parser.GetArgument(name);
         const arg = GetArgumentMML(parser, name);
         //parse dataset to get both sides of equal
         const pair = dataset.split('=');
