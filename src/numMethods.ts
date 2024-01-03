@@ -52,17 +52,17 @@ export function generateNumberPiece(): INumberPiece {
 	return piece;
 }
 
-export function pieceToNumber(piece:INumberPiece): number {
+export function pieceToNumber(piece: INumberPiece): number {
 	let build = piece.sign + piece.whole;
-	if (piece.fractional !== ''){
+	if (piece.fractional !== '') {
 		build += '.' + piece.fractional;
-	}  
-	if (piece.exponent !== ''){
-		build += 'e'+piece.exponentSign + piece.exponent; 
+	}
+	if (piece.exponent !== '') {
+		build += 'e' + piece.exponentSign + piece.exponent;
 	}
 	try {
 		let result = Number.parseFloat(build);
-		if (Number.isNaN(result)){
+		if (Number.isNaN(result)) {
 			result = 0;
 		}
 		return result;
@@ -161,45 +161,34 @@ function parseIgnore() {
 // using two types for output.  Ex.  \\pm is used both as sign and as an uncertainty.  Need map of map for this one.
 export function generateNumberMapping(options: INumParseOptions): Map<string, CharNumFunction | Map<string, CharNumFunction>> {
 	const parseMap = new Map<string, CharNumFunction | Map<string, CharNumFunction>>();
-	//parseMap.set('\\', parseMacro);
-	let tempArray;
-	const matchMacrosOrChar = /[^\\\s]|(?:\\[^\\]*(?=\s|\\|$))/g;
-	while ((tempArray = matchMacrosOrChar.exec(options.inputComparators)) !== null) {
-		parseMap.set(tempArray[0], parseComparators);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputSigns)) !== null) {
-		parseMap.set(tempArray[0], parseSigns);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputDigits)) !== null) {
-		parseMap.set(tempArray[0], parseDigits);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputDecimalMarkers)) !== null) {
-		parseMap.set(tempArray[0], parseDecimals);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputOpenUncertainty)) !== null) {
-		parseMap.set(tempArray[0], parseOpenUncertainty);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputCloseUncertainty)) !== null) {
-		parseMap.set(tempArray[0], parseCloseUncertainty);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputUncertaintySigns)) !== null) {
-		if (parseMap.has(tempArray[0])) {
-			const firstFunc = parseMap.get(tempArray[0]) as CharNumFunction;
-			const innerMap = new Map<string, CharNumFunction>();
-			innerMap.set('inputSigns', firstFunc);
-			innerMap.set('inputUncertaintySigns', parseUncertaintySigns);
-			parseMap.set(tempArray[0], innerMap);
-		} else {
-			parseMap.set(tempArray[0], parseUncertaintySigns);
+	const matchMacrosOrChar = /\\(?:[a-zA-Z]+|[\uD800-\uDBFF].|.)|[\uD800-\uDBFF].|[^\s\\]/g;
+	for (const [key, method] of [
+		['inputComparators', parseComparators],
+		['inputSigns', parseSigns],
+		['inputDigits', parseDigits],
+		['inputDecimalMarkers', parseDecimals],
+		['inputOpenUncertainty', parseOpenUncertainty],
+		['inputCloseUncertainty', parseCloseUncertainty],
+		['inputUncertaintySigns', parseUncertaintySigns],
+		['inputExponentMarkers', parseExponentMarkers],
+		['inputIgnore', parseIgnore]
+	] as [string, CharNumFunction][]) {
+		const option = options[key];
+		if (option.match(/(?:^|[^\\])(?:\\\\)*\\$/)) {
+			throw new TexError('BadOptionChars', 'Invalid control sequence at the end of the %1 option', key);
 		}
+		(option.match(matchMacrosOrChar) || []).forEach(c => {
+			if (parseMap.has(c) && key === 'inputUncertaintySigns') {
+				const firstFunc = parseMap.get(c) as CharNumFunction;
+				const innerMap = new Map<string, CharNumFunction>();
+				innerMap.set('inputSigns', firstFunc);
+				innerMap.set('inputUncertaintySigns', parseUncertaintySigns);
+				parseMap.set(c, innerMap);
+			} else {
+				parseMap.set(c, method);
+			}
+		});
 	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputExponentMarkers)) !== null) {
-		parseMap.set(tempArray[0], parseExponentMarkers);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputIgnore)) !== null) {
-		parseMap.set(tempArray[0], parseIgnore);
-	}
-
 	return parseMap;
 }
 
@@ -305,8 +294,7 @@ export function processNumber(parser: TexParser): MmlNode[] {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', text);
-			let result = eval(expression);
-			text = result.toString();
+			text = eval(expression).toString();
 		}
 
 		const num = parseNumber(parser, text, globalOptions);
