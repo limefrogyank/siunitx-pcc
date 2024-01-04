@@ -1,5 +1,6 @@
 interface LocalizationResource {
     invalidNumArgument: string;
+    comparatorAlreadySet: string;
     extraSemicolon: string;
     macroNotDefined: string;
     literalUnitsForbidden: string;

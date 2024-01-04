@@ -115,7 +115,7 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 		unitLatex += qualiferMethod.get(options.qualifierMode)?.(unitPiece.qualifier, options.qualifierPhrase);
 	}
 	unitLatex += '}';
-	const power = (unitPiece.power !== undefined && unitPiece.power !== null) 
+	const power = (unitPiece.power !== undefined && unitPiece.power !== null)
 		? (absPower
 			? Math.abs(unitPiece.power * (unitPiece.position === 'denominator' ? -1 : 1))
 			: unitPiece.power * (unitPiece.position === 'denominator' ? -1 : 1))

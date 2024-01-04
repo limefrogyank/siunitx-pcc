@@ -72,13 +72,17 @@ export function pieceToNumber(piece: INumberPiece): number {
 	}
 }
 
-function parseDigits(text: string, numPiece: INumberPiece) {
-	let num: INumberPiece;
+// INumberPiece is built from left to right, so we're always working on the latest part... which could be uncertainty.  So get the last piece.
+function getLastNumPiece(numPiece: INumberPiece):INumberPiece{
 	if (numPiece.uncertainty.length > 0) {
-		num = numPiece.uncertainty[numPiece.uncertainty.length - 1];
+		return numPiece.uncertainty[numPiece.uncertainty.length - 1];
 	} else {
-		num = numPiece;
+		return numPiece;
 	}
+}
+
+function parseDigits(text: string, numPiece: INumberPiece) {
+	const num = getLastNumPiece(numPiece);
 	if (num.exponentMarker !== '') {
 		num.exponent += text;
 	} else if (num.decimal !== '') {
@@ -89,23 +93,16 @@ function parseDigits(text: string, numPiece: INumberPiece) {
 }
 
 function parseDecimals(text: string, numPiece: INumberPiece) {
-	let num: INumberPiece;
-	if (numPiece.uncertainty.length > 0) {
-		num = numPiece.uncertainty[numPiece.uncertainty.length - 1];
-	} else {
-		num = numPiece;
-	}
+	const num = getLastNumPiece(numPiece);
 	num.decimal += text;
 }
 
 function parseComparators(text: string, numPiece: INumberPiece) {
-	let num: INumberPiece;
-	if (numPiece.uncertainty.length > 0) {
-		num = numPiece.uncertainty[numPiece.uncertainty.length - 1];
-	} else {
-		num = numPiece;
-	}
+	const num = getLastNumPiece(numPiece);
 
+	if (num.prefix !== ''){
+		throw siunitxError.ComparatorAlreadySet(num.prefix, text);
+	}
 	num.prefix += text;
 
 }
@@ -121,12 +118,7 @@ function parseExponentMarkers(text: string, numPiece: INumberPiece) {
 }
 
 function parseSigns(text: string, numPiece: INumberPiece) {
-	let num: INumberPiece;
-	if (numPiece.uncertainty.length > 0) {
-		num = numPiece.uncertainty[numPiece.uncertainty.length - 1];
-	} else {
-		num = numPiece;
-	}
+	const num = getLastNumPiece(numPiece);
 	if (num.exponentMarker !== '') {
 		num.exponentSign += text;
 	} else {

@@ -9,6 +9,10 @@ export class siunitxError {
 		return new TexError('siunitx:invalidNumArgument', data.invalidNumArgument, arg);
 	}
 
+	static ComparatorAlreadySet(existing: string, toBeAdded: string): TexError {
+		return new TexError('siunitx:comparatorAlreadySet', data.comparatorAlreadySet, existing, toBeAdded);
+	}
+
 	static TooManySemicolonsInAngle = new TexError('siunitx:extraSemicolon', data.extraSemicolon);
 
 	static NoInterpretationForUnitMacro(macro: string): TexError {
