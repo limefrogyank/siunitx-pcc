@@ -58,13 +58,12 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\complexqty': (parser: TexParser): void => {
         processComplexQuantity(parser);
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    '@{}S': (parser: TexParser): void => {
+    
+    '@{}S': (_parser: TexParser): void => {
         //TODO: NOT IMPLEMENTED
         // no tabular in MathJax, but maybe use \\begin{array} ?  or pure html somehow
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    '\\tablenum': (parser: TexParser): void => {
+    '\\tablenum': (_parser: TexParser): void => {
         //TODO: NOT IMPLEMENTED
     },
     '\\sisetup': (parser: TexParser): void => {
@@ -85,12 +84,10 @@ const declareMap: Record<string, (parser: TexParser, name: string, options: Part
             userDefinedUnitOptions.set(newUnitMacro, options);
         }
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    '\\DeclareSIQualifier': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
+    '\\DeclareSIQualifier': (_parser: TexParser, _name: string, _options: Partial<IOptions>): void => {
         //TODO: DeclareSIQualifier (eg g_{salt} for "grams of salt")
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    '\\DeclareSIPower': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
+    '\\DeclareSIPower': (_parser: TexParser, _name: string, _options: Partial<IOptions>): void => {
         //TODO: DeclareSIPower  (eg \square,\cubic,\squared,\cubed)
     },
 };
