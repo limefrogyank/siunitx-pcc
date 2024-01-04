@@ -8,11 +8,15 @@
 	  "allowJs": true,
 	  "sourceMap": true,
 	  "moduleResolution": "node",
-	  "lib":["ES5", "DOM"]
+	  "lib":["ES2021", "DOM"],
+	  "typeRoots": [
+		"./node_modules/@types",
+		"./types"
+	  ]
 	},
 	"include": [
 	  "src/**/*"
-	],
+, "types/localizationResource.d.ts"	],
 	"exclude": [
 		"node_modules",
 		"**/*.spec.ts",

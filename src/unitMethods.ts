@@ -1,7 +1,7 @@
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { siunitxError } from "./errors";
+import { siunitxError } from "./error/errors";
 import { findOptions, IOptions } from "./options/options";
 import { IUnitOptions, QualifierMode } from "./options/unitOptions";
 import { UserDefinedUnitOptionsKey, UserDefinedUnitsKey } from "./siunitx";

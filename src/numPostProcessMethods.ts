@@ -1,4 +1,4 @@
-import { siunitxError } from "./errors";
+import { siunitxError } from "./error/errors";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { INumOptions, INumPostOptions } from "./options/numberOptions";
 import {  IOptions } from "./options/options";
