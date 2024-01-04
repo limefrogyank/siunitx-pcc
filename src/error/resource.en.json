@@ -1,4 +1,5 @@
 {
+    "invalidNumArgument": "%1 contains invalid characters and cannot be parsed by siunitx for the num macro.",
     "extraSemicolon": "There are two many semi-colons.  Should only be two at most.",
     "macroNotDefined": "The unit macro, %1, has not been defined.",
     "literalUnitsForbidden": "%1 is detected as a literal unit.  These are forbidden globally. Use interpreted units instead (i.e. \\kilo\\gram).",

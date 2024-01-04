@@ -5,6 +5,10 @@ import * as data from "./resource.en.json";
 
 export class siunitxError {
 
+	static InvalidNumArgument(arg: string): TexError {
+		return new TexError('siunitx:invalidNumArgument', data.invalidNumArgument, arg);
+	}
+
 	static TooManySemicolonsInAngle = new TexError('siunitx:extraSemicolon', data.extraSemicolon);
 
 	static NoInterpretationForUnitMacro(macro: string): TexError {

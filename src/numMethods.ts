@@ -5,6 +5,7 @@ import { displayOutputMml } from "./numDisplayMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
 import { findOptions, IOptions } from "./options/options";
 import { INumOptions, INumParseOptions } from "./options/numberOptions";
+import { siunitxError } from "./error/errors";
 
 
 
@@ -217,7 +218,13 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 			token += subParser.GetCS();
 		}
 
-		mapping.get(token)?.(token,num);
+		try{
+			mapping.get(token)(token, num);
+		}catch{
+			console.log("ERROR");
+			throw siunitxError.InvalidNumArgument(subParser.string);
+		}
+
 
 	}
 
