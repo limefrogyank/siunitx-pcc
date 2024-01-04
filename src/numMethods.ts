@@ -78,9 +78,9 @@ function parseDigits(text: string, numPiece: INumberPiece) {
 	} else {
 		num = numPiece;
 	}
-	if (num.exponentMarker != '') {
+	if (num.exponentMarker !== '') {
 		num.exponent += text;
-	} else if (num.decimal != '') {
+	} else if (num.decimal !== '') {
 		num.fractional += text;
 	} else {
 		num.whole += text;
@@ -126,7 +126,7 @@ function parseSigns(text: string, numPiece: INumberPiece) {
 	} else {
 		num = numPiece;
 	}
-	if (num.exponentMarker != '') {
+	if (num.exponentMarker !== '') {
 		num.exponentSign += text;
 	} else {
 		num.sign += text;
@@ -139,7 +139,7 @@ function parseOpenUncertainty(text: string, numPiece: INumberPiece) {
 }
 
 function parseCloseUncertainty(text: string, numPiece: INumberPiece) {
-	if (numPiece.uncertainty.length == 0) {
+	if (numPiece.uncertainty.length === 0) {
 		throw new TexError('50', 'No uncertainty parsed to close.');
 	}
 	const uncertainty = numPiece.uncertainty[numPiece.uncertainty.length - 1];
@@ -159,8 +159,8 @@ function parseIgnore() {
 }
 
 // using two types for output.  Ex.  \\pm is used both as sign and as an uncertainty.  Need map of map for this one.
-export function generateNumberMapping(options: INumParseOptions): Map<string, CharNumFunction | Map<string, CharNumFunction>> {
-	const parseMap = new Map<string, CharNumFunction | Map<string, CharNumFunction>>();
+export function generateNumberMapping(options: INumParseOptions): Map<string, CharNumFunction> {
+	const parseMap = new Map<string, CharNumFunction>();
 	const matchMacrosOrChar = /\\(?:[a-zA-Z]+|[\uD800-\uDBFF].|.)|[\uD800-\uDBFF].|[^\s\\]/g;
 	for (const [key, method] of [
 		['inputComparators', parseComparators],
@@ -177,13 +177,13 @@ export function generateNumberMapping(options: INumParseOptions): Map<string, Ch
 		if (option.match(/(?:^|[^\\])(?:\\\\)*\\$/)) {
 			throw new TexError('BadOptionChars', 'Invalid control sequence at the end of the %1 option', key);
 		}
-		(option.match(matchMacrosOrChar) || []).forEach(c => {
+		(option.match(matchMacrosOrChar) || []).forEach((c: string)  => {
 			if (parseMap.has(c) && key === 'inputUncertaintySigns') {
-				const firstFunc = parseMap.get(c) as CharNumFunction;
-				const innerMap = new Map<string, CharNumFunction>();
-				innerMap.set('inputSigns', firstFunc);
-				innerMap.set('inputUncertaintySigns', parseUncertaintySigns);
-				parseMap.set(c, innerMap);
+				const inputSigns = parseMap.get(c) as CharNumFunction;
+				const altMethod : CharNumFunction = function (macro, num){
+					(num.whole === '' && num.decimal === '' ? inputSigns : parseUncertaintySigns)(macro, num);
+				}
+				parseMap.set(c, altMethod);
 			} else {
 				parseMap.set(c, method);
 			}
@@ -194,13 +194,12 @@ export function generateNumberMapping(options: INumParseOptions): Map<string, Ch
 
 
 export function parseNumber(parser: TexParser, text: string, options: INumOptions): INumberPiece {
-
 	const mapping = generateNumberMapping(options);
-	text = text.replace('<<', '\\ll');
-	text = text.replace('>>', '\\gg');
-	text = text.replace('<=', '\\le');
-	text = text.replace('>=', '\\ge');
-	text = text.replace('+-', '\\pm');
+	text = text.replace('<<', '\\ll')
+		.replace('>>', '\\gg')
+		.replace('<=', '\\le')
+		.replace('>=', '\\ge')
+		.replace('+-', '\\pm');
 
 	const num: INumberPiece = generateNumberPiece();
 
@@ -208,65 +207,36 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 	subParser.i = 0;
 	// process character
 	// if '\', then read until next '\' or whitespace char
-	while (subParser.i < subParser.string.length) {
-		let char = subParser.string.charAt(subParser.i);
-		subParser.i++;
-		if (char != '\\') {
-			if (mapping.has(char)) {
-				const func = mapping.get(char);
-				if (typeof func == 'function') {
-					(mapping.get(char) as CharNumFunction)(char, num);
-				} else {
-					if (num.whole == '' && num.decimal == '') {
-						(func as Map<string, CharNumFunction>).get('inputSigns')?.(char, num);
-					} else {
-						(func as Map<string, CharNumFunction>).get('inputUncertaintySigns')?.(char, num);
-					}
-				}
-			}
-		} else {
-			let macro = char;
-			char = '';
-			while (subParser.i < subParser.string.length && char != '\\' && char != ' ') {
-				char = subParser.string.charAt(subParser.i);
-				if (char != '\\' && char != ' ') {
-					macro += char;
-				}
-				subParser.i++;
-			}
 
-			if (mapping.has(macro)) {
-				const func = mapping.get(macro);
-				if (typeof func == 'function') {
-					(mapping.get(macro) as CharNumFunction)(macro, num);
-				} else {
-					if (num.whole == '' && num.decimal == '') {
-						(func as Map<string, CharNumFunction>).get('inputSigns')?.(macro, num);
-					} else {
-						(func as Map<string, CharNumFunction>).get('inputUncertaintySigns')?.(macro, num);
-					}
-				}
-			}
+	let token;
+	while (subParser.i < subParser.string.length) {
+		token = subParser.GetNext();
+		subParser.i++;  // GetNext() does not advance position unless skipping whitespace
+		
+		if (token === '\\') {
+			token += subParser.GetCS();
 		}
 
+		mapping.get(token)?.(token,num);
+
 	}
 
-	if (!options.retainExplicitDecimalMarker && num.decimal != '' && num.fractional == '') {
+	if (!options.retainExplicitDecimalMarker && num.decimal !== '' && num.fractional === '') {
 		num.decimal = '';
 	}
-	if (!options.retainExplicitPlus && num.sign == '+') {
+	if (!options.retainExplicitPlus && num.sign === '+') {
 		num.sign = '';
 	}
 	// adding exponent to value check here.  Without it, exponentials without a base won't stay negative. (-e10)
-	const value = +(num.whole + (num.decimal != '' ? '.' : '') + num.fractional + (num.exponent == '' ? '' : 'e' + num.exponentSign + num.exponent));
-	if (value == 0 && !options.retainNegativeZero && num.sign == '-') {
+	const value = +(num.whole + (num.decimal !== '' ? '.' : '') + num.fractional + (num.exponent === '' ? '' : 'e' + num.exponentSign + num.exponent));
+	if (value === 0 && !options.retainNegativeZero && num.sign === '-') {
 		num.sign = '';
 	}
 
 	if (!options.retainZeroUncertainty) {
 		for (let i = num.uncertainty.length - 1; i >= 0; i--) {
-			const uncertaintyValue = +(num.uncertainty[i].whole + (num.uncertainty[i].decimal != '' ? '.' : '') + num.uncertainty[i].fractional);
-			if (uncertaintyValue == 0) {
+			const uncertaintyValue = +(num.uncertainty[i].whole + (num.uncertainty[i].decimal !== '' ? '.' : '') + num.uncertainty[i].fractional);
+			if (uncertaintyValue === 0) {
 				num.uncertainty.splice(i, 1);
 			}
 		}
