@@ -42,7 +42,7 @@ export function parseComplexNumber(parser: TexParser, text: string, options: IOp
             const sign = text.match(regexSplit);
             const split = text.split(regexSplit);
             if (split.length > 1) {
-                complex.real = parseNumber(parser, split[0], options);
+                complex.real = parseNumber(parser, split[0].trim(), options);
                 //remove imaginary token, add sign, and parse
                 let value = split[1].replace(imaginaryTokenRegex, '').trim();
                 if (value === '') {

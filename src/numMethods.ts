@@ -213,7 +213,6 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 		try {
 			mapping.get(token)(token, num);
 		} catch {
-			console.log("ERROR");
 			throw siunitxError.InvalidNumArgument(subParser.string);
 		}
 

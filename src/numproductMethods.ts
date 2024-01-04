@@ -34,7 +34,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], parser: TexParser, o
 export function parseProductList(parser:TexParser, input : string, options:IOptions): INumberPiece[] {
     const values = input.split('x');
     const nums = values.map(v=>{
-        return parseNumber(parser, v, options);
+        return parseNumber(parser, v.trim(), options);
     });
     return nums;
 }
