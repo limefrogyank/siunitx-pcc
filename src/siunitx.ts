@@ -7,7 +7,6 @@ import { processNumber } from './numMethods';
 import { findOptions, IOptions, processSISetup, siunitxDefaults, } from './options/options';
 import { processQuantity } from './qtyMethods';
 import { processUnit } from './unitMethods';
-import { userDefinedUnitOptions, userDefinedUnits } from './units';
 import { GetArgumentMML } from "./aria-label";
 import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
 
@@ -165,8 +164,8 @@ new CommandMap('siunitxMap', {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const config = (_config: ParserConfiguration, jax: TeX<any, any, any>) => {
-    jax.parseOptions.packageData.set(UserDefinedUnitsKey, userDefinedUnits);
-    jax.parseOptions.packageData.set(UserDefinedUnitOptionsKey, userDefinedUnitOptions);
+    jax.parseOptions.packageData.set(UserDefinedUnitsKey, new Map<string,string>());
+    jax.parseOptions.packageData.set(UserDefinedUnitOptionsKey, new Map<string,string>());
 };
 
 
