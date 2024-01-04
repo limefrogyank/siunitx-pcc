@@ -5,7 +5,7 @@ interface LocalizationResource {
     exponentThresholdsError: string;
 }
 
-declare module "resource.*.json" {
+declare module "src/error/resource.*.json" {
     const val: LocalizationResource;
     export = val;
 }
