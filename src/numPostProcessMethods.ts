@@ -7,17 +7,17 @@ import { GlobalParser } from "./siunitx";
 
 function convertToScientific(numOriginal:INumberPiece, options: INumPostOptions) : INumberPiece {
 	//convert to actual number and use formating to print scientific
-	let num = JSON.parse(JSON.stringify(numOriginal));
-	const val = (+(num.sign + num.whole + num.decimal + num.fractional + (num.exponent != '' ? ('e' + num.exponentSign + num.exponent): '' ))).toExponential();
+	const num = JSON.parse(JSON.stringify(numOriginal));
+	const val = (+(num.sign + num.whole + num.decimal + num.fractional + (num.exponent !== '' ? ('e' + num.exponentSign + num.exponent): '' ))).toExponential();
 	// parse that back in
 	const newNum = parseNumber(GlobalParser, val, options as IOptions);
 
 	//don't forget to check for trailing zeros and put them back
 	let trailingZeros = 0;
 	// count trailing zeros in original fractional part
-	if (num.fractional != ''){
+	if (num.fractional !== ''){
 		for (let i=num.fractional.length-1; i>=0; i--){
-			if (num.fractional[i] == '0'){
+			if (num.fractional[i] === '0'){
 				trailingZeros++;
 			} else{
 				break;
@@ -25,9 +25,9 @@ function convertToScientific(numOriginal:INumberPiece, options: INumPostOptions)
 		}
 	}
 	// count trailing zeros in original whole part (if all of fractional part was zeros)
-	if (num.whole != '' && num.fractional.length == trailingZeros){
+	if (num.whole !== '' && num.fractional.length === trailingZeros){
 		for (let i=num.whole.length-1; i>=0; i--){
-			if (num.whole[i] == '0'){
+			if (num.whole[i] === '0'){
 				trailingZeros++;
 			} else{
 				break;
@@ -39,7 +39,7 @@ function convertToScientific(numOriginal:INumberPiece, options: INumPostOptions)
 		newNum.fractional += '0';
 	}
 	// add a decimal if the original didn't have one, but we need it.
-	if (newNum.decimal == '' && trailingZeros > 0){
+	if (newNum.decimal === '' && trailingZeros > 0){
 		newNum.decimal = '.';
 	}
 	// copy the new values to the original reference
@@ -50,7 +50,7 @@ function convertToScientific(numOriginal:INumberPiece, options: INumPostOptions)
 }
 
 function convertToXExponent(num:INumberPiece, targetExponent: number){
-	if (num == null) return;
+	if (num === null) return;
 	// count difference between target exponent and current one.
 	const diff = targetExponent - +(num.exponentSign + num.exponent);
 	const dir = Math.sign(diff);  // -: move numbers from frac to whole, +: move the other way
@@ -71,7 +71,7 @@ function convertToXExponent(num:INumberPiece, targetExponent: number){
 			}
 		}
 	}
-	if (num.fractional != '' && num.decimal == ''){
+	if (num.fractional !== '' && num.decimal === ''){
 		num.decimal = '.';
 	}
 	num.exponent = Math.abs(targetExponent).toString();
@@ -85,7 +85,7 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 	const convertedNum = convertToScientific(num, options);
 	Object.assign(num, convertedNum);
 	let targetExponent = +(num.exponentSign + num.exponent);
-	while (targetExponent % 3 != 0) {
+	while (targetExponent % 3 !== 0) {
 		targetExponent--;
 	}
 		
@@ -111,7 +111,7 @@ const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOpti
 	}],
 	['threshold', (num: INumberPiece, options: IOptions)=>{ 
 		const minMax = options.exponentThresholds.split(':');
-		if (minMax.length != 2){
+		if (minMax.length !== 2){
 			throw siunitxError.ExponentThresholdsError(options.exponentThresholds);
 		}
 		// ensure we have a version in scientific form but leave the original alone.
@@ -130,9 +130,9 @@ function shouldRoundUp(toRound:number, firstDrop:number, roundEven:boolean):bool
 	let result = false;
 	if (firstDrop > 5){
 		result = true;	
-	} else if (firstDrop == 5) {
+	} else if (firstDrop === 5) {
 		if (roundEven){
-			if (toRound % 2 == 0){
+			if (toRound % 2 === 0){
 				result = false;
 			} else {
 				result = true;
@@ -149,12 +149,12 @@ function roundUp(fullNumber:string, position:number):string{
 	let result = '';
 	const reverseNumArr = new Array<number>();
 	let digit = +fullNumber[position] + 1;
-	let roundedNine = digit == 0 ? true : false;
+	let roundedNine = digit === 0 ? true : false;
 	reverseNumArr.push(digit); 
 	for (let i=position-1; i >= 0; i--) {
 		if (roundedNine){
 			digit = +fullNumber[i] + 1;
-			roundedNine = digit == 0 ? true : false;
+			roundedNine = digit === 0 ? true : false;
 			reverseNumArr.push(digit);
 		} else {
 			digit = +fullNumber[i];
@@ -168,12 +168,12 @@ function roundUp(fullNumber:string, position:number):string{
 
 function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 	// if uncertainty exists, no rounding at all!
-	if (num.uncertainty.length == 0) {
+	if (num.uncertainty.length === 0) {
 		if (num.fractional.length > options.roundPrecision ) {			
 			const firstDrop = +num.fractional.slice(options.roundPrecision, options.roundPrecision+1);
 			const toRound = +num.fractional.slice(options.roundPrecision - 1, options.roundPrecision);
 			const wholeLength = num.whole === '0' ? 0 : num.whole.length;
-			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
+			if (shouldRoundUp(toRound, firstDrop, options.roundHalf === 'even')){
 				const result = roundUp((num.whole === '0' ? '' : num.whole) + num.fractional, wholeLength + options.roundPrecision - 1);
 				//const wholeLength = num.whole.length;
 				num.whole = result.slice(0,wholeLength);
@@ -201,7 +201,7 @@ function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 
 function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 	// if uncertainty exists, no rounding at all!
-	if (num.uncertainty.length == 0) {
+	if (num.uncertainty.length === 0) {
 		// whole can't be '0', and converting fractional to number and back to string gets rid of leading zeros.
 		const combined = num.whole === '0' ? (+num.fractional).toString() : num.whole + (+num.fractional).toString();   
 		if (combined.length > options.roundPrecision ) {			
@@ -211,7 +211,7 @@ function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 			
 			let roundingResult:string;
 			// round up or down
-			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
+			if (shouldRoundUp(toRound, firstDrop, options.roundHalf === 'even')){
 				roundingResult = roundUp(combined, options.roundPrecision - 1);
 			} else {
 				roundingResult = combined.slice(0, options.roundPrecision);
@@ -221,7 +221,7 @@ function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 			if (roundingResult.length >= wholeLength){
 				// need to add leading zeroes to fractional part maybe
 				// if whole was zero, check if original fractional had leading zeroes
-				if (wholeLength == 0){
+				if (wholeLength === 0){
 					num.fractional = ''.padEnd(num.fractional.length - (+num.fractional).toString().length, '0');
 				} else {
 					num.fractional = '';
@@ -242,7 +242,7 @@ function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 			
 			for (let i = 0; i < options.roundPrecision-combined.length; i++){
 				num.fractional += '0';  // pad with zeros, it's only going to go in the fractional part
-				if (num.decimal == '') num.decimal = '.';
+				if (num.decimal === '') num.decimal = '.';
 			}
 
 		} else {
@@ -258,7 +258,7 @@ function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 	if (num.uncertainty.length > 0){
 		// just in case convert uncertainty to bracket form... easier to round
 		num.uncertainty.forEach(uncertainty=>{
-			if (uncertainty.type == 'pm') {
+			if (uncertainty.type === 'pm') {
 				//easiest way is to convert to a number and check if less than zero
 				const strNum = uncertainty.whole + uncertainty.decimal + uncertainty.fractional;
 				const num = +(strNum);
@@ -266,7 +266,7 @@ function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 				if (num < 1) {
 					let position=0;
 					for (let i=0; i<uncertainty.fractional.length;i++){
-						if (uncertainty.fractional[i] != '0'){
+						if (uncertainty.fractional[i] !== '0'){
 							break;
 						}
 						position++;
@@ -287,7 +287,7 @@ function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 				const firstDrop = +uncertainty.whole.slice(options.roundPrecision, options.roundPrecision+1);
 				const toRound = +uncertainty.whole.slice(options.roundPrecision - 1, options.roundPrecision);
 				
-				if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
+				if (shouldRoundUp(toRound, firstDrop, options.roundHalf === 'even')){
 					uncertainty.whole = roundUp(uncertainty.whole, options.roundPrecision - 1);
 				} else {
 					uncertainty.whole = uncertainty.whole.slice(0, options.roundPrecision);
@@ -305,7 +305,7 @@ function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 			
 			let roundingResult;
 			// round up or down
-			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
+			if (shouldRoundUp(toRound, firstDrop, options.roundHalf === 'even')){
 				roundingResult = roundUp(combined, precision - 1);
 			} else {
 				roundingResult = combined.slice(0, precision);
@@ -332,9 +332,9 @@ function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 
 function afterRoundZeroOptions(num:INumberPiece, options: INumPostOptions){
 	// check if zero, then do stuff
-	const current = Math.abs(+(num.whole + num.decimal + num.fractional + (num.exponentMarker != '' ? 'e' : '') + num.exponentSign + num.exponent));
-	if (current == 0) {
-		if (options.roundMinimum != '0'){
+	const current = Math.abs(+(num.whole + num.decimal + num.fractional + (num.exponentMarker !== '' ? 'e' : '') + num.exponentSign + num.exponent));
+	if (current === 0) {
+		if (options.roundMinimum !== '0'){
 			num.prefix = '\\lt'; 
 			const minimumNum = parseNumber(GlobalParser, options.roundMinimum, <INumOptions>options);
 			num.sign = minimumNum.sign;
@@ -384,7 +384,7 @@ export function postProcessNumber(num:INumberPiece, options: INumPostOptions){
 
 	roundModeMap.get(options.roundMode)(num, options);	
 
-	if (options.dropZeroDecimal && +(num.fractional) == 0){
+	if (options.dropZeroDecimal && +(num.fractional) === 0){
 		num.fractional = '';
 		num.decimal = '';
 	}
@@ -410,6 +410,6 @@ export function postProcessNumber(num:INumberPiece, options: INumPostOptions){
 	exponentModeMap.get(options.exponentMode)(num, options);
 
 	// remove any explicit plus in exponent
-	if (num.exponentSign == '+') 
+	if (num.exponentSign === '+') 
 		num.exponentSign = '';
 }

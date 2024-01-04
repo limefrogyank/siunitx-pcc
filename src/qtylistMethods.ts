@@ -1,13 +1,13 @@
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { IOptions, findOptions } from "./options/options";
-import { INumberPiece, parseNumber } from "./numMethods";
+import { INumberPiece } from "./numMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import { createExponentMml, displayOutputMml } from "./numDisplayMethods";
-import { ExponentsMode, UnitsModeProduct } from "./options/listOptions";
+import { displayOutputMml } from "./numDisplayMethods";
+import { UnitsModeProduct } from "./options/listOptions";
 import { IExponentModeOutput, bracketCloseMap, bracketOpenMap, exponentListModeMap, parseList } from "./numlistMethods";
 import { displayUnits, parseUnit } from "./unitMethods";
-import { createQuantityProductMml, prefixModeMap } from "./qtyMethods";
+import { createQuantityProductMml } from "./qtyMethods";
 
 interface IUnitsModeOutput {
     leading?: MmlNode;
@@ -149,9 +149,9 @@ export function processQuantityList(parser: TexParser): void {
 
 	Object.assign(globalOptions, localOptions);
 
-	let text = parser.GetArgument('num');
-	let unitString = parser.GetArgument('unit');
-    const isLiteral = (unitString.indexOf('\\') == -1);
+	const text = parser.GetArgument('num');
+	const unitString = parser.GetArgument('unit');
+    const isLiteral = (unitString.indexOf('\\') === -1);
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
 
 	if (globalOptions.parseNumbers) {
@@ -174,7 +174,7 @@ export function processQuantityList(parser: TexParser): void {
             const targetExponent = numlist[0].exponentSign + numlist[0].exponent;
             const altOptions = Object.assign(globalOptions, { exponentMode: 'fixed', fixedExponent: targetExponent });
             numlist.forEach((v,i)=>{
-                if (i == 0){
+                if (i === 0){
                     postProcessNumber(v, globalOptions);
                 } else {
                     postProcessNumber(v, altOptions);
@@ -182,9 +182,9 @@ export function processQuantityList(parser: TexParser): void {
             });
         }
 
-   		// Need to process this after number because some options alter unit prefixes
-        let unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
-		const unitNode = [(new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml()];
+        // Need to process this after number because some options alter unit prefixes
+        const unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
+        const unitNode = [(new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml()];
         const quantityProductNode = createQuantityProductMml(parser, globalOptions);
         if (quantityProductNode){
             unitNode.splice(0,0,quantityProductNode);

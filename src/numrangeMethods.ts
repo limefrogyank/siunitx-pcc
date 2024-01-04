@@ -12,8 +12,8 @@ export function processNumberRange(parser: TexParser): void {
 
 	Object.assign(globalOptions, localOptions);
 
-	let first = parser.GetArgument('firstNum');
-	let last = parser.GetArgument('lastNum');
+	const first = parser.GetArgument('firstNum');
+	const last = parser.GetArgument('lastNum');
 
 	if (globalOptions.parseNumbers) {
 

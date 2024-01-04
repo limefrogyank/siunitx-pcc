@@ -10,7 +10,7 @@ import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import { GlobalParser } from "./siunitx";
 
 function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
-	if (num.exponent == '' || (units == null || units.length == 0)) {
+	if (num.exponent === '' || (units === null || units.length === 0)) {
 		return;
 	}
 
@@ -25,8 +25,8 @@ function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 	}
 
 	const firstUnit = units[0];
-	if (firstUnit.prefix != '') {
-		const unitPower = (firstUnit.power != null ? +(firstUnit.power) : 1) * (firstUnit.position == 'denominator' ? -1 : 1);
+	if (firstUnit.prefix !== '') {
+		const unitPower = (firstUnit.power !== null ? +(firstUnit.power) : 1) * (firstUnit.position === 'denominator' ? -1 : 1);
 		const addedPower = firstUnit.prefix ? prefixPower.get(firstUnit.prefix) : 1;
 		targetExponent += addedPower * unitPower;
 		// just in case prefix was cm (2) and we added 3, there's no prefix for 5
@@ -47,7 +47,7 @@ function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 }
 
 function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
-	if (units == null) {
+	if (units === null) {
 		return;
 	}
 
@@ -62,7 +62,7 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 		// 2. prefix is not k for grams when extractMassInKilograms // special case
 
 		if ((unit.symbol !== 'g' && unit.prefix !== '') || (unit.symbol === 'g' && unit.prefix !== '' && !options.extractMassInKilograms)) {
-			const unitPower = (unit.power != null ? +(unit.power) : 1) * (unit.position == 'denominator' ? -1 : 1);
+			const unitPower = (unit.power !== null ? +(unit.power) : 1) * (unit.position === 'denominator' ? -1 : 1);
 			// if (binaryPrefixPower.has(unit.prefix)){
 			// 	const prefPower = binaryPrefixPower.get(unit.prefix);
 			// 	powersOfTwo += (prefPower*unitPower);
@@ -76,7 +76,7 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 			}
 			unit.prefix = '';
 		} else if (unit.symbol === 'g' && unit.prefix !== 'k' && options.extractMassInKilograms) {
-			const unitPower = (unit.power != null ? +(unit.power) : 1) * (unit.position == 'denominator' ? -1 : 1);
+			const unitPower = (unit.power !== null ? +(unit.power) : 1) * (unit.position === 'denominator' ? -1 : 1);
 			if (prefixPower.has(unit.prefix)) {
 				const prefPower = prefixPower.get(unit.prefix);
 				powersOfTen += (prefPower * unitPower) - 3;
@@ -87,11 +87,11 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 			unit.prefix = 'k';
 		}
 	}
-	const currentExponent = (num.exponent != '' ? +(num.exponentSign + num.exponent) : 0);
+	const currentExponent = (num.exponent !== '' ? +(num.exponentSign + num.exponent) : 0);
 	const newExponent = currentExponent + powersOfTen;
 	num.exponent = Math.abs(newExponent).toString();
 	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
-	if (num.exponentMarker == '') {
+	if (num.exponentMarker === '') {
 		num.exponentMarker = 'e';
 	}
 }
@@ -107,14 +107,14 @@ function findUncertaintyNode(root: MmlNode): MmlNode | null {
 	for (const x of root.childNodes) {
 		const mmlNode = x as MmlNode;
 		if (mmlNode) {
-			if (mmlNode.attributes != null) {
+			if (mmlNode.attributes !== null) {
 				const names = mmlNode.attributes.getExplicitNames();
-				if (names.indexOf('data-siunitx-uncertainty') != -1) {
+				if (names.indexOf('data-siunitx-uncertainty') !== -1) {
 					return mmlNode;
 				}
 			}
 			const result = findUncertaintyNode(mmlNode);
-			if (result != null) {
+			if (result !== null) {
 				return result;
 			}
 		}
@@ -123,7 +123,7 @@ function findUncertaintyNode(root: MmlNode): MmlNode | null {
 }
 
 const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions) => MmlNode[]>([
-	['single', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions): MmlNode[] => {
+	['single', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, _parser: TexParser, _options: IQuantityOptions): MmlNode[] => {
 
 		return [...num, quantityProduct, units];
 	}],
@@ -131,13 +131,13 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 		let uncertaintyNode: MmlNode = null;
 		for (const x of num) {
 			const result = findUncertaintyNode(x);
-			if (result != null) {
+			if (result !== null) {
 				uncertaintyNode = result;
 				break;
 			}
 		}
 
-		if (uncertaintyNode != null) {
+		if (uncertaintyNode !== null) {
 			const leftBracket = parser.create('token', 'mo', {}, options.outputOpenUncertainty);
 			const rightBracket = parser.create('token', 'mo', {}, options.outputCloseUncertainty);
 			return [leftBracket, ...num, rightBracket, quantityProduct, units];
@@ -146,16 +146,16 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 			return [...num, quantityProduct, units];
 		}
 	}],
-	['repeat', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions): MmlNode[] => {
+	['repeat', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, _parser: TexParser, _options: IQuantityOptions): MmlNode[] => {
 		let uncertaintyNode: MmlNode = null;
 		for (const x of num) {
 			const result = findUncertaintyNode(x);
-			if (result != null) {
+			if (result !== null) {
 				uncertaintyNode = result;
 				break;
 			}
 		}
-		if (uncertaintyNode != null) {
+		if (uncertaintyNode !== null) {
 			const parent = uncertaintyNode.parent;
 			const uncertaintyPosition = parent.childNodes.indexOf(uncertaintyNode);
 			parent.childNodes.splice(uncertaintyPosition, 0, quantityProduct, units);
@@ -179,7 +179,7 @@ const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: stri
 		return num + options.quantityProduct + units;
 	}],
 	['bracket', (num: string, units: string, options: IQuantityOptions): string => {
-		if (num.indexOf('\\pm') == -1) {
+		if (num.indexOf('\\pm') === -1) {
 			return num + options.quantityProduct + units;
 		}
 		return options.outputOpenUncertainty + num + options.outputCloseUncertainty + options.quantityProduct + units;
@@ -189,7 +189,7 @@ const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: stri
 		const split = num.split('\\pm');
 		let separate = '';
 		for (let i = 0; i < split.length; i++) {
-			if (separate != '') {
+			if (separate !== '') {
 				separate += '\\pm';
 			}
 			separate += split[i];
@@ -228,7 +228,7 @@ export function processQuantity(parser: TexParser): void {
 
 	let unitDisplay = '';
 
-	const isLiteral = (unitString.indexOf('\\') == -1);
+	const isLiteral = (unitString.indexOf('\\') === -1);
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
 
 	if (globalOptions.parseNumbers) {
@@ -238,8 +238,7 @@ export function processQuantity(parser: TexParser): void {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', numString);
-			let result = eval(expression);
-			numString = result.toString();
+			numString = eval(expression).toString();
 		}
 
 		// refresh global options from default
@@ -271,7 +270,7 @@ export function processQuantity(parser: TexParser): void {
 		// }
 		// parser.Push(unitNode);
 		// uncertainty will already be separated.
-		let quantityProductNode = createQuantityProductMml(parser, globalOptions);
+		const quantityProductNode = createQuantityProductMml(parser, globalOptions);
 		// const trimmedQuantityProduct = globalOptions.quantityProduct.trimStart();
 		// if (trimmedQuantityProduct !== '') {
 		// 	let quantityProduct = spacerMap[trimmedQuantityProduct];

@@ -1,12 +1,8 @@
-import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { IOptions, findOptions } from "./options";
-
 export type ExponentsMode = 'individual' | 'combine-bracket' | 'combine';
 type UnitsMode = 'repeat' | 'bracket' | 'single';
 export type UnitsModeProduct = UnitsMode | 'bracket-power' | 'power';
 
-export interface IListOptions{
+export interface IListOptions {
     listCloseBracket: string;
     listOpenBracket: string;
     listExponents: ExponentsMode;
@@ -17,7 +13,7 @@ export interface IListOptions{
     productCloseBracket: string;
     productOpenBracket: string;
     productExponents: ExponentsMode;
-    productMode:'symbol'|'phrase';
+    productMode: 'symbol' | 'phrase';
     productPhrase: string;
     productSymbol: string;
     productUnits: UnitsModeProduct;
@@ -26,7 +22,7 @@ export interface IListOptions{
     rangeExponents: ExponentsMode;
     rangePhrase: string;
     rangeUnits: UnitsMode;
-    
+
 }
 export const ListOptionDefaults: IListOptions = {
     listCloseBracket: ')',

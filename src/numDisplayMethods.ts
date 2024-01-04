@@ -40,19 +40,19 @@ function addSpacing(text: string, digitGroupSize: number, minimum: number, space
 	if (text.length >= minimum) {
 		const arr = text.split('');
 		let adjusted = 0;
-		const firstCount = (digitGroupFirstSize != -1 && digitGroupFirstSize != undefined) ? digitGroupFirstSize : digitGroupSize;
+		const firstCount = (digitGroupFirstSize !== -1 && digitGroupFirstSize !== undefined) ? digitGroupFirstSize : digitGroupSize;
 		let fluidCount = firstCount;
 		if (reverse) {
 			for (let i = firstCount; i < arr.length; i += fluidCount) {
 				text = text.slice(0, i + adjusted) + mmlSpacer + text.slice(i + adjusted, text.length + adjusted);
 				adjusted += mmlSpacer.length;
-				fluidCount = (digitGroupOtherSize != -1 && digitGroupOtherSize != undefined) ? digitGroupOtherSize : digitGroupSize;
+				fluidCount = (digitGroupOtherSize !== -1 && digitGroupOtherSize !== undefined) ? digitGroupOtherSize : digitGroupSize;
 			}
 		} else {
 			for (let i = arr.length - firstCount; i >= 0; i -= fluidCount) {
 				text = text.slice(0, i) + mmlSpacer + text.slice(i, text.length + adjusted);
 				adjusted += mmlSpacer.length;
-				fluidCount = (digitGroupOtherSize != -1 && digitGroupOtherSize != undefined) ? digitGroupOtherSize : digitGroupSize;
+				fluidCount = (digitGroupOtherSize !== -1 && digitGroupOtherSize !== undefined) ? digitGroupOtherSize : digitGroupSize;
 			}
 		}
 	}
@@ -79,9 +79,9 @@ const groupNumbersMap = new Map<string, (num: INumberPiece, options: INumOutputO
 
 
 function convertUncertaintyToPlusMinus(uncertainty: IUncertainty, piece: INumberPiece, options: INumOutputOptions): void {
-	if (uncertainty.type != 'pm') {
+	if (uncertainty.type !== 'pm') {
 		// if there's a decimal in the uncertainty, then it's ok to display as-is
-		if (uncertainty.decimal == '') {
+		if (uncertainty.decimal === '') {
 			// add zeros, move whole to fraction part, and potentially add decimal and whole
 			const diff = piece.fractional.length - uncertainty.whole.length;
 			if (diff >= 0) {
@@ -109,7 +109,7 @@ function convertUncertaintyToPlusMinus(uncertainty: IUncertainty, piece: INumber
 }
 
 export function convertUncertaintyToBracket(uncertainty: IUncertainty, piece: INumberPiece, options: INumOutputOptions): void {
-	if (uncertainty.type == 'bracket') {
+	if (uncertainty.type === 'bracket') {
 		// check to make sure that uncertainty doesn't need a decimal point via 'compact marker' or 'full' (full adds zeros to fractional only uncertainty!)
 		// should only be checked if there is NOT already a decimal point
 		if (uncertainty.decimal === '' && (options.uncertaintyMode === 'compact-marker' || options.uncertaintyMode === 'full')) {
@@ -135,7 +135,7 @@ export function convertUncertaintyToBracket(uncertainty: IUncertainty, piece: IN
 		if (num < 1) {
 			let position = 0;
 			for (let i = 0; i < uncertainty.fractional.length; i++) {
-				if (uncertainty.fractional[i] != '0') {
+				if (uncertainty.fractional[i] !== '0') {
 					break;
 				}
 				position++;
@@ -152,7 +152,7 @@ function displayUncertaintyBracket(uncertainty: IUncertainty, options: INumOutpu
 	let output = options.uncertaintySeparator;
 	output += options.outputOpenUncertainty;
 	output += uncertainty.whole;
-	output += (options.uncertaintyMode === 'compact-marker' || options.uncertaintyMode === 'full') && uncertainty.decimal != '' ? options.outputDecimalMarker : '';
+	output += (options.uncertaintyMode === 'compact-marker' || options.uncertaintyMode === 'full') && uncertainty.decimal !== '' ? options.outputDecimalMarker : '';
 	output += uncertainty.fractional;
 	output += options.outputCloseUncertainty;
 	return output;
@@ -163,7 +163,7 @@ function displayUncertaintyBracketMml(uncertainty: IUncertainty, parser: TexPars
 	const openUncertainty = (new TexParser(options.outputOpenUncertainty, GlobalParser.stack.env, GlobalParser.configuration)).mml();
 
 	let number = uncertainty.whole;
-	number += (options.uncertaintyMode === 'compact-marker' || options.uncertaintyMode === 'full') && uncertainty.decimal != '' ? options.outputDecimalMarker : '';
+	number += (options.uncertaintyMode === 'compact-marker' || options.uncertaintyMode === 'full') && uncertainty.decimal !== '' ? options.outputDecimalMarker : '';
 	number += uncertainty.fractional;
 	const numberNode = parser.create('token', 'mn', {}, number);
 	const closeUncertainty = (new TexParser(options.outputCloseUncertainty, GlobalParser.stack.env, GlobalParser.configuration)).mml();
@@ -228,16 +228,16 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 	let mmlString = '';
 	groupNumbersMap.get(options.groupDigits)?.(piece, options);
 
-	if (options.negativeColor != '') {
+	if (options.negativeColor !== '') {
 		output += '{\\color{' + options.negativeColor + '}';
 	}
 	if (options.bracketNegativeNumbers) {
-		if (piece.sign == '-') {
+		if (piece.sign === '-') {
 			output += '(';
 		}
 	} else {
 		// brackets remove extra spacing intended for math equation
-		if (options.printImplicitPlus && piece.sign == '') {
+		if (options.printImplicitPlus && piece.sign === '') {
 			//output += '\\mmlToken{mrow}{\\mmlToken{mo}{+}}';
 			output += '\\mmlToken{mo}[rspace="0em", lspace="0em"]{+}';
 		} else {
@@ -249,21 +249,21 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 	}
 
 	// if unity mantissa AND don't print it, then we don't need the rest of this.
-	if (piece.whole == '1' && piece.fractional == '' && !options.printUnityMantissa) {
+	if (piece.whole === '1' && piece.fractional === '' && !options.printUnityMantissa) {
 		// don't do anything UNLESS exponent is also zero and printZeroExponent is false
-		if (!options.printZeroExponent && (piece.exponent == '' || (piece.exponent == '1' && piece.exponentSign != '-'))) {
+		if (!options.printZeroExponent && (piece.exponent === '' || (piece.exponent === '1' && piece.exponentSign !== '-'))) {
 			mmlString += '1';
 		}
 	} else {
-		if ((piece.whole == '' && piece.fractional) || piece.whole == '0') {
+		if ((piece.whole === '' && piece.fractional) || piece.whole === '0') {
 			if (options.printZeroInteger) {
 				mmlString += '0';
 			}
 		} else {
 			mmlString += piece.whole;
 		}
-		mmlString += (piece.decimal != '' ? options.outputDecimalMarker : '');
-		if (options.zeroDecimalAsSymbol && +(piece.fractional) == 0) {
+		mmlString += (piece.decimal !== '' ? options.outputDecimalMarker : '');
+		if (options.zeroDecimalAsSymbol && +(piece.fractional) === 0) {
 			// hack: insert searchable identifier
 			mmlString += options.zeroSymbol;
 		} else {
@@ -279,8 +279,8 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 		output += uncertaintyModeMapping.get(options.uncertaintyMode)?.(v, piece, options);
 	});
 
-	if (options.printZeroExponent && (piece.exponent == '' || (piece.exponent == '0'))) {
-		if (options.outputExponentMarker != '') {
+	if (options.printZeroExponent && (piece.exponent === '' || (piece.exponent === '0'))) {
+		if (options.outputExponentMarker !== '') {
 			output += options.outputExponentMarker;
 			output += '0';
 		} else {
@@ -292,21 +292,21 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 			output += options.exponentBase;
 			output += '^{0}';
 		}
-	} else if (piece.exponent != '' && piece.exponent != '0') {
+	} else if (piece.exponent !== '' && piece.exponent !== '0') {
 		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
-		if (piece.whole == '1' && piece.fractional == '' && !options.printUnityMantissa) {
+		if (piece.whole === '1' && piece.fractional === '' && !options.printUnityMantissa) {
 			output += options.exponentBase;
 			output += '^{' + piece.exponentSign + piece.exponent + '}';
 		} else {
-			if (piece.exponentMarker != '') {
-				if (options.outputExponentMarker != '') {
+			if (piece.exponentMarker !== '') {
+				if (options.outputExponentMarker !== '') {
 					output += options.outputExponentMarker;
 					output += piece.exponentSign + piece.exponent;
 				} else {
 					if (options.tightSpacing) {
-						output += (piece.whole != '' || piece.fractional != '') ? '{' + options.exponentProduct + '}' : '';
+						output += (piece.whole !== '' || piece.fractional !== '') ? '{' + options.exponentProduct + '}' : '';
 					} else {
-						output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
+						output += (piece.whole !== '' || piece.fractional !== '') ? options.exponentProduct : '';
 					}
 					output += options.exponentBase;
 					output += '^{' + piece.exponentSign + piece.exponent + '}';
@@ -316,11 +316,11 @@ export function displayNumber(piece: INumberPiece, options: INumOutputOptions): 
 	}
 
 	if (options.bracketNegativeNumbers) {
-		if (piece.sign == '-') {
+		if (piece.sign === '-') {
 			output += ')';
 		}
 	}
-	if (options.negativeColor != '') {
+	if (options.negativeColor !== '') {
 		output += '}';
 	}
 
@@ -334,9 +334,9 @@ export function createExponentMml(num:INumberPiece, parser: TexParser, options: 
 	const nodes = [];
 	const exponentProductNode = (new TexParser(options.exponentProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
 	const exponentBaseNode = (new TexParser(options.exponentBase, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-	if (options.printZeroExponent && (num.exponent == '' || (num.exponent == '0'))) {
+	if (options.printZeroExponent && (num.exponent === '' || (num.exponent === '0'))) {
 		const zeroNode = parser.create('token', 'mn', {}, '0');
-		if (options.outputExponentMarker != '') {
+		if (options.outputExponentMarker !== '') {
 			const customExponentMarker = parser.create('token', 'mi', { mathvariant: 'normal' }, options.outputExponentMarker);
 			nodes.push(customExponentMarker);
 			nodes.push(zeroNode);
@@ -353,7 +353,7 @@ export function createExponentMml(num:INumberPiece, parser: TexParser, options: 
 			// currentNode.appendChild(exponentProductNode);
 			// currentNode.appendChild(exponential);
 		}
-	} else if (num.exponent != '' && num.exponent != '0') {
+	} else if (num.exponent !== '' && num.exponent !== '0') {
 		const exponentSignNode = parser.create('token', 'mo', {}, num.exponentSign);
 		const exponentValueNode = parser.create('token', 'mn', {}, num.exponent);
 		const supPart = num.exponentSign === '-'
@@ -361,12 +361,12 @@ export function createExponentMml(num:INumberPiece, parser: TexParser, options: 
 			: exponentValueNode;
 		const exponential = parser.create('node', 'msup', [exponentBaseNode, supPart]);
 		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
-		if (num.whole == '1' && num.fractional == '' && !options.printUnityMantissa) {
+		if (num.whole === '1' && num.fractional === '' && !options.printUnityMantissa) {
 			//currentNode.appendChild(exponential);
 			nodes.push(exponential);
 		} else {
-			if (num.exponentMarker != '') {
-				if (options.outputExponentMarker != '') {
+			if (num.exponentMarker !== '') {
+				if (options.outputExponentMarker !== '') {
 					const customExponentMarker = (new TexParser(options.outputExponentMarker, GlobalParser.stack.env, GlobalParser.configuration)).mml();
 					//const customExponentMarker = parser.create('token', 'mi', { }, options.outputExponentMarker);
 					nodes.push(customExponentMarker);
@@ -374,7 +374,7 @@ export function createExponentMml(num:INumberPiece, parser: TexParser, options: 
 					// currentNode.appendChild(customExponentMarker);
 					// currentNode.appendChild(supPart);
 				} else {
-					if (num.whole != '' || num.fractional != '') {
+					if (num.whole !== '' || num.fractional !== '') {
 						if (options.tightSpacing) {
 							exponentProductNode.attributes.set('lspace', '0em');
 							exponentProductNode.attributes.set('rspace', '0em');
@@ -393,12 +393,11 @@ export function createExponentMml(num:INumberPiece, parser: TexParser, options: 
 
 export function displayNumberMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
 	let rootNode: MmlNode;
-	let currentNode: MmlNode;
-	if (options.negativeColor != '') {
+	if (options.negativeColor !== '') {
 		rootNode = parser.create('node', 'mstyle', [], { mathcolor: options.negativeColor });
 	}
-	let mrow = parser.create('node', 'mrow');
-	currentNode = mrow;
+	const mrow = parser.create('node', 'mrow');
+	const currentNode = mrow;
 	if (rootNode === undefined) {
 		rootNode = mrow;
 	} else {
@@ -427,21 +426,21 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	let numberString = '';
 	let trailingMml: MmlNode;
 	// if unity mantissa AND don't print it, then we don't need the rest of this.
-	if (num.whole == '1' && num.fractional == '' && !options.printUnityMantissa) {
+	if (num.whole === '1' && num.fractional === '' && !options.printUnityMantissa) {
 		// don't do anything UNLESS exponent is also zero and printZeroExponent is false
-		if (!options.printZeroExponent && (num.exponent == '' || (num.exponent == '1' && num.exponentSign != '-'))) {
+		if (!options.printZeroExponent && (num.exponent === '' || (num.exponent === '1' && num.exponentSign !== '-'))) {
 			numberString += '1';
 		}
 	} else {
-		if ((num.whole == '' && num.fractional) || num.whole == '0') {
+		if ((num.whole === '' && num.fractional) || num.whole === '0') {
 			if (options.printZeroInteger) {
 				numberString += '0';
 			}
 		} else {
 			numberString += num.whole;
 		}
-		numberString += (num.decimal != '' ? options.outputDecimalMarker : '');
-		if (options.zeroDecimalAsSymbol && +(num.fractional) == 0) {
+		numberString += (num.decimal !== '' ? options.outputDecimalMarker : '');
+		if (options.zeroDecimalAsSymbol && +(num.fractional) === 0) {
 			trailingMml = (new TexParser(options.zeroSymbol, GlobalParser.stack.env, GlobalParser.configuration)).mml();
 		} else {
 			numberString += num.fractional;
@@ -449,7 +448,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	}
 	const numberNode = parser.create('token', 'mn', {}, numberString);
 	currentNode.appendChild(numberNode);
-	if (trailingMml != null) {
+	if (trailingMml !== null) {
 		currentNode.appendChild(trailingMml);
 	}
 
@@ -512,7 +511,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	// }
 
 	if (options.bracketNegativeNumbers) {
-		if (num.sign == '-') {
+		if (num.sign === '-') {
 			const rightBracket = parser.create('token', 'mo', {}, ')');
 			currentNode.appendChild(rightBracket);
 		}
@@ -522,12 +521,12 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 }
 
 export function displayOutputMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode[] {
-	let rootNodes: MmlNode[] = [];
+	const rootNodes: MmlNode[] = [];
 	let currentNode: MmlNode;
-	if (options.numberColor != '') {
+	if (options.numberColor !== '') {
 		currentNode = parser.create('node', 'mstyle', [], { mathcolor: options.numberColor });
 		rootNodes.push(currentNode);
-	} else if (options.color != '') {
+	} else if (options.color !== '') {
 		currentNode = parser.create('node', 'mstyle', [], { mathcolor: options.color });
 		rootNodes.push(currentNode);
 	}
@@ -536,7 +535,7 @@ export function displayOutputMml(num: INumberPiece, parser: TexParser, options: 
 		const prefix = (new TexParser(num.prefix, GlobalParser.stack.env, GlobalParser.configuration)).mml();
 		prefix.attributes.set('rspace', '0em');
 		prefix.attributes.set('lspace', '0em');
-		if (currentNode == null) {
+		if (currentNode === null) {
 			rootNodes.push(prefix);
 		} else {
 			currentNode.appendChild(prefix);
@@ -544,7 +543,7 @@ export function displayOutputMml(num: INumberPiece, parser: TexParser, options: 
 	}
 
 	const numberNode = displayNumberMml(num, parser, options);
-	if (currentNode == null) {
+	if (currentNode === null) {
 		rootNodes.push(numberNode);
 	} else {
 		currentNode.appendChild(numberNode);
@@ -559,10 +558,10 @@ export function displayOutput(num: INumberPiece, options: IOptions): string {
 	let output = '';
 
 	let closeColor: boolean = false;
-	if (options.numberColor != '') {
+	if (options.numberColor !== '') {
 		output += '{\\color{' + options.numberColor + '}';
 		closeColor = true;
-	} else if (options.color != '') {
+	} else if (options.color !== '') {
 		output += '{\\color{' + options.color + '}';
 		closeColor = true;
 	}

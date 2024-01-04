@@ -1,6 +1,4 @@
-import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { defaultOptions } from "mathjax-full/js/util/Options";
 import { IUnitOptions, UnitOptionDefaults } from "./unitOptions";
 import { INumOptions, NumOptionDefaults } from "./numberOptions";
 import { IAngleOptions, AngleOptionDefaults } from "./angleOptions";
@@ -41,7 +39,7 @@ function camelToDash(str: string): string {
 }
 
 export function processSISetup(parser: TexParser): void {
-	let globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options as IOptions };
 
 	const optionsString = parser.GetArgument('sisetup');
 
@@ -57,7 +55,7 @@ export function processSISetup(parser: TexParser): void {
 
 function optionStringToObject( optionString: string):Partial<IOptions>{
 	const options : Partial<IOptions> = {};
-	if (optionString != null) {
+	if (optionString !== null) {
 		// check if wrapped in curly braces and remove them
 		while (optionString.startsWith('{') && optionString.endsWith('}')) {
 			optionString = optionString.slice(1, optionString.length - 1);
@@ -68,7 +66,7 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 		let escaped = false;
 		let value = '';
 		for (const c of optionString) {
-			if (c == '{') {
+			if (c === '{') {
 				if (onValue) {
 					value += c;
 				} else {
@@ -76,7 +74,7 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 				}
 				depth++;
 			}
-			else if (c == '}') {
+			else if (c === '}') {
 				depth--;
 				if (onValue) {
 					value += c;
@@ -84,7 +82,7 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 					prop += c;
 				}
 			}
-			else if (c == '\\') {
+			else if (c === '\\') {
 				escaped = true;
 				if (onValue) {
 					value += c;
@@ -92,9 +90,9 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 					prop += c;
 				}
 			}
-			else if (c == ',' && depth == 0 && !escaped) {
+			else if (c === ',' && depth === 0 && !escaped) {
 				prop = dashToCamel(prop.trim());
-				if (value == '') {
+				if (value === '') {
 					options[prop] = true;
 				}
 				else if (typeof siunitxDefaults[prop] === 'number') {
@@ -102,7 +100,7 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 				} else if (typeof siunitxDefaults[prop] === 'boolean') {
 					options[prop] = (value.trim() === 'true');
 				} else {
-					if (value.indexOf('\\') == -1) {
+					if (value.indexOf('\\') === -1) {
 						value = value.trim();
 						// finally, remove curly brackets around value if present
 						value = value.replace(/^{(.*)}$/g, '$1');
@@ -113,12 +111,12 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 				value = '';
 				onValue = false;
 			}
-			else if (c == '=' && depth == 0) {
+			else if (c === '=' && depth === 0) {
 				onValue = true;
 			}
 			else {
 				if (onValue) {
-					if (c == ' ' && escaped) {
+					if (c === ' ' && escaped) {
 						escaped = false;
 					}
 					value += c;
@@ -129,7 +127,7 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 		}
 		prop = dashToCamel(prop.trim());
 		
-		if (value == '') {
+		if (value === '') {
 			options[prop] = true;
 		}
 		else if (typeof siunitxDefaults[prop] === 'number') {
@@ -137,7 +135,7 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 		} else if (typeof siunitxDefaults[prop] === 'boolean') {
 			options[prop] = (value.trim() === 'true');
 		} else {
-			if (value.indexOf('\\') == -1) {
+			if (value.indexOf('\\') === -1) {
 				value = value.trim();
 				// finally, remove curly brackets around value if present
 				value = value.replace(/^{(.*)}$/g, '$1');
@@ -149,10 +147,10 @@ function optionStringToObject( optionString: string):Partial<IOptions>{
 }
 
 // LaTeX commands (in the value portion) MUST end with a space before using a comma to add another option
-export function processOptions(globalOptions: IOptions, optionString: string): Map<string, any> {
-	const options = new Map<string, any>();
+export function processOptions(globalOptions: IOptions, optionString: string): Map<string, string|boolean|number> {
+	const options = new Map<string, string|boolean|number>();
 
-	if (optionString != null) {
+	if (optionString !== null) {
 		// check if wrapped in curly braces and remove them
 		while (optionString.startsWith('{') && optionString.endsWith('}')) {
 			optionString = optionString.slice(1, optionString.length - 1);
@@ -163,7 +161,7 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 		let escaped = false;
 		let value = '';
 		for (const c of optionString) {
-			if (c == '{') {
+			if (c === '{') {
 				if (onValue) {
 					value += c;
 				} else {
@@ -171,7 +169,7 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 				}
 				depth++;
 			}
-			else if (c == '}') {
+			else if (c === '}') {
 				depth--;
 				if (onValue) {
 					value += c;
@@ -179,7 +177,7 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 					prop += c;
 				}
 			}
-			else if (c == '\\') {
+			else if (c === '\\') {
 				escaped = true;
 				if (onValue) {
 					value += c;
@@ -187,10 +185,10 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 					prop += c;
 				}
 			}
-			else if (c == ',' && depth == 0 && !escaped) {
+			else if (c === ',' && depth === 0 && !escaped) {
 				prop = dashToCamel(prop.trim());
 				//console.log(prop + ': ' + value);
-				if (value == '') {
+				if (value === '') {
 					//globalOptions[prop] = true;
 					options.set(prop, true);
 				}
@@ -201,7 +199,7 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 					//globalOptions[prop] = (value.trim() === 'true');
 					options.set(prop, (value.trim() === 'true'));
 				} else {
-					if (value.indexOf('\\') == -1) {
+					if (value.indexOf('\\') === -1) {
 						value = value.trim();
 						// finally, remove curly brackets around value if present
 						value = value.replace(/^{(.*)}$/g, '$1');
@@ -213,12 +211,12 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 				value = '';
 				onValue = false;
 			}
-			else if (c == '=' && depth == 0) {
+			else if (c === '=' && depth === 0) {
 				onValue = true;
 			}
 			else {
 				if (onValue) {
-					if (c == ' ' && escaped) {
+					if (c === ' ' && escaped) {
 						escaped = false;
 					}
 					value += c;
@@ -230,7 +228,7 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 
 		prop = dashToCamel(prop.trim());
 		//console.log(prop + ': ' + value);
-		if (value == '') {
+		if (value === '') {
 			//globalOptions[prop] = true;
 			options.set(prop, true);
 		}
@@ -241,7 +239,7 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 			//globalOptions[prop] = (value.trim() === 'true');
 			options.set(prop, (value.trim() === 'true'));
 		} else {
-			if (value.indexOf('\\') == -1) {
+			if (value.indexOf('\\') === -1) {
 				value = value.trim();
 				// finally, remove curly brackets around value if present
 				value = value.replace(/^{(.*)}$/g, '$1');

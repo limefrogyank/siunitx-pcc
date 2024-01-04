@@ -31,7 +31,7 @@ export const bracketCloseMap = new Map<string, (options: IOptions) => string>([
 ]);
 
 export const exponentListModeMap = new Map<ExponentsMode, (nums: INumberPiece[], parser: TexParser, options: IOptions) => IExponentModeOutput>([
-    ['individual', (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
+    ['individual', (nums: INumberPiece[], _parser: TexParser, _options: IOptions) => {
         // do nothing
         return { numbers: nums };
     }],
@@ -128,8 +128,7 @@ export function processNumberList(parser: TexParser): void {
             // TODO Sanitize Evaluate Expression!
             let expression = globalOptions.expression
             expression = expression.replace('#1', text);
-            let result = eval(expression);
-            text = result.toString();
+            text = eval(expression).toString();
         }
 
         const numlist = parseList(parser, text, globalOptions);
@@ -141,7 +140,7 @@ export function processNumberList(parser: TexParser): void {
             const targetExponent = numlist[0].exponentSign + numlist[0].exponent;
             const altOptions = Object.assign(globalOptions, { exponentMode: 'fixed', fixedExponent: targetExponent });
             numlist.forEach((v, i) => {
-                if (i == 0) {
+                if (i === 0) {
                     postProcessNumber(v, globalOptions);
                 } else {
                     postProcessNumber(v, altOptions);

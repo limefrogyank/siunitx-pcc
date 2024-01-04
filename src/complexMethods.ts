@@ -2,11 +2,9 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { INumberPiece, NumberPieceDefault, parseNumber, pieceToNumber } from "./numMethods";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import { IOptions, findOptions } from "./options/options";
-import { IComplexNumberOptions } from "./options/complexNumberOptions";
 import { GlobalParser } from "./siunitx";
 import { postProcessNumber } from "./numPostProcessMethods";
 import { displayOutputMml, findInnerText, spacerMap } from "./numDisplayMethods";
-import { OPTIONS } from "mathjax-full/js/util/Options";
 import { displayUnits, parseUnit } from "./unitMethods";
 import { prefixModeMap } from "./qtyMethods";
 
@@ -98,7 +96,7 @@ function polarToCartesian(parser: TexParser, complex: IComplex, options: IOption
 function displayComplexNumber(complex: IComplex, parser: TexParser, options: IOptions): MmlNode[]{
     const realMmlNodes = displayOutputMml(complex.real, parser, options);
 
-        let rootNodes: MmlNode[] = [];
+        const rootNodes: MmlNode[] = [];
         realMmlNodes.forEach(n => {
             rootNodes.push(n);
         })
@@ -160,7 +158,7 @@ export function processComplexNumber(parser: TexParser): MmlNode[] {
 
     Object.assign(globalOptions, localOptions);
 
-    let text = parser.GetArgument('complexnum');
+    const text = parser.GetArgument('complexnum');
 
     if (globalOptions.parseNumbers) {
 
@@ -191,12 +189,12 @@ export function processComplexQuantity(parser: TexParser): void {
 
     Object.assign(globalOptions, localOptions);
 
-    let complexnum = parser.GetArgument('complexnum');
+    const complexnum = parser.GetArgument('complexnum');
     const unitString = parser.GetArgument('unit');
 
     let unitDisplay = '';
 
-	const isLiteral = (unitString.indexOf('\\') == -1);
+	const isLiteral = (unitString.indexOf('\\') === -1);
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
 
     

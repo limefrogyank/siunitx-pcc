@@ -3,8 +3,7 @@ import { IOptions, findOptions } from "./options/options";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import { createExponentMml, displayOutputMml } from "./numDisplayMethods";
-import { ExponentsMode } from "./options/listOptions";
+import { displayOutputMml } from "./numDisplayMethods";
 import { exponentListModeMap } from "./numlistMethods";
 
 
@@ -56,7 +55,7 @@ export function processNumberProduct(parser: TexParser): void {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', text);
-			let result = eval(expression);
+			const result = eval(expression);
 			text = result.toString();
 		}
 
@@ -69,7 +68,7 @@ export function processNumberProduct(parser: TexParser): void {
             const targetExponent = numlist[0].exponentSign + numlist[0].exponent;
             const altOptions = Object.assign(globalOptions, { exponentMode: 'fixed', fixedExponent: targetExponent });
             numlist.forEach((v,i)=>{
-                if (i == 0){
+                if (i === 0){
                     postProcessNumber(v, globalOptions);
                 } else {
                     postProcessNumber(v, altOptions);
