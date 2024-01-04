@@ -266,11 +266,9 @@ export function processNumber(parser: TexParser): MmlNode[] {
 			expression = expression.replace('#1', text);
 			text = eval(expression).toString();
 		}
-
 		const num = parseNumber(parser, text, globalOptions);
-
+		
 		postProcessNumber(num, globalOptions);
-
 		//const displayResult = displayOutput(num, globalOptions);
 
 		const mmlNodes = displayOutputMml(num, parser, globalOptions);

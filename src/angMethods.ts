@@ -72,10 +72,10 @@ function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IA
 				}
 			}
 		} else {
-			if (ang.minutes === null) {
+			if (ang.minutes === undefined) {
 				ang.minutes = generateNumberPiece();
 				num = ang.minutes;
-			} else if (ang.seconds === null) {
+			} else if (ang.seconds === undefined) {
 				ang.seconds = generateNumberPiece();
 				num = ang.seconds;
 			} else {
@@ -135,11 +135,11 @@ function convertToArc(ang: IAnglePiece): void {
 
 function convertToDecimal(ang: IAnglePiece): void {
 	let value = 0;
-	if (ang.seconds !== null) {
+	if (ang.seconds !== undefined && ang.seconds !== null) {
 		value = +ang.seconds.whole / 60;
 		ang.seconds = null;
 	}
-	if (ang.minutes !== null) {
+	if (ang.minutes !== undefined && ang.minutes !== null) {
 		value = (+ang.minutes.whole + value) / 60;
 		ang.minutes = null;
 	}
@@ -195,12 +195,10 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 		}
 	}
 
-
 	if (displayResult !== '' && options.angleSeparator !== '') {
 		displayResult += options.angleSeparator;
 	}
-
-	if (ang.minutes !== null) {
+	if (ang.minutes !== undefined && ang.minutes !== null) {
 		const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal !== '' ? '.' : '') + ang.minutes.fractional);
 		let moddedAngleSymbolMinute = '\\mathrm{' + options.angleSymbolMinute + '}';
 		if (moddedAngleSymbolMinute === "\\mathrm{'}") {
@@ -239,11 +237,10 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 			}
 		}
 	}
-
 	if (displayResult !== '' && options.angleSeparator !== '' && !displayResult.endsWith(options.angleSeparator)) {
 		displayResult += options.angleSeparator;
 	}
-	if (ang.seconds !== null) {
+	if (ang.seconds !== undefined && ang.seconds !== null) {
 		const secondsValue = +(ang.seconds.whole + (ang.seconds.decimal !== '' ? '.' : '') + ang.seconds.fractional);
 		let moddedAngleSymbolSecond = '\\mathrm{' + options.angleSymbolSecond + '}';
 		if (moddedAngleSymbolSecond === "\\mathrm{''}") {
@@ -279,6 +276,7 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 		}
 
 	}
+	
 	//console.log(displayResult);
 	return displayResult;
 }
@@ -295,19 +293,17 @@ export function processAngle(parser: TexParser): MmlNode {
 	Object.assign(globalOptions, localOptions);
 
 	const text = parser.GetArgument('ang');
-
+	
 	// FIXME:  processOption here twice in processAngle?  
 	//processOptions(globalOptions, localOptionString);  
 	const ang = parseAngle(parser, text, globalOptions);
-
 	// TODO: consider error checking result
 	// Is there an exponent??  Throw an error... or ignore it?
 
 	// transform angle format
 	modeMapping.get(globalOptions.angleMode)(ang);
-
 	const displayResult = displayAngle(ang, globalOptions);
-
+	
 	const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
 
 	return mml;

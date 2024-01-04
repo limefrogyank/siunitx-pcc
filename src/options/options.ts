@@ -55,7 +55,7 @@ export function processSISetup(parser: TexParser): void {
 
 function optionStringToObject( optionString: string):Partial<IOptions>{
 	const options : Partial<IOptions> = {};
-	if (optionString !== null) {
+	if (optionString !== undefined && optionString !== null) {
 		// check if wrapped in curly braces and remove them
 		while (optionString.startsWith('{') && optionString.endsWith('}')) {
 			optionString = optionString.slice(1, optionString.length - 1);

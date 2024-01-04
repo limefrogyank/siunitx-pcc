@@ -1,6 +1,8 @@
 import TexError from "mathjax-full/js/input/tex/TexError";
 import * as data from "./resource.en.json";
 
+
+
 export class siunitxError {
 
 	static TooManySemicolonsInAngle = new TexError('siunitx:extraSemicolon', data.extraSemicolon);

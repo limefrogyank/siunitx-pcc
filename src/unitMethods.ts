@@ -115,14 +115,14 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 		unitLatex += qualiferMethod.get(options.qualifierMode)?.(unitPiece.qualifier, options.qualifierPhrase);
 	}
 	unitLatex += '}';
-	const power = unitPiece.power !== null
+	const power = (unitPiece.power !== undefined && unitPiece.power !== null) 
 		? (absPower
 			? Math.abs(unitPiece.power * (unitPiece.position === 'denominator' ? -1 : 1))
 			: unitPiece.power * (unitPiece.position === 'denominator' ? -1 : 1))
 		: (absPower
 			? Math.abs(1 * (unitPiece.position === 'denominator' ? -1 : 1))
 			: 1 * (unitPiece.position === 'denominator' ? -1 : 1));
-	if (power !== null && power !== 1) {
+	if (power !== null && power !== undefined && power !== 1) {
 		unitLatex += '^{' + power + '}';
 	}
 	if (unitPiece.cancel) {
@@ -147,7 +147,7 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 	}
 	let perForSingle = false;
 	if (unitPieces.length >= 2 && unitPieces.filter((v) => {
-		const power = v.power !== null
+		const power = (v.power !== null && v.power !== undefined)
 			? (v.power * (v.position === 'denominator' ? -1 : 1))
 			: 1;
 		return Math.sign(power) === -1;
@@ -187,7 +187,7 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 		let numeratorCount = 0;
 		let denominatorCount = 0;
 		unitPieces.forEach((v) => {
-			if (v.position === 'denominator' || (v.power !== null && v.power < 0)) {
+			if (v.position === 'denominator' || (v.power !== null && v.power !== undefined && v.power < 0)) {
 				denominatorCount++;
 			} else {
 				numeratorCount++;
@@ -201,7 +201,7 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 			let lastNumeratorHadSuperscript = false;
 			unitPieces.forEach((v) => {
 				let latexResult;
-				if (v.position === 'denominator' || (v.power !== null && v.power < 0)) {
+				if (v.position === 'denominator' || (v.power !== null && v.power !== undefined && v.power < 0)) {
 					latexResult = unitLatex(v, options, options.perMode === 'fraction' || options.perMode === 'symbol' || options.perMode === 'repeated-symbol' || options.perMode === "single-symbol" || perForSingle);
 
 					if (denominator !== '') {
@@ -251,11 +251,11 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 		} else {
 			if (options.perMode === 'power-positive-first') {
 				unitPieces = unitPieces.sort((x, y) => {
-					let a = x.power !== null ? x : 1;
+					let a = (x.power !== null && x.power !== undefined) ? x : 1;
 					if (x.position === 'denominator') {
 						a = -a;
 					}
-					let b = y.power !== null ? y : 1;
+					let b = (y.power !== null && y.power !== undefined) ? y : 1;
 					if (y.position === 'denominator') {
 						b = -b;
 					}
@@ -411,7 +411,7 @@ function processPrefixUnitCombo(text: string, unitPiece: IUnitPiece): void {
 		return;
 	}
 
-	if (result[1] !== undefined) {
+	if (result[1] !== undefined && result[1] !== null) {
 		unitPiece.prefix = result[1];
 	} else {
 		unitPiece.prefix = '';

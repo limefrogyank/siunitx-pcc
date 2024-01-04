@@ -50,7 +50,6 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 	if (units === null) {
 		return;
 	}
-
 	let powersOfTen = 0;
 	//let powersOfTwo = 0;
 
@@ -62,7 +61,7 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 		// 2. prefix is not k for grams when extractMassInKilograms // special case
 
 		if ((unit.symbol !== 'g' && unit.prefix !== '') || (unit.symbol === 'g' && unit.prefix !== '' && !options.extractMassInKilograms)) {
-			const unitPower = (unit.power !== null ? +(unit.power) : 1) * (unit.position === 'denominator' ? -1 : 1);
+			const unitPower = ((unit.power !== undefined && unit.power !== null) ? +(unit.power) : 1) * (unit.position === 'denominator' ? -1 : 1);
 			// if (binaryPrefixPower.has(unit.prefix)){
 			// 	const prefPower = binaryPrefixPower.get(unit.prefix);
 			// 	powersOfTwo += (prefPower*unitPower);
@@ -76,7 +75,7 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 			}
 			unit.prefix = '';
 		} else if (unit.symbol === 'g' && unit.prefix !== 'k' && options.extractMassInKilograms) {
-			const unitPower = (unit.power !== null ? +(unit.power) : 1) * (unit.position === 'denominator' ? -1 : 1);
+			const unitPower = ((unit.power !== undefined && unit.power !== null) ? +(unit.power) : 1) * (unit.position === 'denominator' ? -1 : 1);
 			if (prefixPower.has(unit.prefix)) {
 				const prefPower = prefixPower.get(unit.prefix);
 				powersOfTen += (prefPower * unitPower) - 3;
@@ -158,14 +157,22 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 		if (uncertaintyNode !== null) {
 			const parent = uncertaintyNode.parent;
 			const uncertaintyPosition = parent.childNodes.indexOf(uncertaintyNode);
-			parent.childNodes.splice(uncertaintyPosition, 0, quantityProduct, units);
+			if (quantityProduct === null){
+				
+				parent.childNodes.splice(uncertaintyPosition, 0, units);
+				parent.appendChild(units);
+			} else {
+				
+				parent.childNodes.splice(uncertaintyPosition, 0, quantityProduct, units);
 
-			// To make it match the MathML structure of the previous insert,
-			// we should insert the 2nd unit at the same depth.
-			// However, SRE seems to rearrange it all anyways.
-			parent.appendChild(quantityProduct);
-			parent.appendChild(units);
+				// To make it match the MathML structure of the previous insert,
+				// we should insert the 2nd unit at the same depth.
+				// However, SRE seems to rearrange it all anyways.
+	
+				parent.appendChild(quantityProduct);
+				parent.appendChild(units);
 
+			}
 			return [...num];
 
 		} else {

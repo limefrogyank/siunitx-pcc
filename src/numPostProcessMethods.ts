@@ -49,7 +49,7 @@ function convertToScientific(numOriginal:INumberPiece, options: INumPostOptions)
 	return num;
 }
 
-function convertToXExponent(num:INumberPiece, targetExponent: number){
+function convertToExponent(num:INumberPiece, targetExponent: number){
 	if (num === null) return;
 	// count difference between target exponent and current one.
 	const diff = targetExponent - +(num.exponentSign + num.exponent);
@@ -89,7 +89,7 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 		targetExponent--;
 	}
 		
-	convertToXExponent(num, targetExponent);	
+	convertToExponent(num, targetExponent);	
 }
 
 export function convertToFixed(num:INumberPiece, options: INumPostOptions):void {
@@ -97,7 +97,7 @@ export function convertToFixed(num:INumberPiece, options: INumPostOptions):void 
 	const convertedNum = convertToScientific(num, options);
 	Object.assign(num, convertedNum);
 	
-	convertToXExponent(num, options.fixedExponent);
+	convertToExponent(num, options.fixedExponent);
 }
 
 const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions)=>void>([

@@ -393,6 +393,7 @@ export function createExponentMml(num:INumberPiece, parser: TexParser, options: 
 
 export function displayNumberMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
 	let rootNode: MmlNode;
+
 	if (options.negativeColor !== '') {
 		rootNode = parser.create('node', 'mstyle', [], { mathcolor: options.negativeColor });
 	}
@@ -405,7 +406,6 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	}
 
 	groupNumbersMap.get(options.groupDigits)?.(num, options);
-
 	if (options.bracketNegativeNumbers) {
 		if (num.sign === '-') {
 			const leftBracket = parser.create('token', 'mo', {}, '(');
@@ -448,16 +448,15 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	}
 	const numberNode = parser.create('token', 'mn', {}, numberString);
 	currentNode.appendChild(numberNode);
-	if (trailingMml !== null) {
+	if (trailingMml !== undefined) {
 		currentNode.appendChild(trailingMml);
 	}
-
 	// display uncertanties (if not null)
 	num.uncertainty?.forEach(v => {
 		const uncertaintyNode = uncertaintyModeMmlMapping.get(options.uncertaintyMode)?.(v, num, parser, options);
 		currentNode.appendChild(uncertaintyNode);
 	});
-
+	
 	const exponentNodes = createExponentMml( num, parser, options);
 	exponentNodes.forEach(v=>{
 		currentNode.appendChild(v);
@@ -516,7 +515,6 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 			currentNode.appendChild(rightBracket);
 		}
 	}
-
 	return rootNode;
 }
 
@@ -535,7 +533,7 @@ export function displayOutputMml(num: INumberPiece, parser: TexParser, options: 
 		const prefix = (new TexParser(num.prefix, GlobalParser.stack.env, GlobalParser.configuration)).mml();
 		prefix.attributes.set('rspace', '0em');
 		prefix.attributes.set('lspace', '0em');
-		if (currentNode === null) {
+		if (currentNode === undefined) {
 			rootNodes.push(prefix);
 		} else {
 			currentNode.appendChild(prefix);
@@ -543,7 +541,7 @@ export function displayOutputMml(num: INumberPiece, parser: TexParser, options: 
 	}
 
 	const numberNode = displayNumberMml(num, parser, options);
-	if (currentNode === null) {
+	if (currentNode === undefined) {
 		rootNodes.push(numberNode);
 	} else {
 		currentNode.appendChild(numberNode);
