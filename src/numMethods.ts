@@ -178,10 +178,10 @@ export function generateNumberMapping(options: INumParseOptions): Map<string, Ch
 		if (option.match(/(?:^|[^\\])(?:\\\\)*\\$/)) {
 			throw new TexError('BadOptionChars', 'Invalid control sequence at the end of the %1 option', key);
 		}
-		(option.match(matchMacrosOrChar) || []).forEach((c: string)  => {
+		(option.match(matchMacrosOrChar) || []).forEach((c: string) => {
 			if (parseMap.has(c) && key === 'inputUncertaintySigns') {
 				const inputSigns = parseMap.get(c) as CharNumFunction;
-				const altMethod : CharNumFunction = function (macro, num){
+				const altMethod: CharNumFunction = function (macro, num) {
 					(num.whole === '' && num.decimal === '' ? inputSigns : parseUncertaintySigns)(macro, num);
 				}
 				parseMap.set(c, altMethod);
@@ -213,18 +213,17 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 	while (subParser.i < subParser.string.length) {
 		token = subParser.GetNext();
 		subParser.i++;  // GetNext() does not advance position unless skipping whitespace
-		
+
 		if (token === '\\') {
 			token += subParser.GetCS();
 		}
 
-		try{
+		try {
 			mapping.get(token)(token, num);
-		}catch{
+		} catch {
 			console.log("ERROR");
 			throw siunitxError.InvalidNumArgument(subParser.string);
 		}
-
 
 	}
 
@@ -274,7 +273,7 @@ export function processNumber(parser: TexParser): MmlNode[] {
 			text = eval(expression).toString();
 		}
 		const num = parseNumber(parser, text, globalOptions);
-		
+
 		postProcessNumber(num, globalOptions);
 		//const displayResult = displayOutput(num, globalOptions);
 
