@@ -136,7 +136,7 @@ new CommandMap('siunitxMap', {
     },
     siunitxGlobal: (parser, name) => {
         GlobalParser = parser;
-        const options = findOptions(parser);
+        const options = findOptions(parser, siunitxDefaults);
         declareMap[name as string]?.(parser, name as string, options);
     },
     Arialabel: (parser: TexParser, name: string) => {

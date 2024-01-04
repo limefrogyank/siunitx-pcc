@@ -9,6 +9,10 @@ export class siunitxError {
 		return new TexError('siunitx:invalidNumArgument', data.invalidNumArgument, arg);
 	}
 
+	static InvalidOptionValue(key: string, type:string): TexError {
+		return new TexError('siunitx:InvalidOptionValue', data.invalidOptionValue, key, type)
+	}
+
 	static ComparatorAlreadySet(existing: string, toBeAdded: string): TexError {
 		return new TexError('siunitx:comparatorAlreadySet', data.comparatorAlreadySet, existing, toBeAdded);
 	}

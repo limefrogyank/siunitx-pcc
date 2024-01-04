@@ -40,9 +40,9 @@ function bracketExponent(exponentResult: IExponentModeOutput, unitNodes: MmlNode
         exponentResult.leading = leadingBracket;
     }
 
-    if (options.listExponents !== 'combine-bracket'){
+    if (options["list-exponents"] !== 'combine-bracket'){
         const trailingBracket = (new TexParser(bracketCloseMap.get(parser.currentCS)(options), parser.stack.env, parser.configuration)).mml();
-        if (options.listExponents === 'individual'){
+        if (options["list-exponents"] === 'individual'){
             exponentResult.trailing = [];
         }
         exponentResult.trailing.push(trailingBracket);            
@@ -74,10 +74,10 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
     }],  
 	[2, (nums: INumberPiece[],  unitNodes: MmlNode[], parser: TexParser, options: IOptions) => {
         
-        const exponentMapItem = exponentListModeMap.get(options.listExponents);
+        const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
 
-        const unitsMapItem = unitListModeMap.get(options.listUnits);
+        const unitsMapItem = unitListModeMap.get(options["list-units"]);
         const unitsResult = unitsMapItem(exponentResult, unitNodes, parser,options);
         
         let total = [];
@@ -89,7 +89,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
         // if (options.listUnits === 'single'){
         //     total.push(unitNode);
         // }
-        const separator = (new TexParser(`\\text{${options.listPairSeparator}}`, parser.stack.env, parser.configuration)).mml();
+        const separator = (new TexParser(`\\text{${options["list-pair-separator"]}}`, parser.stack.env, parser.configuration)).mml();
         total = total.concat(separator);
         //const second = displayOutputMml(exponentResult.numbers[1], parser, options);
         total = total.concat(unitsResult[1]);
@@ -104,10 +104,10 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
         return total;
     }],
 	[3, (nums: INumberPiece[], unitNodes: MmlNode[], parser: TexParser, options: IOptions) => {
-        const exponentMapItem = exponentListModeMap.get(options.listUnits === 'single' ? 'individual' : options.listExponents);
+        const exponentMapItem = exponentListModeMap.get(options["list-units"] === 'single' ? 'individual' : options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
         
-        const unitsMapItem = unitListModeMap.get(options.listUnits);
+        const unitsMapItem = unitListModeMap.get(options["list-units"]);
         const unitsResult = unitsMapItem(exponentResult, unitNodes, parser,options);
         
         let total = [];
@@ -120,7 +120,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
         //     total.push(unitNode);
         // }
         for (let i=1; i< nums.length-1; i++){
-            const separator = (new TexParser(`\\text{${options.listSeparator}}`, parser.stack.env, parser.configuration)).mml();
+            const separator = (new TexParser(`\\text{${options["list-separator"]}}`, parser.stack.env, parser.configuration)).mml();
             //const next = displayOutputMml(exponentResult.numbers[i], parser, options);
             total = total.concat(separator).concat(unitsResult.numbers[i]);
             // if (options.listUnits === 'repeat'){
@@ -128,7 +128,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
             // }    
         }
 
-        const finalSeparator = (new TexParser(`\\text{${options.listFinalSeparator}}`, parser.stack.env, parser.configuration)).mml();
+        const finalSeparator = (new TexParser(`\\text{${options["list-final-separator"]}}`, parser.stack.env, parser.configuration)).mml();
         //const last = displayOutputMml(exponentResult.numbers[exponentResult.numbers.length-1], parser, options);
         total = total.concat(finalSeparator).concat(unitsResult.numbers[unitsResult.numbers.length-1]);
         // if (options.listUnits === 'repeat'){
@@ -145,7 +145,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
 export function processQuantityList(parser: TexParser): void {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 
 	Object.assign(globalOptions, localOptions);
 
@@ -154,19 +154,19 @@ export function processQuantityList(parser: TexParser): void {
     const isLiteral = (unitString.indexOf('\\') === -1);
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
 
-	if (globalOptions.parseNumbers) {
+	if (globalOptions["parse-numbers"]) {
 
 		const numlist = parseList(parser, text, globalOptions);
 		// // convert number and unit if necessary, use first number in list only
 		// prefixModeMap.get(globalOptions.prefixMode)?.(numlist[0], unitPieces, globalOptions);
 
         // list-units=repeat requires list-exponents=individual, so override if necessary
-        if (globalOptions.listUnits === 'repeat'){
-            globalOptions.listExponents = 'individual';
+        if (globalOptions["list-units"] === 'repeat'){
+            globalOptions["list-exponents"] = 'individual';
         }        
 
         // seems both have to be set to have the list printed plainly, any changes in units display will affect exponents display and v.v.
-        if (globalOptions.listExponents === 'individual'){
+        if (globalOptions["list-exponents"] === 'individual'){
             numlist.forEach(v=>{
                 postProcessNumber(v, globalOptions);
             });

@@ -3,47 +3,47 @@ type UnitsMode = 'repeat' | 'bracket' | 'single';
 export type UnitsModeProduct = UnitsMode | 'bracket-power' | 'power';
 
 export interface IListOptions {
-    listCloseBracket: string;
-    listOpenBracket: string;
-    listExponents: ExponentsMode;
-    listFinalSeparator: string;
-    listPairSeparator: string;
-    listSeparator: string;
-    listUnits: UnitsMode;
-    productCloseBracket: string;
-    productOpenBracket: string;
-    productExponents: ExponentsMode;
-    productMode: 'symbol' | 'phrase';
-    productPhrase: string;
-    productSymbol: string;
-    productUnits: UnitsModeProduct;
-    rangeCloseBracket: string;
-    rangeOpenBracket: string;
-    rangeExponents: ExponentsMode;
-    rangePhrase: string;
-    rangeUnits: UnitsMode;
+    "list-close-bracket": string;
+    "list-open-bracket": string;
+    "list-exponents": ExponentsMode;
+    "list-final-separator": string;
+    "list-pair-separator": string;
+    "list-separator": string;
+    "list-units": UnitsMode;
+    "product-close-bracket": string;
+    "product-open-bracket": string;
+    "product-exponents": ExponentsMode;
+    "product-mode": 'symbol' | 'phrase';
+    "product-phrase": string;
+    "product-symbol": string;
+    "product-units": UnitsModeProduct;
+    "range-close-bracket": string;
+    "range-open-bracket": string;
+    "range-exponents": ExponentsMode;
+    "range-phrase": string;
+    "range-units": UnitsMode;
 
 }
 export const ListOptionDefaults: IListOptions = {
-    listCloseBracket: ')',
-    listOpenBracket: '(',
-    listExponents: 'individual',
-    listFinalSeparator: ', and ',
-    listPairSeparator: ' and ',
-    listSeparator: ', ',
-    listUnits: 'repeat',
-    productCloseBracket: ')',
-    productOpenBracket: '(',
-    productExponents: 'individual',
-    productMode: 'symbol',
-    productPhrase: ' by ',
-    productSymbol: '\\times',
-    productUnits: 'repeat',
-    rangeCloseBracket: ')',
-    rangeOpenBracket: '(',
-    rangeExponents: 'individual',
-    rangePhrase: ' to ',
-    rangeUnits: 'repeat'
+    "list-close-bracket": ')',
+    "list-open-bracket": '(',
+    "list-exponents": 'individual',
+    "list-final-separator": ', and ',
+    "list-pair-separator": ' and ',
+    "list-separator": ', ',
+    "list-units": 'repeat',
+    "product-close-bracket": ')',
+    "product-open-bracket": '(',
+    "product-exponents": 'individual',
+    "product-mode": 'symbol',
+    "product-phrase": ' by ',
+    "product-symbol": '\\times',
+    "product-units": 'repeat',
+    "range-close-bracket": ')',
+    "range-open-bracket": '(',
+    "range-exponents": 'individual',
+    "range-phrase": ' to ',
+    "range-units": 'repeat'
 }
 
 

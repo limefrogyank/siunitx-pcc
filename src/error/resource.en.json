@@ -1,5 +1,6 @@
 {
     "invalidNumArgument": "%1 contains invalid characters and cannot be parsed by siunitx for the num macro.",
+    "invalidOptionValue": "Key %1 accepts only values of type %2",
     "comparatorAlreadySet": "A comparator has already been set.  %1 is already present, but you're trying to add %2.",
     "extraSemicolon": "There are two many semi-colons.  Should only be two at most.",
     "macroNotDefined": "The unit macro, %1, has not been defined.",

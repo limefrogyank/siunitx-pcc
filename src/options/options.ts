@@ -1,4 +1,5 @@
 import TexParser from "mathjax-full/js/input/tex/TexParser";
+import ParseUtil from 'mathjax-full/js/input/tex/ParseUtil';
 import { IUnitOptions, UnitOptionDefaults } from "./unitOptions";
 import { INumOptions, NumOptionDefaults } from "./numberOptions";
 import { IAngleOptions, AngleOptionDefaults } from "./angleOptions";
@@ -6,37 +7,38 @@ import { IQuantityOptions, QuantityOptionDefaults } from "./quantityOptions";
 import { IPrintOptions, PrintOptionsDefault } from "./printOptions";
 import { IComplexNumberOptions, ComplexNumberOptionsDefault } from "./complexNumberOptions";
 import { IListOptions, ListOptionDefaults } from "./listOptions";
+import { siunitxError } from "../error/errors";
 
 
 export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions, IQuantityOptions, IComplexNumberOptions, IPrintOptions, IListOptions { }
 
 export const siunitxDefaults = {
-	...UnitOptionDefaults, 
-	...NumOptionDefaults, 
-	...AngleOptionDefaults, 
-	...QuantityOptionDefaults, 
-	...ComplexNumberOptionsDefault, 
+	...UnitOptionDefaults,
+	...NumOptionDefaults,
+	...AngleOptionDefaults,
+	...QuantityOptionDefaults,
+	...ComplexNumberOptionsDefault,
 	...PrintOptionsDefault,
 	...ListOptionDefaults
 };
 
 // originally this function contained a manual version of getting options inside brackets... not necessary anymore
-export function findOptions(parser: TexParser): Partial<IOptions> {
-	return optionStringToObject(parser.GetBrackets(parser.currentCS));
+export function findOptions(parser: TexParser, globalOptions: IOptions): Partial<IOptions> {
+	return optionStringToObject(parser.GetBrackets(parser.currentCS), globalOptions);
 }
 
-// from https://stackoverflow.com/a/10425344/1938624
-function dashToCamel(input: string): string {
-	return input.toLowerCase().replace(/-(.)/g, (match, group) => {
-		return group.toUpperCase();
-	});
-}
+// // from https://stackoverflow.com/a/10425344/1938624
+// function dashToCamel(input: string): string {
+// 	return input.toLowerCase().replace(/-(.)/g, (match, group) => {
+// 		return group.toUpperCase();
+// 	});
+// }
 
-// from https://stackoverflow.com/a/47932848/1938624
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function camelToDash(str: string): string {
-	return str.replace(/([A-Z])/g, ($1) => { return "-" + $1.toLowerCase(); });
-}
+// // from https://stackoverflow.com/a/47932848/1938624
+// // eslint-disable-next-line @typescript-eslint/no-unused-vars
+// function camelToDash(str: string): string {
+// 	return str.replace(/([A-Z])/g, ($1) => { return "-" + $1.toLowerCase(); });
+// }
 
 export function processSISetup(parser: TexParser): void {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
@@ -53,202 +55,41 @@ export function processSISetup(parser: TexParser): void {
 
 }
 
-function optionStringToObject( optionString: string):Partial<IOptions>{
-	const options : Partial<IOptions> = {};
-	if (optionString !== undefined && optionString !== null) {
-		// check if wrapped in curly braces and remove them
-		while (optionString.startsWith('{') && optionString.endsWith('}')) {
-			optionString = optionString.slice(1, optionString.length - 1);
-		}
-		let prop = '';
-		let onValue = false;
-		let depth = 0;
-		let escaped = false;
-		let value = '';
-		for (const c of optionString) {
-			if (c === '{') {
-				if (onValue) {
-					value += c;
-				} else {
-					prop += c;
-				}
-				depth++;
-			}
-			else if (c === '}') {
-				depth--;
-				if (onValue) {
-					value += c;
-				} else {
-					prop += c;
-				}
-			}
-			else if (c === '\\') {
-				escaped = true;
-				if (onValue) {
-					value += c;
-				} else {
-					prop += c;
-				}
-			}
-			else if (c === ',' && depth === 0 && !escaped) {
-				prop = dashToCamel(prop.trim());
-				if (value === '') {
-					options[prop] = true;
-				}
-				else if (typeof siunitxDefaults[prop] === 'number') {
-					options[prop] = +(value.trim());
-				} else if (typeof siunitxDefaults[prop] === 'boolean') {
-					options[prop] = (value.trim() === 'true');
-				} else {
-					if (value.indexOf('\\') === -1) {
-						value = value.trim();
-						// finally, remove curly brackets around value if present
-						value = value.replace(/^{(.*)}$/g, '$1');
-					}
-					options[prop] = value;
-				}
-				prop = '';
-				value = '';
-				onValue = false;
-			}
-			else if (c === '=' && depth === 0) {
-				onValue = true;
-			}
-			else {
-				if (onValue) {
-					if (c === ' ' && escaped) {
-						escaped = false;
-					}
-					value += c;
-				} else {
-					prop += c;
-				}
+function optionStringToObject(optionString: string, globalOptions: IOptions): Partial<IOptions> {
+	const optionObject = ParseUtil.keyvalOptions(optionString, globalOptions as unknown as { [key: string]: number } , true);
+	const options: Partial<IOptions> = {};
+	for (let [key, value] of Object.entries(optionObject)) {
+		const type = typeof globalOptions[key];
+		if (typeof value !== type) {
+			if (type === 'number' && value.toString().match(/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]\d+)?$/)) {
+				value = parseFloat(value.toString());
+			} else {
+				throw siunitxError.InvalidOptionValue(key, type);
 			}
 		}
-		prop = dashToCamel(prop.trim());
-		
-		if (value === '') {
-			options[prop] = true;
-		}
-		else if (typeof siunitxDefaults[prop] === 'number') {
-			options[prop] = +(value.trim());
-		} else if (typeof siunitxDefaults[prop] === 'boolean') {
-			options[prop] = (value.trim() === 'true');
-		} else {
-			if (value.indexOf('\\') === -1) {
-				value = value.trim();
-				// finally, remove curly brackets around value if present
-				value = value.replace(/^{(.*)}$/g, '$1');
-			}
-			options[prop] = value;
-		}
+		options[key] = value;
 	}
+	
 	return options;
 }
 
 // LaTeX commands (in the value portion) MUST end with a space before using a comma to add another option
-export function processOptions(globalOptions: IOptions, optionString: string): Map<string, string|boolean|number> {
-	const options = new Map<string, string|boolean|number>();
+export function processOptions(globalOptions: IOptions, optionString: string): Map<string, string | boolean | number> {
 
-	if (optionString !== null) {
-		// check if wrapped in curly braces and remove them
-		while (optionString.startsWith('{') && optionString.endsWith('}')) {
-			optionString = optionString.slice(1, optionString.length - 1);
-		}
-		let prop = '';
-		let onValue = false;
-		let depth = 0;
-		let escaped = false;
-		let value = '';
-		for (const c of optionString) {
-			if (c === '{') {
-				if (onValue) {
-					value += c;
-				} else {
-					prop += c;
-				}
-				depth++;
-			}
-			else if (c === '}') {
-				depth--;
-				if (onValue) {
-					value += c;
-				} else {
-					prop += c;
-				}
-			}
-			else if (c === '\\') {
-				escaped = true;
-				if (onValue) {
-					value += c;
-				} else {
-					prop += c;
-				}
-			}
-			else if (c === ',' && depth === 0 && !escaped) {
-				prop = dashToCamel(prop.trim());
-				//console.log(prop + ': ' + value);
-				if (value === '') {
-					//globalOptions[prop] = true;
-					options.set(prop, true);
-				}
-				else if (typeof globalOptions[prop] === 'number') {
-					//globalOptions[prop] = +(value.trim());
-					options.set(prop, +(value.trim()));
-				} else if (typeof globalOptions[prop] === 'boolean') {
-					//globalOptions[prop] = (value.trim() === 'true');
-					options.set(prop, (value.trim() === 'true'));
-				} else {
-					if (value.indexOf('\\') === -1) {
-						value = value.trim();
-						// finally, remove curly brackets around value if present
-						value = value.replace(/^{(.*)}$/g, '$1');
-					}
-					//globalOptions[prop] = value;
-					options.set(prop, value);
-				}
-				prop = '';
-				value = '';
-				onValue = false;
-			}
-			else if (c === '=' && depth === 0) {
-				onValue = true;
-			}
-			else {
-				if (onValue) {
-					if (c === ' ' && escaped) {
-						escaped = false;
-					}
-					value += c;
-				} else {
-					prop += c;
-				}
-			}
-		}
+		const optionObject = ParseUtil.keyvalOptions(optionString, globalOptions as unknown as { [key: string]: number }, true);
+		const options = new Map<string, string | boolean | number>();
 
-		prop = dashToCamel(prop.trim());
-		//console.log(prop + ': ' + value);
-		if (value === '') {
-			//globalOptions[prop] = true;
-			options.set(prop, true);
-		}
-		else if (typeof globalOptions[prop] === 'number') {
-			//globalOptions[prop] = +(value.trim());
-			options.set(prop, +(value.trim()));
-		} else if (typeof globalOptions[prop] === 'boolean') {
-			//globalOptions[prop] = (value.trim() === 'true');
-			options.set(prop, (value.trim() === 'true'));
-		} else {
-			if (value.indexOf('\\') === -1) {
-				value = value.trim();
-				// finally, remove curly brackets around value if present
-				value = value.replace(/^{(.*)}$/g, '$1');
+		for (let [key, value] of Object.entries(optionObject)) {
+			const type = typeof globalOptions[key];
+			if (typeof value !== type) {
+				console.log(value);
+				if (type === 'number' && value.toString().match(/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]\d+)?$/)) {
+					value = parseFloat(value.toString());
+				} else {
+					throw siunitxError.InvalidOptionValue(key, type);
+				}
 			}
-			//globalOptions[prop] = value;
-			options.set(prop, value);
+			options.set(key, value);
 		}
-	}
-
-	return options;
-
+		return options;
 }

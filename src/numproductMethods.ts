@@ -12,7 +12,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], parser: TexParser, o
         return displayOutputMml(nums[0], parser, options);
     }],  
 	[3, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
-        const exponentMapItem = exponentListModeMap.get(options.listExponents);
+        const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
         let total = [];
         if (exponentResult.leading){
@@ -20,7 +20,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], parser: TexParser, o
         }
         total = total.concat(displayOutputMml(exponentResult.numbers[0], parser, options));
         for (let i=1; i< nums.length; i++){
-            const separator = (new TexParser(options.productMode === 'symbol' ? options.productSymbol : `\\text{${options.productPhrase}}`, parser.stack.env, parser.configuration)).mml();
+            const separator = (new TexParser(options["product-mode"] === 'symbol' ? options["product-symbol"] : `\\text{${options["product-phrase"]}}`, parser.stack.env, parser.configuration)).mml();
             const next = displayOutputMml(exponentResult.numbers[i], parser, options);
             total = total.concat(separator).concat(next);
         }
@@ -42,16 +42,16 @@ export function parseProductList(parser:TexParser, input : string, options:IOpti
 export function processNumberProduct(parser: TexParser): void {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 
 	Object.assign(globalOptions, localOptions);
 
 	let text = parser.GetArgument('num');
 
-	if (globalOptions.parseNumbers) {
+	if (globalOptions["parse-numbers"]) {
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally
-		if (globalOptions.evaluateExpression) {
+		if (globalOptions["evaluate-expression"]) {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', text);
@@ -60,7 +60,7 @@ export function processNumberProduct(parser: TexParser): void {
 		}
 
 		const numlist = parseProductList(parser, text, globalOptions);
-        if (globalOptions.productExponents === 'individual'){
+        if (globalOptions["product-exponents"] === 'individual'){
             numlist.forEach(v=>{
                 postProcessNumber(v, globalOptions);
             });

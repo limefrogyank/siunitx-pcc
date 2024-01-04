@@ -5,19 +5,19 @@ export type PrefixMode = 'input' | 'combine-exponent' | 'extract-exponent';
 export type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single';
 
 export interface IQuantityOptions extends INumOptions, IUnitOptions {
-	allowQuantityBreaks: boolean; 			// not implemented, // TODO: allowQuantityBreaks: Check that this can't really be done with MathJax
-	extractMassInKilograms: boolean;
-	prefixMode: PrefixMode;
-	quantityProduct: '\\,';
-	separateUncertaintyUnits: SeparateUncertaintyUnits;
+	"allow-quantity-breaks": boolean; 			// not implemented, // TODO: allowQuantityBreaks: Check that this can't really be done with MathJax
+	"extract-mass-in-kilograms": boolean;
+	"prefix-mode": PrefixMode;
+	"quantity-product": '\\,';
+	"separate-uncertainty-units": SeparateUncertaintyUnits;
 }
 
 export const QuantityOptionDefaults: IQuantityOptions = {
 	...NumOptionDefaults,
 	...UnitOptionDefaults,
-	allowQuantityBreaks: false,
-	extractMassInKilograms: true,
-	prefixMode: 'input',
-	quantityProduct: '\\,',
-	separateUncertaintyUnits: 'bracket'
+	"allow-quantity-breaks": false,
+	"extract-mass-in-kilograms": true,
+	"prefix-mode": 'input',
+	"quantity-product": '\\,',
+	"separate-uncertainty-units": 'bracket'
 }

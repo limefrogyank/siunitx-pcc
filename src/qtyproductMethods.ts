@@ -17,10 +17,10 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
         return nodes.concat(unitNodes);
     }],  
 	[3, (nums: INumberPiece[], unitNodes: MmlNode[], parser: TexParser, options: IOptions) => {
-        const exponentMapItem = exponentListModeMap.get(options.listExponents);
+        const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
 
-        const unitsMapItem = unitListModeMap.get(options.productUnits);
+        const unitsMapItem = unitListModeMap.get(options["product-units"]);
         const unitsResult = unitsMapItem(exponentResult, unitNodes, parser,options);
 
         let total = [];
@@ -30,7 +30,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
         //total = total.concat(displayOutputMml(exponentResult.numbers[0], parser, options));
         total = total.concat(unitsResult.numbers[0]);
         for (let i=1; i< nums.length; i++){
-            const separator = (new TexParser(options.productMode === 'symbol' ? options.productSymbol : `\\text{${options.productPhrase}}`, parser.stack.env, parser.configuration)).mml();
+            const separator = (new TexParser(options["product-mode"] === 'symbol' ? options["product-symbol"] : `\\text{${options["product-phrase"]}}`, parser.stack.env, parser.configuration)).mml();
             //const next = displayOutputMml(exponentResult.numbers[i], parser, options);
             total = total.concat(separator).concat(unitsResult.numbers[i]);
         }
@@ -44,7 +44,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
 export function processQuantityProduct(parser: TexParser): void {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 
 	Object.assign(globalOptions, localOptions);
 
@@ -53,10 +53,10 @@ export function processQuantityProduct(parser: TexParser): void {
     const isLiteral = (unitString.indexOf('\\') === -1);
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
 
-	if (globalOptions.parseNumbers) {
+	if (globalOptions["parse-numbers"]) {
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally
-		if (globalOptions.evaluateExpression) {
+		if (globalOptions["evaluate-expression"]) {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', text);
@@ -64,7 +64,7 @@ export function processQuantityProduct(parser: TexParser): void {
 		}
 
 		const numlist = parseProductList(parser, text, globalOptions);
-        if (globalOptions.productExponents === 'individual'){
+        if (globalOptions["product-exponents"] === 'individual'){
             numlist.forEach(v=>{
                 postProcessNumber(v, globalOptions);
             });
@@ -81,7 +81,7 @@ export function processQuantityProduct(parser: TexParser): void {
         }
 
         // Need to process this after number because some options alter unit prefixes
-        if (globalOptions.productUnits === 'power' || globalOptions.productUnits === 'bracket-power'){
+        if (globalOptions["product-units"] === 'power' || globalOptions["product-units"] === 'bracket-power'){
             const multiplier = numlist.length;
             unitPieces.forEach(v=>{
                 if (v.power){

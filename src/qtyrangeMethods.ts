@@ -10,7 +10,7 @@ import { unitListModeMap } from "./qtylistMethods";
 export function processQuantityRange(parser: TexParser): void {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 
 	Object.assign(globalOptions, localOptions);
 
@@ -21,11 +21,11 @@ export function processQuantityRange(parser: TexParser): void {
     const isLiteral = (unitString.indexOf('\\') === -1);
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
 
-	if (globalOptions.parseNumbers) {
+	if (globalOptions["parse-numbers"]) {
 
 		const firstNum = parseNumber(parser, first, globalOptions);
 		const lastNum = parseNumber(parser, last, globalOptions);
-        if (globalOptions.rangeExponents === 'individual'){
+        if (globalOptions["range-exponents"] === 'individual'){
             postProcessNumber(firstNum, globalOptions);
             postProcessNumber(lastNum, globalOptions);
         } else {
@@ -43,12 +43,12 @@ export function processQuantityRange(parser: TexParser): void {
             unitNodes.splice(0,0,quantityProductNode);
         }
 
-        const exponentMapItem = exponentListModeMap.get(globalOptions.rangeExponents);
+        const exponentMapItem = exponentListModeMap.get(globalOptions["range-exponents"]);
         const exponentResult = exponentMapItem([firstNum, lastNum], parser, globalOptions);
-        const unitsMapItem = unitListModeMap.get(globalOptions.rangeUnits);
+        const unitsMapItem = unitListModeMap.get(globalOptions["range-units"]);
         const unitsResult = unitsMapItem(exponentResult, unitNodes, parser,globalOptions);
         
-        const separator = (new TexParser(`\\text{${globalOptions.rangePhrase}}`, parser.stack.env, parser.configuration)).mml();
+        const separator = (new TexParser(`\\text{${globalOptions["range-phrase"]}}`, parser.stack.env, parser.configuration)).mml();
         
         let total = [];
         if (exponentResult.leading){

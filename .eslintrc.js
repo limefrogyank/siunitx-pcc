@@ -33,6 +33,7 @@ module.exports = {
         // to enforce using type for object type definitions, can be type or interface 
         "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
         // force === and !== instead of == and !=
-        "eqeqeq": ["error", "always"]
+        "eqeqeq": ["error", "always"],
+        "prefer-const": ["error", {"destructuring" : "all"}]
     }
 }

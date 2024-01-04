@@ -60,7 +60,7 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 		// 2. prefix is present for grams when !extractMassInKilograms
 		// 2. prefix is not k for grams when extractMassInKilograms // special case
 
-		if ((unit.symbol !== 'g' && unit.prefix !== '') || (unit.symbol === 'g' && unit.prefix !== '' && !options.extractMassInKilograms)) {
+		if ((unit.symbol !== 'g' && unit.prefix !== '') || (unit.symbol === 'g' && unit.prefix !== '' && !options["extract-mass-in-kilograms"])) {
 			const unitPower = ((unit.power !== undefined && unit.power !== null) ? +(unit.power) : 1) * (unit.position === 'denominator' ? -1 : 1);
 			// if (binaryPrefixPower.has(unit.prefix)){
 			// 	const prefPower = binaryPrefixPower.get(unit.prefix);
@@ -74,7 +74,7 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 				continue;
 			}
 			unit.prefix = '';
-		} else if (unit.symbol === 'g' && unit.prefix !== 'k' && options.extractMassInKilograms) {
+		} else if (unit.symbol === 'g' && unit.prefix !== 'k' && options["extract-mass-in-kilograms"]) {
 			const unitPower = ((unit.power !== undefined && unit.power !== null) ? +(unit.power) : 1) * (unit.position === 'denominator' ? -1 : 1);
 			if (prefixPower.has(unit.prefix)) {
 				const prefPower = prefixPower.get(unit.prefix);
@@ -137,8 +137,8 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 		}
 
 		if (uncertaintyNode !== null) {
-			const leftBracket = parser.create('token', 'mo', {}, options.outputOpenUncertainty);
-			const rightBracket = parser.create('token', 'mo', {}, options.outputCloseUncertainty);
+			const leftBracket = parser.create('token', 'mo', {}, options["output-open-uncertainty"]);
+			const rightBracket = parser.create('token', 'mo', {}, options["output-close-uncertainty"]);
 			return [leftBracket, ...num, rightBracket, quantityProduct, units];
 
 		} else {
@@ -183,13 +183,13 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 
 const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: string, units: string, options: IQuantityOptions) => string>([
 	['single', (num: string, units: string, options: IQuantityOptions): string => {
-		return num + options.quantityProduct + units;
+		return num + options["quantity-product"] + units;
 	}],
 	['bracket', (num: string, units: string, options: IQuantityOptions): string => {
 		if (num.indexOf('\\pm') === -1) {
-			return num + options.quantityProduct + units;
+			return num + options["quantity-product"] + units;
 		}
-		return options.outputOpenUncertainty + num + options.outputCloseUncertainty + options.quantityProduct + units;
+		return options["output-open-uncertainty"] + num + options["output-close-uncertainty"] + options["quantity-product"] + units;
 	}],
 	['repeat', (num: string, units: string, options: IQuantityOptions): string => {
 		// split the num from the uncertainty, split on \\pm
@@ -200,7 +200,7 @@ const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: stri
 				separate += '\\pm';
 			}
 			separate += split[i];
-			separate += options.quantityProduct;
+			separate += options["quantity-product"];
 			separate += units;
 		}
 		return separate;
@@ -209,7 +209,7 @@ const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: stri
 
 export function createQuantityProductMml(parser:TexParser, options:IOptions):MmlNode|null{
 	let quantityProductNode = null;
-		const trimmedQuantityProduct = options.quantityProduct.trimStart();
+		const trimmedQuantityProduct = options["quantity-product"].trimStart();
 		if (trimmedQuantityProduct !== '') {
 			let quantityProduct = spacerMap[trimmedQuantityProduct];
 			if (quantityProduct === undefined) {
@@ -226,7 +226,7 @@ export function createQuantityProductMml(parser:TexParser, options:IOptions):Mml
 export function processQuantity(parser: TexParser): void {
 	let globalOptions: IOptions = { ...parser.options as IOptions };
 
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 	//const localOptions = optionStringToObject(localOptionString);
 
 	let numString = parser.GetArgument('num');
@@ -238,10 +238,10 @@ export function processQuantity(parser: TexParser): void {
 	const isLiteral = (unitString.indexOf('\\') === -1);
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
 
-	if (globalOptions.parseNumbers) {
+	if (globalOptions["parse-numbers"]) {
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally
-		if (globalOptions.evaluateExpression) {
+		if (globalOptions["evaluate-expression"]) {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', numString);
@@ -259,7 +259,7 @@ export function processQuantity(parser: TexParser): void {
 
 		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 		// convert number and unit if necessary
-		prefixModeMap.get(globalOptions.prefixMode)?.(num, unitPieces, globalOptions);
+		prefixModeMap.get(globalOptions["prefix-mode"])?.(num, unitPieces, globalOptions);
 		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 
 		postProcessNumber(num, globalOptions);
@@ -290,7 +290,7 @@ export function processQuantity(parser: TexParser): void {
 		// 	quantityProductNode = parser.create('token', 'mo', {}, quantityProduct);
 		// }
 
-		const qtyDisplay = separateUncertaintyUnitsMmlMap.get(globalOptions.separateUncertaintyUnits)(numDisplay, unitNode, quantityProductNode, parser, globalOptions);
+		const qtyDisplay = separateUncertaintyUnitsMmlMap.get(globalOptions["separate-uncertainty-units"])(numDisplay, unitNode, quantityProductNode, parser, globalOptions);
 		for (const piece of qtyDisplay) {
 			parser.Push(piece);
 		}
@@ -302,7 +302,7 @@ export function processQuantity(parser: TexParser): void {
 		// Need to process this after number because some options alter unit prefixes
 		unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
 
-		const qtyDisplay = separateUncertaintyUnitsMap.get(globalOptions.separateUncertaintyUnits)(numDisplay, unitDisplay, globalOptions);
+		const qtyDisplay = separateUncertaintyUnitsMap.get(globalOptions["separate-uncertainty-units"])(numDisplay, unitDisplay, globalOptions);
 		const qtyNode = (new TexParser(qtyDisplay, parser.stack.env, parser.configuration)).mml();
 		parser.Push(qtyNode);
 	}

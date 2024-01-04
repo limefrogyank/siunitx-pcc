@@ -13,21 +13,21 @@ export interface IExponentModeOutput {
 }
 
 export const bracketOpenMap = new Map<string, (options: IOptions) => string>([
-    ['\\numlist', (options: IOptions) => options.listOpenBracket],
-    ['\\numproduct', (options: IOptions) => options.productOpenBracket],
-    ['\\numrange', (options: IOptions) => options.rangeOpenBracket],
-    ['\\qtylist', (options: IOptions) => options.listOpenBracket],
-    ['\\qtyproduct', (options: IOptions) => options.productOpenBracket],
-    ['\\qtyrange', (options: IOptions) => options.rangeOpenBracket],
+    ['\\numlist', (options: IOptions) => options["list-open-bracket"]],
+    ['\\numproduct', (options: IOptions) => options["product-open-bracket"]],
+    ['\\numrange', (options: IOptions) => options["range-open-bracket"]],
+    ['\\qtylist', (options: IOptions) => options["list-open-bracket"]],
+    ['\\qtyproduct', (options: IOptions) => options["product-open-bracket"]],
+    ['\\qtyrange', (options: IOptions) => options["range-open-bracket"]],
 ]);
 
 export const bracketCloseMap = new Map<string, (options: IOptions) => string>([
-    ['\\numlist', (options: IOptions) => options.listCloseBracket],
-    ['\\numproduct', (options: IOptions) => options.productCloseBracket],
-    ['\\numrange', (options: IOptions) => options.rangeCloseBracket],
-    ['\\qtylist', (options: IOptions) => options.listCloseBracket],
-    ['\\qtyproduct', (options: IOptions) => options.productCloseBracket],
-    ['\\qtyrange', (options: IOptions) => options.rangeCloseBracket],
+    ['\\numlist', (options: IOptions) => options["list-close-bracket"]],
+    ['\\numproduct', (options: IOptions) => options["product-close-bracket"]],
+    ['\\numrange', (options: IOptions) => options["range-close-bracket"]],
+    ['\\qtylist', (options: IOptions) => options["list-close-bracket"]],
+    ['\\qtyproduct', (options: IOptions) => options["product-close-bracket"]],
+    ['\\qtyrange', (options: IOptions) => options["range-close-bracket"]],
 ]);
 
 export const exponentListModeMap = new Map<ExponentsMode, (nums: INumberPiece[], parser: TexParser, options: IOptions) => IExponentModeOutput>([
@@ -65,10 +65,10 @@ const listNumberMap = new Map<number, (nums: INumberPiece[], parser: TexParser, 
         return displayOutputMml(nums[0], parser, options);
     }],
     [2, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
-        const exponentMapItem = exponentListModeMap.get(options.listExponents);
+        const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
         const first = displayOutputMml(exponentResult.numbers[0], parser, options);
-        const separator = (new TexParser(`\\text{${options.listPairSeparator}}`, parser.stack.env, parser.configuration)).mml();
+        const separator = (new TexParser(`\\text{${options["list-pair-separator"]}}`, parser.stack.env, parser.configuration)).mml();
         const second = displayOutputMml(exponentResult.numbers[1], parser, options);
         let total = [];
         if (exponentResult.leading) {
@@ -81,7 +81,7 @@ const listNumberMap = new Map<number, (nums: INumberPiece[], parser: TexParser, 
         return total;
     }],
     [3, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
-        const exponentMapItem = exponentListModeMap.get(options.listExponents);
+        const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
         let total = [];
         if (exponentResult.leading) {
@@ -89,12 +89,12 @@ const listNumberMap = new Map<number, (nums: INumberPiece[], parser: TexParser, 
         }
         total = total.concat(displayOutputMml(exponentResult.numbers[0], parser, options));
         for (let i = 1; i < nums.length - 1; i++) {
-            const separator = (new TexParser(`\\text{${options.listSeparator}}`, parser.stack.env, parser.configuration)).mml();
+            const separator = (new TexParser(`\\text{${options["list-separator"]}}`, parser.stack.env, parser.configuration)).mml();
             const next = displayOutputMml(exponentResult.numbers[i], parser, options);
             total = total.concat(separator).concat(next);
         }
 
-        const finalSeparator = (new TexParser(`\\text{${options.listFinalSeparator}}`, parser.stack.env, parser.configuration)).mml();
+        const finalSeparator = (new TexParser(`\\text{${options["list-final-separator"]}}`, parser.stack.env, parser.configuration)).mml();
         const last = displayOutputMml(exponentResult.numbers[exponentResult.numbers.length - 1], parser, options);
         total = total.concat(finalSeparator).concat(last);
         if (exponentResult.trailing) {
@@ -115,16 +115,16 @@ export function parseList(parser: TexParser, input: string, options: IOptions): 
 export function processNumberList(parser: TexParser): void {
     const globalOptions: IOptions = { ...parser.options as IOptions };
 
-    const localOptions = findOptions(parser);
+    const localOptions = findOptions(parser, globalOptions);
 
     Object.assign(globalOptions, localOptions);
 
     let text = parser.GetArgument('num');
 
-    if (globalOptions.parseNumbers) {
+    if (globalOptions["parse-numbers"]) {
 
         // going to assume evaluate expression is processed first, THEN the result is parsed normally
-        if (globalOptions.evaluateExpression) {
+        if (globalOptions["evaluate-expression"]) {
             // TODO Sanitize Evaluate Expression!
             let expression = globalOptions.expression
             expression = expression.replace('#1', text);
@@ -132,7 +132,7 @@ export function processNumberList(parser: TexParser): void {
         }
 
         const numlist = parseList(parser, text, globalOptions);
-        if (globalOptions.listExponents === 'individual') {
+        if (globalOptions["list-exponents"] === 'individual') {
             numlist.forEach(v => {
                 postProcessNumber(v, globalOptions);
             });

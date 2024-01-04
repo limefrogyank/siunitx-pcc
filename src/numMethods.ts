@@ -156,22 +156,22 @@ export function generateNumberMapping(options: INumParseOptions): Map<string, Ch
 	const parseMap = new Map<string, CharNumFunction>();
 	const matchMacrosOrChar = /\\(?:[a-zA-Z]+|[\uD800-\uDBFF].|.)|[\uD800-\uDBFF].|[^\s\\]/g;
 	for (const [key, method] of [
-		['inputComparators', parseComparators],
-		['inputSigns', parseSigns],
-		['inputDigits', parseDigits],
-		['inputDecimalMarkers', parseDecimals],
-		['inputOpenUncertainty', parseOpenUncertainty],
-		['inputCloseUncertainty', parseCloseUncertainty],
-		['inputUncertaintySigns', parseUncertaintySigns],
-		['inputExponentMarkers', parseExponentMarkers],
-		['inputIgnore', parseIgnore]
+		['input-comparators', parseComparators],
+		['input-signs', parseSigns],
+		['input-digits', parseDigits],
+		['input-decimal-markers', parseDecimals],
+		['input-open-uncertainty', parseOpenUncertainty],
+		['input-close-uncertainty', parseCloseUncertainty],
+		['input-uncertainty-signs', parseUncertaintySigns],
+		['input-exponent-markers', parseExponentMarkers],
+		['input-ignore', parseIgnore]
 	] as [string, CharNumFunction][]) {
 		const option = options[key];
 		if (option.match(/(?:^|[^\\])(?:\\\\)*\\$/)) {
 			throw new TexError('BadOptionChars', 'Invalid control sequence at the end of the %1 option', key);
 		}
 		(option.match(matchMacrosOrChar) || []).forEach((c: string) => {
-			if (parseMap.has(c) && key === 'inputUncertaintySigns') {
+			if (parseMap.has(c) && key === 'input-uncertainty-signs') {
 				const inputSigns = parseMap.get(c) as CharNumFunction;
 				const altMethod: CharNumFunction = function (macro, num) {
 					(num.whole === '' && num.decimal === '' ? inputSigns : parseUncertaintySigns)(macro, num);
@@ -218,19 +218,19 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 
 	}
 
-	if (!options.retainExplicitDecimalMarker && num.decimal !== '' && num.fractional === '') {
+	if (!options["retain-explicit-decimal-marker"] && num.decimal !== '' && num.fractional === '') {
 		num.decimal = '';
 	}
-	if (!options.retainExplicitPlus && num.sign === '+') {
+	if (!options["retain-explicit-plus"] && num.sign === '+') {
 		num.sign = '';
 	}
 	// adding exponent to value check here.  Without it, exponentials without a base won't stay negative. (-e10)
 	const value = +(num.whole + (num.decimal !== '' ? '.' : '') + num.fractional + (num.exponent === '' ? '' : 'e' + num.exponentSign + num.exponent));
-	if (value === 0 && !options.retainNegativeZero && num.sign === '-') {
+	if (value === 0 && !options["retain-negative-zero"] && num.sign === '-') {
 		num.sign = '';
 	}
 
-	if (!options.retainZeroUncertainty) {
+	if (!options["retain-zero-uncertainty"]) {
 		for (let i = num.uncertainty.length - 1; i >= 0; i--) {
 			const uncertaintyValue = +(num.uncertainty[i].whole + (num.uncertainty[i].decimal !== '' ? '.' : '') + num.uncertainty[i].fractional);
 			if (uncertaintyValue === 0) {
@@ -245,7 +245,7 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 export function processNumber(parser: TexParser): MmlNode[] {
 	const globalOptions: IOptions = { ...parser.options as IOptions };
 
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 
 	//processOptions(globalOptions, localOptionString);
 	//const options = processOptions(globalOptions, localOptionString);
@@ -254,10 +254,10 @@ export function processNumber(parser: TexParser): MmlNode[] {
 
 	let text = parser.GetArgument('num');
 
-	if (globalOptions.parseNumbers) {
+	if (globalOptions["parse-numbers"]) {
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally
-		if (globalOptions.evaluateExpression) {
+		if (globalOptions["evaluate-expression"]) {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', text);
