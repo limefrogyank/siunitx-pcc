@@ -9,7 +9,7 @@ import { ExponentsMode } from "./options/listOptions";
 export interface IExponentModeOutput {
     leading?: MmlNode;
     numbers: INumberPiece[];
-    trailing?: MmlNode[];
+    trailing?: MmlNode;
 }
 
 export const bracketOpenMap = new Map<string, (options: IOptions) => string>([
@@ -45,7 +45,7 @@ export const exponentListModeMap = new Map<ExponentsMode, (nums: INumberPiece[],
         return { numbers: nums, trailing: exponentNodes };
     }],
     ['combine-bracket', (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
-        const exponentNodes = createExponentMml(nums[0], parser, options);
+        const exponentNode = createExponentMml(nums[0], parser, options);
         nums.forEach(x => {
             x.exponent = '';
             x.exponentMarker = '';
@@ -54,13 +54,13 @@ export const exponentListModeMap = new Map<ExponentsMode, (nums: INumberPiece[],
 
         const leadingBracket = (new TexParser(bracketOpenMap.get(parser.currentCS)(options), parser.stack.env, parser.configuration)).mml();
         const trailingBracket = (new TexParser(bracketCloseMap.get(parser.currentCS)(options), parser.stack.env, parser.configuration)).mml();
-        exponentNodes.splice(0, 0, trailingBracket);
+        exponentNode.childNodes.splice(0, 0, trailingBracket);
 
-        return { numbers: nums, trailing: exponentNodes, leading: leadingBracket };
+        return { numbers: nums, trailing: exponentNode, leading: leadingBracket };
     }]
 ]);
 
-const listNumberMap = new Map<number, (nums: INumberPiece[], parser: TexParser, options: IOptions) => MmlNode[]>([
+const listNumberMap = new Map<number, (nums: INumberPiece[], parser: TexParser, options: IOptions) => MmlNode>([
     [1, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
         return displayOutputMml(nums[0], parser, options);
     }],
@@ -70,37 +70,41 @@ const listNumberMap = new Map<number, (nums: INumberPiece[], parser: TexParser, 
         const first = displayOutputMml(exponentResult.numbers[0], parser, options);
         const separator = (new TexParser(`\\text{${options["list-pair-separator"]}}`, parser.stack.env, parser.configuration)).mml();
         const second = displayOutputMml(exponentResult.numbers[1], parser, options);
-        let total = [];
+        const root = parser.create('node', 'inferredMrow', [], {});
         if (exponentResult.leading) {
-            total.push(exponentResult.leading);
+            root.appendChild(exponentResult.leading);
         }
-        total = total.concat(first).concat(separator).concat(second);
+        root.appendChild(first);
+        root.appendChild(separator);
+        root.appendChild(second);
         if (exponentResult.trailing) {
-            total = total.concat(exponentResult.trailing);
+            root.appendChild(exponentResult.trailing);
         }
-        return total;
+        return root;
     }],
     [3, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
         const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
-        let total = [];
+        const root = parser.create('node', 'inferredMrow', [], {});
         if (exponentResult.leading) {
-            total.push(exponentResult.leading);
+            root.appendChild(exponentResult.leading);
         }
-        total = total.concat(displayOutputMml(exponentResult.numbers[0], parser, options));
+        root.appendChild(displayOutputMml(exponentResult.numbers[0], parser, options));
         for (let i = 1; i < nums.length - 1; i++) {
             const separator = (new TexParser(`\\text{${options["list-separator"]}}`, parser.stack.env, parser.configuration)).mml();
             const next = displayOutputMml(exponentResult.numbers[i], parser, options);
-            total = total.concat(separator).concat(next);
+            root.appendChild(separator);
+            root.appendChild(next);
         }
 
         const finalSeparator = (new TexParser(`\\text{${options["list-final-separator"]}}`, parser.stack.env, parser.configuration)).mml();
         const last = displayOutputMml(exponentResult.numbers[exponentResult.numbers.length - 1], parser, options);
-        total = total.concat(finalSeparator).concat(last);
+        root.appendChild(finalSeparator);
+        root.appendChild(last);
         if (exponentResult.trailing) {
-            total = total.concat(exponentResult.trailing);
+            root.appendChild(exponentResult.trailing);
         }
-        return total;
+        return root;
     }]
 ]);
 
@@ -149,10 +153,9 @@ export function processNumberList(parser: TexParser): void {
         }
 
         const mapItem = listNumberMap.get(numlist.length) ?? listNumberMap.get(3);
-        const mmlNodes = mapItem(numlist, parser, globalOptions);
-        mmlNodes.forEach(v => {
-            parser.Push(v);
-        });
+        const mmlNode = mapItem(numlist, parser, globalOptions);
+        parser.Push(mmlNode);
+        
 
     } else {
         const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();

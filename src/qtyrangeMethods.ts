@@ -8,7 +8,7 @@ import { createQuantityProductMml } from "./qtyMethods";
 import { unitListModeMap } from "./qtylistMethods";
 
 export function processQuantityRange(parser: TexParser): void {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const localOptions = findOptions(parser, globalOptions);
 
@@ -37,31 +37,34 @@ export function processQuantityRange(parser: TexParser): void {
 
         // Need to process this after number because some options alter unit prefixes
         const unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
-		const unitNodes = [(new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml()];
+		let unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
         const quantityProductNode = createQuantityProductMml(parser, globalOptions);
         if (quantityProductNode){
-            unitNodes.splice(0,0,quantityProductNode);
+            const root = parser.create('node', 'inferredMrow', [], {});
+            root.appendChild(quantityProductNode);
+            root.appendChild(unitNode);
+            unitNode = root; 
         }
 
         const exponentMapItem = exponentListModeMap.get(globalOptions["range-exponents"]);
         const exponentResult = exponentMapItem([firstNum, lastNum], parser, globalOptions);
         const unitsMapItem = unitListModeMap.get(globalOptions["range-units"]);
-        const unitsResult = unitsMapItem(exponentResult, unitNodes, parser,globalOptions);
+        const unitsResult = unitsMapItem(exponentResult, unitNode, parser,globalOptions);
         
         const separator = (new TexParser(`\\text{${globalOptions["range-phrase"]}}`, parser.stack.env, parser.configuration)).mml();
-        
-        let total = [];
+
+        const root = parser.create('node', 'inferredMrow', [], {});
         if (exponentResult.leading){
-            total.push(exponentResult.leading);
+            root.appendChild(exponentResult.leading);
         }
-        total = total.concat(unitsResult.numbers[0]).concat(separator).concat(unitsResult.numbers[1]);
+        root.appendChild(unitsResult.numbers[0]);
+        root.appendChild(separator);
+        root.appendChild(unitsResult.numbers[1]);
         if (exponentResult.trailing){
-            total = total.concat(exponentResult.trailing);
+            root.appendChild(exponentResult.trailing);
         }
         
-        total.forEach(v=>{
-            parser.Push(v);
-        });
+        parser.Push(root);
 		
 	} else {
 		const mml = (new TexParser(first + last, parser.stack.env, parser.configuration)).mml();

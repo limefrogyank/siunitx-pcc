@@ -82,7 +82,6 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 		for (let [key, value] of Object.entries(optionObject)) {
 			const type = typeof globalOptions[key];
 			if (typeof value !== type) {
-				console.log(value);
 				if (type === 'number' && value.toString().match(/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]\d+)?$/)) {
 					value = parseFloat(value.toString());
 				} else {

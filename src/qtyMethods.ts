@@ -121,15 +121,19 @@ function findUncertaintyNode(root: MmlNode): MmlNode | null {
 	return null;
 }
 
-const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions) => MmlNode[]>([
-	['single', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, _parser: TexParser, _options: IQuantityOptions): MmlNode[] => {
-
-		return [...num, quantityProduct, units];
+const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: MmlNode, units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions) => MmlNode>([
+	['single', (num: MmlNode, units: MmlNode, quantityProduct: MmlNode, parser: TexParser, _options: IQuantityOptions): MmlNode => {
+		const root = parser.create('node', 'inferredMrow', [], {});
+		root.appendChild(num);
+		root.appendChild(quantityProduct);
+		root.appendChild(units);
+		return root;
 	}],
-	['bracket', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions): MmlNode[] => {
+	['bracket', (num: MmlNode, units: MmlNode, quantityProduct: MmlNode, parser: TexParser, options: IQuantityOptions): MmlNode => {
+		const root = parser.create('node', 'inferredMrow', [], {});
 		let uncertaintyNode: MmlNode = null;
-		for (const x of num) {
-			const result = findUncertaintyNode(x);
+		for (const x of num.childNodes) {
+			const result = findUncertaintyNode(x as MmlNode);
 			if (result !== null) {
 				uncertaintyNode = result;
 				break;
@@ -139,16 +143,24 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 		if (uncertaintyNode !== null) {
 			const leftBracket = parser.create('token', 'mo', {}, options["output-open-uncertainty"]);
 			const rightBracket = parser.create('token', 'mo', {}, options["output-close-uncertainty"]);
-			return [leftBracket, ...num, rightBracket, quantityProduct, units];
+			root.appendChild(leftBracket);
+			root.appendChild(num);
+			root.appendChild(rightBracket);
+			root.appendChild(quantityProduct);
+			root.appendChild(units);
+			return root;
 
 		} else {
-			return [...num, quantityProduct, units];
+			root.appendChild(num);
+			root.appendChild(quantityProduct);
+			root.appendChild(units);
+			return root;
 		}
 	}],
-	['repeat', (num: MmlNode[], units: MmlNode, quantityProduct: MmlNode, _parser: TexParser, _options: IQuantityOptions): MmlNode[] => {
+	['repeat', (num: MmlNode, units: MmlNode, quantityProduct: MmlNode, parser: TexParser, _options: IQuantityOptions): MmlNode => {
 		let uncertaintyNode: MmlNode = null;
-		for (const x of num) {
-			const result = findUncertaintyNode(x);
+		for (const x of num.childNodes) {
+			const result = findUncertaintyNode(x as MmlNode);
 			if (result !== null) {
 				uncertaintyNode = result;
 				break;
@@ -173,10 +185,14 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 				parent.appendChild(units);
 
 			}
-			return [...num];
+			return num;
 
 		} else {
-			return [...num, quantityProduct, units];
+			const root = parser.create('node', 'inferredMrow', [], {});
+			root.appendChild(num);
+			root.appendChild(quantityProduct);
+			root.appendChild(units);
+			return root;
 		}
 	}]
 ]);
@@ -291,9 +307,7 @@ export function processQuantity(parser: TexParser): void {
 		// }
 
 		const qtyDisplay = separateUncertaintyUnitsMmlMap.get(globalOptions["separate-uncertainty-units"])(numDisplay, unitNode, quantityProductNode, parser, globalOptions);
-		for (const piece of qtyDisplay) {
-			parser.Push(piece);
-		}
+		parser.Push(qtyDisplay);
 
 	} else {
 		// can't do any conversions with number since processing is off

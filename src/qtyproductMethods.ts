@@ -11,33 +11,37 @@ import { createQuantityProductMml } from "./qtyMethods";
 import { unitListModeMap } from "./qtylistMethods";
 
 
-const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[], parser: TexParser, options: IOptions)=>MmlNode[]>([
-	[1, (nums: INumberPiece[], unitNodes: MmlNode[],parser: TexParser, options: IOptions) => {
-        const nodes= displayOutputMml(nums[0], parser, options);
-        return nodes.concat(unitNodes);
+const listNumberMap = new Map<number, (nums:INumberPiece[], unitNode: MmlNode, parser: TexParser, options: IOptions)=>MmlNode>([
+	[1, (nums: INumberPiece[], unitNode: MmlNode,parser: TexParser, options: IOptions) => {
+        const root = parser.create('node', 'inferredMrow', [], {});
+        const node = displayOutputMml(nums[0], parser, options);
+        root.appendChild(node);
+        root.appendChild(unitNode);
+        return root;
     }],  
-	[3, (nums: INumberPiece[], unitNodes: MmlNode[], parser: TexParser, options: IOptions) => {
+	[3, (nums: INumberPiece[], unitNode: MmlNode, parser: TexParser, options: IOptions) => {
         const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
 
         const unitsMapItem = unitListModeMap.get(options["product-units"]);
-        const unitsResult = unitsMapItem(exponentResult, unitNodes, parser,options);
+        const unitsResult = unitsMapItem(exponentResult, unitNode, parser,options);
 
-        let total = [];
+        const root = parser.create('node', 'inferredMrow', [], {});
         if (unitsResult.leading){
-            total.push(unitsResult.leading);
+            root.appendChild(unitsResult.leading);
         }
         //total = total.concat(displayOutputMml(exponentResult.numbers[0], parser, options));
-        total = total.concat(unitsResult.numbers[0]);
+        root.appendChild(unitsResult.numbers[0]);
         for (let i=1; i< nums.length; i++){
             const separator = (new TexParser(options["product-mode"] === 'symbol' ? options["product-symbol"] : `\\text{${options["product-phrase"]}}`, parser.stack.env, parser.configuration)).mml();
             //const next = displayOutputMml(exponentResult.numbers[i], parser, options);
-            total = total.concat(separator).concat(unitsResult.numbers[i]);
+            root.appendChild(separator);
+            root.appendChild(unitsResult.numbers[i]);
         }
         if (unitsResult.trailing){
-            total = total.concat(unitsResult.trailing);
+            root.appendChild(unitsResult.trailing);
         }
-        return total;
+        return root;
     }]
 ]);
 
@@ -93,18 +97,19 @@ export function processQuantityProduct(parser: TexParser): void {
         }
 
         const unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
-		const unitNodes = [(new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml()];
+		let unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
         const quantityProductNode = createQuantityProductMml(parser, globalOptions);
         if (quantityProductNode){
-            unitNodes.splice(0,0,quantityProductNode);
+            const root = parser.create('node', 'inferredMrow', [], {});
+            root.appendChild(quantityProductNode);
+            root.appendChild(unitNode);
+            unitNode = root; 
         }
         
-        
+
         const mapItem = listNumberMap.get(numlist.length) ?? listNumberMap.get(3);
-        const mmlNodes = mapItem(numlist, unitNodes, parser, globalOptions);
-        mmlNodes.forEach(v=>{
-            parser.Push(v);
-        });
+        const mmlNode = mapItem(numlist, unitNode, parser, globalOptions);
+        parser.Push(mmlNode);
 		
 	} else {
 		const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();

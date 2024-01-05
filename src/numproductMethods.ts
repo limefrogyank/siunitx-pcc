@@ -7,27 +7,28 @@ import { displayOutputMml } from "./numDisplayMethods";
 import { exponentListModeMap } from "./numlistMethods";
 
 
-const listNumberMap = new Map<number, (nums:INumberPiece[], parser: TexParser, options: IOptions)=>MmlNode[]>([
+const listNumberMap = new Map<number, (nums:INumberPiece[], parser: TexParser, options: IOptions)=>MmlNode>([
 	[1, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
         return displayOutputMml(nums[0], parser, options);
     }],  
 	[3, (nums: INumberPiece[], parser: TexParser, options: IOptions) => {
         const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
-        let total = [];
+        const root = parser.create('node', 'inferredMrow', [], {});
         if (exponentResult.leading){
-            total.push(exponentResult.leading);
+            root.appendChild(exponentResult.leading);
         }
-        total = total.concat(displayOutputMml(exponentResult.numbers[0], parser, options));
+        root.appendChild(displayOutputMml(exponentResult.numbers[0], parser, options));
         for (let i=1; i< nums.length; i++){
             const separator = (new TexParser(options["product-mode"] === 'symbol' ? options["product-symbol"] : `\\text{${options["product-phrase"]}}`, parser.stack.env, parser.configuration)).mml();
             const next = displayOutputMml(exponentResult.numbers[i], parser, options);
-            total = total.concat(separator).concat(next);
+            root.appendChild(separator);
+            root.appendChild(next);
         }
         if (exponentResult.trailing){
-            total = total.concat(exponentResult.trailing);
+            root.appendChild(exponentResult.trailing);
         }
-        return total;
+        return root;
     }]
 ]);
 
@@ -77,11 +78,9 @@ export function processNumberProduct(parser: TexParser): void {
         }
         
         const mapItem = listNumberMap.get(numlist.length) ?? listNumberMap.get(3);
-        const mmlNodes = mapItem(numlist, parser, globalOptions);
-        mmlNodes.forEach(v=>{
-            parser.Push(v);
-        });
-		
+        const mmlNode = mapItem(numlist, parser, globalOptions);
+        parser.Push(mmlNode);
+        
 	} else {
 		const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();
         parser.Push(mml);

@@ -18,15 +18,15 @@ export interface IPrintOptions {
 	textSeriesToMath: boolean;			// not implemented
 
 	// WARNING: using MathJax, \\color{blue} will only color everything past that point until the END of the LINE.   
-	color: string;						// not implemented	
-	numberColor: string;				// not implemented		
-	unitColor: string;					// not implemented	
+	color: string;							
+	"number-color": string;					
+	"unit-color": string;					
 }
 
 export const PrintOptionsDefault: IPrintOptions = {
 	color: '',
 	mode: 'math',
-	numberColor: '',
+	"number-color": '',
 	numberMode: 'math',
 	propagateMathFont: false,
 	resetMathVersion: true,
@@ -38,6 +38,6 @@ export const PrintOptionsDefault: IPrintOptions = {
 	textSubscriptCommand: '\\textsubscript',
 	textSuperscriptCommand: '\\textsuperscript',
 	textSeriesToMath: false,
-	unitColor: '',
+	"unit-color": '',
 	unitMode: 'math'
 }

@@ -1,7 +1,7 @@
-import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
+import { MmlNode, TextNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./error/errors";
-import { displayNumber } from "./numDisplayMethods";
+import { displayNumberMml } from "./numDisplayMethods";
 import { CharNumFunction, generateNumberMapping, generateNumberPiece, INumberPiece } from "./numMethods";
 import { findOptions, IOptions } from "./options/options";
 import { IAngleOptions } from "./options/angleOptions";
@@ -153,6 +153,31 @@ function convertToDecimal(ang: IAnglePiece): void {
 	}
 }
 
+function degreeOverDecimal(parser: TexParser, inputNode: MmlNode, symbolToUse: string, options: IOptions, accent: boolean): MmlNode | undefined {
+	let degreeNodeToAdd: MmlNode;
+	// decimal will be in first mn node
+	const mnNodes = inputNode.findNodes('mn');
+	
+	if (mnNodes && mnNodes.length > 0) {
+		const numNode = mnNodes[0];
+		const textNode = numNode.childNodes[0] as TextNode;
+		const split = textNode.getText().split(options["output-decimal-marker"]);
+		if (split.length > 1) {  // does contain decimal
+			const replacementNode = parser.create('node', 'inferredMrow', [], {});
+			replacementNode.appendChild(parser.create('token', 'mn', {}, split[0]));
+			const mover = parser.create('node', 'mover', [], {"accent": accent});
+			replacementNode.appendChild(mover);
+			mover.appendChild(parser.create('token', 'mo', {}, '.'));
+			mover.appendChild((new TexParser('\\class{MathML-Unit}{\\mathrm{' + symbolToUse + '}}', parser.stack.env, parser.configuration)).mml());
+			replacementNode.appendChild(parser.create('token', 'mn', {}, split[1]));
+			const parent = numNode.parent;
+			parent.replaceChild(replacementNode, numNode);
+			//console.log(JSON.parse(JSON.stringify(numNode)));
+			degreeNodeToAdd = inputNode as MmlNode;
+		}
+	}
+	return degreeNodeToAdd;
+}
 
 const modeMapping = new Map<string, (ang: IAnglePiece) => void>([
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -161,8 +186,9 @@ const modeMapping = new Map<string, (ang: IAnglePiece) => void>([
 	['decimal', convertToDecimal]
 ]);
 
-function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
-	let displayResult = '';
+function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOptions): MmlNode {
+	const root = parser.create('node', 'inferredMrow', [], {});
+
 	const degreeValue = +(ang.degrees.whole + (ang.degrees.decimal !== '' ? '.' : '') + ang.degrees.fractional);
 	if (ang.degrees.whole === '' && options["fill-angle-degrees"]) {
 		if (ang.minutes.sign === '-') {
@@ -174,33 +200,23 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 		}
 		ang.degrees.whole = '0';
 	}
+	let degreeNodeToAdd: MmlNode;
 	if (degreeValue !== 0 || ang.degrees.whole === '0' || options["fill-angle-degrees"]) {
+		const degreeMml = displayNumberMml(ang.degrees, parser, options as IOptions);
 		if (options["angle-symbol-over-decimal"]) {
-			const number = displayNumber(ang.degrees, options);
-			console.log(number);
-			const split = number.split(options["output-decimal-marker"]);
-			if (split.length > 1) {
-				displayResult += split[0];
-				console.log(displayResult);
-				displayResult += '\\rlap{' + options["output-decimal-marker"] + '}{\\class{MathML-Unit}{\\mathrm{' + options["angle-symbol-degree"] + '}}}';
-				console.log(displayResult);
-				displayResult +=  split[1];
-				console.log(displayResult);
-			} else {
-				displayResult += number;
-				displayResult += options["number-angle-product"];
-				displayResult += '\\class{MathML-Unit}{\\mathrm{' + options["angle-symbol-degree"] + '}}';
-			}
-		} else {
-			displayResult += displayNumber(ang.degrees, options);
-			displayResult += options["number-angle-product"];
-			displayResult += '\\mathrm{' + options["angle-symbol-degree"] + '}';
+			// TODO: assume no exponents, maybe check for this and thow error
+			degreeNodeToAdd = degreeOverDecimal(parser, degreeMml, options["angle-symbol-degree"], options as IOptions, true);
+		}
+		if (degreeNodeToAdd === undefined) {
+			// do nothing but add symbol to end
+			degreeNodeToAdd = parser.create('node', 'inferredMrow', [], {});
+			degreeNodeToAdd.appendChild(degreeMml);
+			degreeNodeToAdd.appendChild((new TexParser(options["number-angle-product"] + '\\class{MathML-Unit}{\\mathrm{' + options["angle-symbol-degree"] + '}}', parser.stack.env, parser.configuration)).mml());
+
 		}
 	}
 
-	if (displayResult !== '' && options["angle-separator"] !== '') {
-		displayResult += options["angle-separator"];
-	}
+	let minuteNodeToAdd: MmlNode;
 	if (ang.minutes !== undefined && ang.minutes !== null) {
 		const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal !== '' ? '.' : '') + ang.minutes.fractional);
 		let moddedAngleSymbolMinute = '\\mathrm{' + options["angle-symbol-minute"] + '}';
@@ -211,6 +227,7 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 			else
 				moddedAngleSymbolMinute = '\\arialabel{degree-minutes}{\\degreeminute}';
 		}
+
 		if (minutesValue !== 0 || ang.minutes.whole === '0' || options["fill-angle-minutes"]) {
 
 			if (minutesValue === 0 && options["fill-angle-minutes"]) {
@@ -220,29 +237,22 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 				}
 				ang.minutes.whole = '0';
 			}
-
+			const minutesMml = displayNumberMml(ang.minutes, parser, options as IOptions);
 			if (options["angle-symbol-over-decimal"]) {
-				const number = displayNumber(ang.minutes, options);
-				const split = number.split(options["output-decimal-marker"]);
-				if (split.length > 1) {
-					displayResult += split[0];
-					displayResult += '\\rlap{' + options["output-decimal-marker"] + '}{' + moddedAngleSymbolMinute + '}';
-					displayResult += split[1];
-				} else {
-					displayResult += number;
-					displayResult += options["number-angle-product"];
-					displayResult += moddedAngleSymbolMinute;
-				}
-			} else {
-				displayResult += displayNumber(ang.minutes, options);
-				displayResult += options["number-angle-product"];
-				displayResult += moddedAngleSymbolMinute;
+				//const number = displayNumber(ang.minutes, options);
+				minuteNodeToAdd = degreeOverDecimal(parser, minutesMml, moddedAngleSymbolMinute, options as IOptions, false);
+			}
+
+			if (minuteNodeToAdd === undefined) {
+				// do nothing but add symbol to end
+				minuteNodeToAdd = parser.create('node', 'inferredMrow', [], {});
+				minuteNodeToAdd.appendChild(minutesMml);
+				minuteNodeToAdd.appendChild((new TexParser(options["number-angle-product"] + '\\class{MathML-Unit}{\\mathrm{' + moddedAngleSymbolMinute + '}}', parser.stack.env, parser.configuration)).mml());
 			}
 		}
 	}
-	if (displayResult !== '' && options["angle-separator"] !== '' && !displayResult.endsWith(options["angle-separator"])) {
-		displayResult += options["angle-separator"];
-	}
+
+	let secondsNodeToAdd: MmlNode;
 	if (ang.seconds !== undefined && ang.seconds !== null) {
 		const secondsValue = +(ang.seconds.whole + (ang.seconds.decimal !== '' ? '.' : '') + ang.seconds.fractional);
 		let moddedAngleSymbolSecond = '\\mathrm{' + options["angle-symbol-second"] + '}';
@@ -253,35 +263,45 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 			else
 				moddedAngleSymbolSecond = '\\arialabel{degree-seconds}{\\degreesecond}';
 		}
-		if (secondsValue !== 0 || ang.seconds.whole === '0' || options["fill-angle-seconds"]) {
 
+		if (secondsValue !== 0 || ang.seconds.whole === '0' || options["fill-angle-seconds"]) {
 			if (secondsValue === 0 && options["fill-angle-seconds"]) {
 				ang.seconds.whole = '0';
 			}
 
+			const secondsMml = displayNumberMml(ang.seconds, parser, options as IOptions);
 			if (options["angle-symbol-over-decimal"]) {
-				const number = displayNumber(ang.seconds, options);
-				const split = number.split(options["output-decimal-marker"]);
-				if (split.length > 1) {
-					displayResult += split[0];
-					displayResult += '\\rlap{' + options["output-decimal-marker"] + '}{' + moddedAngleSymbolSecond + '}';
-					displayResult += split[1];
-				} else {
-					displayResult += number;
-					displayResult += options["number-angle-product"];
-					displayResult += moddedAngleSymbolSecond;
-				}
-			} else {
-				displayResult += displayNumber(ang.seconds, options);
-				displayResult += options["number-angle-product"];
-				displayResult += moddedAngleSymbolSecond
+				//const number = displayNumberMml(ang.seconds, parser, options);
+				secondsNodeToAdd = degreeOverDecimal(parser, secondsMml, moddedAngleSymbolSecond, options as IOptions, false);
+			}
+
+			if (secondsNodeToAdd === undefined) {
+				// do nothing but add symbol to end
+				secondsNodeToAdd = parser.create('node', 'inferredMrow', [], {});
+				secondsNodeToAdd.appendChild(secondsMml);
+				secondsNodeToAdd.appendChild((new TexParser(options["number-angle-product"] + '\\class{MathML-Unit}{\\mathrm{' + moddedAngleSymbolSecond + '}}', parser.stack.env, parser.configuration)).mml());
 			}
 		}
-
 	}
-	
-	console.log(displayResult);
-	return displayResult;
+
+
+	if (degreeNodeToAdd) {
+		root.appendChild(degreeNodeToAdd);
+	}
+	if (degreeNodeToAdd && (minuteNodeToAdd || secondsNodeToAdd) && options["angle-separator"] !== '') {
+		root.appendChild((new TexParser(options["angle-separator"], parser.stack.env, parser.configuration)).mml());
+	}
+	if (minuteNodeToAdd){
+		root.appendChild(minuteNodeToAdd);
+	}
+	if (minuteNodeToAdd && secondsNodeToAdd && options["angle-separator"] !== '') {
+		root.appendChild((new TexParser(options["angle-separator"], parser.stack.env, parser.configuration)).mml());
+	}
+	if (secondsNodeToAdd){
+		root.appendChild(secondsNodeToAdd);
+	}
+
+	return root;
 }
 
 
@@ -296,7 +316,7 @@ export function processAngle(parser: TexParser): MmlNode {
 	Object.assign(globalOptions, localOptions);
 
 	const text = parser.GetArgument('ang');
-	
+
 	// FIXME:  processOption here twice in processAngle?  
 	//processOptions(globalOptions, localOptionString);  
 	const ang = parseAngle(parser, text, globalOptions);
@@ -305,9 +325,7 @@ export function processAngle(parser: TexParser): MmlNode {
 
 	// transform angle format
 	modeMapping.get(globalOptions["angle-mode"])(ang);
-	const displayResult = displayAngle(ang, globalOptions);
-	
-	const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
+	const mml = displayAngleMml( parser, ang, globalOptions);
 
 	return mml;
 }

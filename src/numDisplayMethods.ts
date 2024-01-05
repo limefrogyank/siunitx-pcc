@@ -3,7 +3,6 @@ import { INumberPiece, IUncertainty } from "./numMethods";
 import { IOptions } from "./options/options";
 import { INumOutputOptions } from "./options/numberOptions";
 import { MmlNode, TextNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import { GlobalParser } from "./siunitx";
 import NodeUtil from "mathjax-full/js/input/tex/NodeUtil";
 
 export const spacerMap: Record<string, string> = {
@@ -28,12 +27,12 @@ export function findInnerText(node: MmlNode): string {
 	}
 }
 
-function addSpacing(text: string, digitGroupSize: number, minimum: number, spacer: string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number) {
+function addSpacing(parser: TexParser, text: string, digitGroupSize: number, minimum: number, spacer: string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number) {
 	let mmlSpacer = spacerMap[spacer.trimStart()];
 	if (mmlSpacer === undefined) {
 		// instead of copying spacer, 
 		// should auto parse latex and extract unicode from mml
-		const spacerNode = (new TexParser(spacer, GlobalParser.stack.env, GlobalParser.configuration)).mml();
+		const spacerNode = (new TexParser(spacer, parser.stack.env, parser.configuration)).mml();
 		mmlSpacer = findInnerText(spacerNode);
 	}
 
@@ -60,18 +59,18 @@ function addSpacing(text: string, digitGroupSize: number, minimum: number, space
 }
 
 
-const groupNumbersMap = new Map<string, (num: INumberPiece, options: INumOutputOptions) => void>([
-	['all', (num: INumberPiece, options: INumOutputOptions): void => {
-		num.whole = addSpacing(num.whole, options["digit-group-size"], options["group-minimum-digits"], options["group-separator"], false, options["digit-group-first-size"], options["digit-group-other-size"]);
-		num.fractional = addSpacing(num.fractional, options["digit-group-size"], options["group-minimum-digits"], options["group-separator"], true, options["digit-group-first-size"], options["digit-group-other-size"]);
+const groupNumbersMap = new Map<string, (parser: TexParser, num: INumberPiece, options: INumOutputOptions) => void>([
+	['all', (parser: TexParser, num: INumberPiece, options: INumOutputOptions): void => {
+		num.whole = addSpacing(parser, num.whole, options["digit-group-size"], options["group-minimum-digits"], options["group-separator"], false, options["digit-group-first-size"], options["digit-group-other-size"]);
+		num.fractional = addSpacing(parser, num.fractional, options["digit-group-size"], options["group-minimum-digits"], options["group-separator"], true, options["digit-group-first-size"], options["digit-group-other-size"]);
 
 	}],
-	['decimal', (num: INumberPiece, options: INumOutputOptions): void => {
-		num.fractional = addSpacing(num.fractional, options["digit-group-size"], options["group-minimum-digits"], options["group-separator"], true, options["digit-group-first-size"], options["digit-group-other-size"]);
+	['decimal', (parser: TexParser, num: INumberPiece, options: INumOutputOptions): void => {
+		num.fractional = addSpacing(parser, num.fractional, options["digit-group-size"], options["group-minimum-digits"], options["group-separator"], true, options["digit-group-first-size"], options["digit-group-other-size"]);
 
 	}],
-	['integer', (num: INumberPiece, options: INumOutputOptions): void => {
-		num.whole = addSpacing(num.whole, options["digit-group-size"], options["group-minimum-digits"], options["group-separator"], false, options["digit-group-first-size"], options["digit-group-other-size"]);
+	['integer', (parser: TexParser, num: INumberPiece, options: INumOutputOptions): void => {
+		num.whole = addSpacing(parser, num.whole, options["digit-group-size"], options["group-minimum-digits"], options["group-separator"], false, options["digit-group-first-size"], options["digit-group-other-size"]);
 	}],
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	['none', (): void => { }]
@@ -147,34 +146,34 @@ export function convertUncertaintyToBracket(uncertainty: IUncertainty, piece: IN
 	}
 }
 
-// Deprecated
-function displayUncertaintyBracket(uncertainty: IUncertainty, options: INumOutputOptions): string {
-	let output = options["uncertainty-separator"];
-	output += options["output-open-uncertainty"];
-	output += uncertainty.whole;
-	output += (options["uncertainty-mode"] === 'compact-marker' || options["uncertainty-mode"] === 'full') && uncertainty.decimal !== '' ? options["output-decimal-marker"] : '';
-	output += uncertainty.fractional;
-	output += options["output-close-uncertainty"];
-	return output;
-}
+// // Deprecated
+// function displayUncertaintyBracket(uncertainty: IUncertainty, options: INumOutputOptions): string {
+// 	let output = options["uncertainty-separator"];
+// 	output += options["output-open-uncertainty"];
+// 	output += uncertainty.whole;
+// 	output += (options["uncertainty-mode"] === 'compact-marker' || options["uncertainty-mode"] === 'full') && uncertainty.decimal !== '' ? options["output-decimal-marker"] : '';
+// 	output += uncertainty.fractional;
+// 	output += options["output-close-uncertainty"];
+// 	return output;
+// }
 
 function displayUncertaintyBracketMml(uncertainty: IUncertainty, parser: TexParser, options: INumOutputOptions): MmlNode {
-	const uncertaintySeparator = (new TexParser(options["uncertainty-separator"], GlobalParser.stack.env, GlobalParser.configuration)).mml();
-	const openUncertainty = (new TexParser(options["output-open-uncertainty"], GlobalParser.stack.env, GlobalParser.configuration)).mml();
+	const uncertaintySeparator = (new TexParser(options["uncertainty-separator"], parser.stack.env, parser.configuration)).mml();
+	const openUncertainty = (new TexParser(options["output-open-uncertainty"], parser.stack.env, parser.configuration)).mml();
 
 	let number = uncertainty.whole;
 	number += (options["uncertainty-mode"] === 'compact-marker' || options["uncertainty-mode"] === 'full') && uncertainty.decimal !== '' ? options["output-decimal-marker"] : '';
 	number += uncertainty.fractional;
 	const numberNode = parser.create('token', 'mn', {}, number);
-	const closeUncertainty = (new TexParser(options["output-close-uncertainty"], GlobalParser.stack.env, GlobalParser.configuration)).mml();
+	const closeUncertainty = (new TexParser(options["output-close-uncertainty"], parser.stack.env, parser.configuration)).mml();
 	const mrow = parser.create('node', 'mrow', [uncertaintySeparator, openUncertainty, numberNode, closeUncertainty]);
 	return mrow;
 }
 
-// Deprecated
-function displayUncertaintyPlusMinus(uncertainty: IUncertainty, options: INumOutputOptions): string {
-	return '\\pm' + displayNumber(uncertainty, options);
-}
+// // Deprecated
+// function displayUncertaintyPlusMinus(uncertainty: IUncertainty, options: INumOutputOptions): string {
+// 	return '\\pm' + displayNumber(uncertainty, options);
+// }
 
 function displayUncertaintyPlusMinusMml(uncertainty: IUncertainty, parser: TexParser, options: INumOutputOptions): MmlNode {
 	const numberNode = displayNumberMml(uncertainty, parser, options as IOptions);
@@ -183,25 +182,25 @@ function displayUncertaintyPlusMinusMml(uncertainty: IUncertainty, parser: TexPa
 	return mrow;
 }
 
-// Deprecated
-const uncertaintyModeMapping = new Map<string, (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions) => string>([
-	['separate', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
-		convertUncertaintyToPlusMinus(uncertainty, value, options);
-		return displayUncertaintyPlusMinus(uncertainty, options);
-	}],
-	['compact', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
-		convertUncertaintyToBracket(uncertainty, value, options);
-		return displayUncertaintyBracket(uncertainty, options);
-	}],
-	['full', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
-		convertUncertaintyToBracket(uncertainty, value, options);
-		return displayUncertaintyBracket(uncertainty, options);
-	}],
-	['compact-marker', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
-		convertUncertaintyToBracket(uncertainty, value, options);
-		return displayUncertaintyBracket(uncertainty, options);
-	}],
-])
+// // Deprecated
+// const uncertaintyModeMapping = new Map<string, (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions) => string>([
+// 	['separate', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
+// 		convertUncertaintyToPlusMinus(uncertainty, value, options);
+// 		return displayUncertaintyPlusMinus(uncertainty, options);
+// 	}],
+// 	['compact', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
+// 		convertUncertaintyToBracket(uncertainty, value, options);
+// 		return displayUncertaintyBracket(uncertainty, options);
+// 	}],
+// 	['full', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
+// 		convertUncertaintyToBracket(uncertainty, value, options);
+// 		return displayUncertaintyBracket(uncertainty, options);
+// 	}],
+// 	['compact-marker', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
+// 		convertUncertaintyToBracket(uncertainty, value, options);
+// 		return displayUncertaintyBracket(uncertainty, options);
+// 	}],
+// ])
 
 const uncertaintyModeMmlMapping = new Map<string, (uncertainty: IUncertainty, value: INumberPiece, parser: TexParser, options: INumOutputOptions) => MmlNode>([
 	['separate', (uncertainty: IUncertainty, value: INumberPiece, parser: TexParser, options: INumOutputOptions): MmlNode => {
@@ -223,123 +222,120 @@ const uncertaintyModeMmlMapping = new Map<string, (uncertainty: IUncertainty, va
 ])
 
 
-export function displayNumber(piece: INumberPiece, options: INumOutputOptions): string {
-	let output = '';
-	let mmlString = '';
-	groupNumbersMap.get(options["group-digits"])?.(piece, options);
+// export function displayNumber(piece: INumberPiece, options: INumOutputOptions): string {
+// 	let output = '';
+// 	let mmlString = '';
+// 	groupNumbersMap.get(options["group-digits"])?.(piece, options);
 
-	if (options["negative-color"] !== '') {
-		output += '{\\color{' + options["negative-color"] + '}';
-	}
-	if (options["bracket-negative-numbers"]) {
-		if (piece.sign === '-') {
-			output += '(';
-		}
-	} else {
-		// brackets remove extra spacing intended for math equation
-		if (options["print-implicit-plus"] && piece.sign === '') {
-			//output += '\\mmlToken{mrow}{\\mmlToken{mo}{+}}';
-			output += '\\mmlToken{mo}[rspace="0em", lspace="0em"]{+}';
-		} else {
-			if (piece.sign !== '') {
-				//output += `\\mmlToken{mrow}{\\mmlToken{mo}{${piece.sign}}}`;
-				output += `\\mmlToken{mo}[rspace="0em", lspace="0em"]{${piece.sign}}`;
-			}
-		}
-	}
+// 	if (options["negative-color"] !== '') {
+// 		output += '{\\color{' + options["negative-color"] + '}';
+// 	}
+// 	if (options["bracket-negative-numbers"]) {
+// 		if (piece.sign === '-') {
+// 			output += '(';
+// 		}
+// 	} else {
+// 		// brackets remove extra spacing intended for math equation
+// 		if (options["print-implicit-plus"] && piece.sign === '') {
+// 			//output += '\\mmlToken{mrow}{\\mmlToken{mo}{+}}';
+// 			output += '\\mmlToken{mo}[rspace="0em", lspace="0em"]{+}';
+// 		} else {
+// 			if (piece.sign !== '') {
+// 				//output += `\\mmlToken{mrow}{\\mmlToken{mo}{${piece.sign}}}`;
+// 				output += `\\mmlToken{mo}[rspace="0em", lspace="0em"]{${piece.sign}}`;
+// 			}
+// 		}
+// 	}
 
-	// if unity mantissa AND don't print it, then we don't need the rest of this.
-	if (piece.whole === '1' && piece.fractional === '' && !options["print-unity-mantissa"]) {
-		// don't do anything UNLESS exponent is also zero and printZeroExponent is false
-		if (!options["print-zero-exponent"] && (piece.exponent === '' || (piece.exponent === '1' && piece.exponentSign !== '-'))) {
-			mmlString += '1';
-		}
-	} else {
-		if ((piece.whole === '' && piece.fractional) || piece.whole === '0') {
-			if (options["print-zero-integer"]) {
-				mmlString += '0';
-			}
-		} else {
-			mmlString += piece.whole;
-		}
-		mmlString += (piece.decimal !== '' ? options["output-decimal-marker"] : '');
-		if (options["zero-decimal-as-symbol"] && +(piece.fractional) === 0) {
-			// hack: insert searchable identifier
-			mmlString += options["zero-symbol"];
-		} else {
-			mmlString += piece.fractional;
-		}
-	}
+// 	// if unity mantissa AND don't print it, then we don't need the rest of this.
+// 	if (piece.whole === '1' && piece.fractional === '' && !options["print-unity-mantissa"]) {
+// 		// don't do anything UNLESS exponent is also zero and printZeroExponent is false
+// 		if (!options["print-zero-exponent"] && (piece.exponent === '' || (piece.exponent === '1' && piece.exponentSign !== '-'))) {
+// 			mmlString += '1';
+// 		}
+// 	} else {
+// 		if ((piece.whole === '' && piece.fractional) || piece.whole === '0') {
+// 			if (options["print-zero-integer"]) {
+// 				mmlString += '0';
+// 			}
+// 		} else {
+// 			mmlString += piece.whole;
+// 		}
+// 		mmlString += (piece.decimal !== '' ? options["output-decimal-marker"] : '');
+// 		if (options["zero-decimal-as-symbol"] && +(piece.fractional) === 0) {
+// 			// hack: insert searchable identifier
+// 			mmlString += options["zero-symbol"];
+// 		} else {
+// 			mmlString += piece.fractional;
+// 		}
+// 	}
 
-	output += `\\mmlToken{mn}{${mmlString}}`;
-	mmlString = '';
+// 	output += `\\mmlToken{mn}{${mmlString}}`;
+// 	mmlString = '';
 
-	// display uncertanties (if not null)
-	piece.uncertainty?.forEach(v => {
-		output += uncertaintyModeMapping.get(options["uncertainty-mode"])?.(v, piece, options);
-	});
+// 	// display uncertanties (if not null)
+// 	piece.uncertainty?.forEach(v => {
+// 		output += uncertaintyModeMapping.get(options["uncertainty-mode"])?.(v, piece, options);
+// 	});
 
-	if (options["print-zero-exponent"] && (piece.exponent === '' || (piece.exponent === '0'))) {
-		if (options["output-exponent-marker"] !== '') {
-			output += options["output-exponent-marker"];
-			output += '0';
-		} else {
-			if (options["tight-spacing"]) {
-				output += '{' + options["exponent-product"] + '}';
-			} else {
-				output += options["exponent-product"];
-			}
-			output += options["exponent-base"];
-			output += '^{0}';
-		}
-	} else if (piece.exponent !== '' && piece.exponent !== '0') {
-		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
-		if (piece.whole === '1' && piece.fractional === '' && !options["print-unity-mantissa"]) {
-			output += options["exponent-base"];
-			output += '^{' + piece.exponentSign + piece.exponent + '}';
-		} else {
-			if (piece.exponentMarker !== '') {
-				if (options["output-exponent-marker"] !== '') {
-					output += options["output-exponent-marker"];
-					output += piece.exponentSign + piece.exponent;
-				} else {
-					if (options["tight-spacing"]) {
-						output += (piece.whole !== '' || piece.fractional !== '') ? '{' + options["exponent-product"] + '}' : '';
-					} else {
-						output += (piece.whole !== '' || piece.fractional !== '') ? options["exponent-product"] : '';
-					}
-					output += options["exponent-base"];
-					output += '^{' + piece.exponentSign + piece.exponent + '}';
-				}
-			}
-		}
-	}
+// 	if (options["print-zero-exponent"] && (piece.exponent === '' || (piece.exponent === '0'))) {
+// 		if (options["output-exponent-marker"] !== '') {
+// 			output += options["output-exponent-marker"];
+// 			output += '0';
+// 		} else {
+// 			if (options["tight-spacing"]) {
+// 				output += '{' + options["exponent-product"] + '}';
+// 			} else {
+// 				output += options["exponent-product"];
+// 			}
+// 			output += options["exponent-base"];
+// 			output += '^{0}';
+// 		}
+// 	} else if (piece.exponent !== '' && piece.exponent !== '0') {
+// 		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
+// 		if (piece.whole === '1' && piece.fractional === '' && !options["print-unity-mantissa"]) {
+// 			output += options["exponent-base"];
+// 			output += '^{' + piece.exponentSign + piece.exponent + '}';
+// 		} else {
+// 			if (piece.exponentMarker !== '') {
+// 				if (options["output-exponent-marker"] !== '') {
+// 					output += options["output-exponent-marker"];
+// 					output += piece.exponentSign + piece.exponent;
+// 				} else {
+// 					if (options["tight-spacing"]) {
+// 						output += (piece.whole !== '' || piece.fractional !== '') ? '{' + options["exponent-product"] + '}' : '';
+// 					} else {
+// 						output += (piece.whole !== '' || piece.fractional !== '') ? options["exponent-product"] : '';
+// 					}
+// 					output += options["exponent-base"];
+// 					output += '^{' + piece.exponentSign + piece.exponent + '}';
+// 				}
+// 			}
+// 		}
+// 	}
 
-	if (options["bracket-negative-numbers"]) {
-		if (piece.sign === '-') {
-			output += ')';
-		}
-	}
-	if (options["negative-color"] !== '') {
-		output += '}';
-	}
+// 	if (options["bracket-negative-numbers"]) {
+// 		if (piece.sign === '-') {
+// 			output += ')';
+// 		}
+// 	}
+// 	if (options["negative-color"] !== '') {
+// 		output += '}';
+// 	}
 
-	//const mml = (new TexParser(output, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-	// resume hack: find zero symbol replacement
+// 	return output;
+// }
 
-	return output;
-}
-
-export function createExponentMml(num:INumberPiece, parser: TexParser, options: IOptions):MmlNode[]{
-	const nodes = [];
-	const exponentProductNode = (new TexParser(options["exponent-product"], GlobalParser.stack.env, GlobalParser.configuration)).mml();
-	const exponentBaseNode = (new TexParser(options["exponent-base"], GlobalParser.stack.env, GlobalParser.configuration)).mml();
+export function createExponentMml(num:INumberPiece, parser: TexParser, options: IOptions):MmlNode {
+	const root = parser.create('node', 'inferredMrow', [], {});
+	const exponentProductNode = (new TexParser(options["exponent-product"], parser.stack.env, parser.configuration)).mml();
+	const exponentBaseNode = (new TexParser(options["exponent-base"], parser.stack.env, parser.configuration)).mml();
 	if (options["print-zero-exponent"] && (num.exponent === '' || (num.exponent === '0'))) {
 		const zeroNode = parser.create('token', 'mn', {}, '0');
 		if (options["output-exponent-marker"] !== '') {
 			const customExponentMarker = parser.create('token', 'mi', { mathvariant: 'normal' }, options["output-exponent-marker"]);
-			nodes.push(customExponentMarker);
-			nodes.push(zeroNode);
+			root.appendChild(customExponentMarker);
+			root.appendChild(zeroNode);
 			//currentNode.appendChild(customExponentMarker);
 			//currentNode.appendChild(zeroNode);
 		} else {
@@ -348,8 +344,8 @@ export function createExponentMml(num:INumberPiece, parser: TexParser, options: 
 				exponentProductNode.attributes.set('rspace', '0em');
 			}
 			const exponential = parser.create('node', 'msup', [exponentBaseNode, zeroNode]);
-			nodes.push(exponentProductNode);
-			nodes.push(exponential);
+			root.appendChild(exponentProductNode);
+			root.appendChild(exponential);
 			// currentNode.appendChild(exponentProductNode);
 			// currentNode.appendChild(exponential);
 		}
@@ -363,14 +359,14 @@ export function createExponentMml(num:INumberPiece, parser: TexParser, options: 
 		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
 		if (num.whole === '1' && num.fractional === '' && !options["print-unity-mantissa"]) {
 			//currentNode.appendChild(exponential);
-			nodes.push(exponential);
+			root.appendChild(exponential);
 		} else {
 			if (num.exponentMarker !== '') {
 				if (options["output-exponent-marker"] !== '') {
-					const customExponentMarker = (new TexParser(options["output-exponent-marker"], GlobalParser.stack.env, GlobalParser.configuration)).mml();
+					const customExponentMarker = (new TexParser(options["output-exponent-marker"], parser.stack.env, parser.configuration)).mml();
 					//const customExponentMarker = parser.create('token', 'mi', { }, options.outputExponentMarker);
-					nodes.push(customExponentMarker);
-					nodes.push(supPart);
+					root.appendChild(customExponentMarker);
+					root.appendChild(supPart);
 					// currentNode.appendChild(customExponentMarker);
 					// currentNode.appendChild(supPart);
 				} else {
@@ -379,16 +375,16 @@ export function createExponentMml(num:INumberPiece, parser: TexParser, options: 
 							exponentProductNode.attributes.set('lspace', '0em');
 							exponentProductNode.attributes.set('rspace', '0em');
 						}
-						nodes.push(exponentProductNode);
+						root.appendChild(exponentProductNode);
 						// currentNode.appendChild(exponentProductNode);
 					}
-					nodes.push(exponential);
+					root.appendChild(exponential);
 					// currentNode.appendChild(exponential);
 				}
 			}
 		}
 	}
-	return nodes;
+	return root;
 }
 
 export function displayNumberMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
@@ -405,7 +401,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 		rootNode.appendChild(mrow);
 	}
 
-	groupNumbersMap.get(options["group-digits"])?.(num, options);
+	groupNumbersMap.get(options["group-digits"])?.(parser, num, options);
 	if (options["bracket-negative-numbers"]) {
 		if (num.sign === '-') {
 			const leftBracket = parser.create('token', 'mo', {}, '(');
@@ -441,7 +437,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 		}
 		numberString += (num.decimal !== '' ? options["output-decimal-marker"] : '');
 		if (options["zero-decimal-as-symbol"] && +(num.fractional) === 0) {
-			trailingMml = (new TexParser(options["zero-symbol"], GlobalParser.stack.env, GlobalParser.configuration)).mml();
+			trailingMml = (new TexParser(options["zero-symbol"], parser.stack.env, parser.configuration)).mml();
 		} else {
 			numberString += num.fractional;
 		}
@@ -457,57 +453,9 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 		currentNode.appendChild(uncertaintyNode);
 	});
 	
-	const exponentNodes = createExponentMml( num, parser, options);
-	exponentNodes.forEach(v=>{
-		currentNode.appendChild(v);
-	});
-	// const exponentProductNode = (new TexParser(options.exponentProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-	// const exponentBaseNode = (new TexParser(options.exponentBase, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-	// if (options.printZeroExponent && (num.exponent == '' || (num.exponent == '0'))) {
-	// 	const zeroNode = parser.create('token', 'mn', {}, '0');
-	// 	if (options.outputExponentMarker != '') {
-	// 		const customExponentMarker = parser.create('token', 'mi', { mathvariant: 'normal' }, options.outputExponentMarker);
-	// 		currentNode.appendChild(customExponentMarker);
-	// 		currentNode.appendChild(zeroNode);
-	// 	} else {
-	// 		if (options.tightSpacing) {
-	// 			exponentProductNode.attributes.set('lspace', '0em');
-	// 			exponentProductNode.attributes.set('rspace', '0em');
-	// 		}
-	// 		const exponential = parser.create('node', 'msup', [exponentBaseNode, zeroNode]);
-	// 		currentNode.appendChild(exponentProductNode);
-	// 		currentNode.appendChild(exponential);
-	// 	}
-	// } else if (num.exponent != '' && num.exponent != '0') {
-	// 	const exponentSignNode = parser.create('token', 'mo', {}, num.exponentSign);
-	// 	const exponentValueNode = parser.create('token', 'mn', {}, num.exponent);
-	// 	const supPart = num.exponentSign === '-'
-	// 		? parser.create('node', 'mrow', [exponentSignNode, exponentValueNode])
-	// 		: exponentValueNode;
-	// 	const exponential = parser.create('node', 'msup', [exponentBaseNode, supPart]);
-	// 	// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
-	// 	if (num.whole == '1' && num.fractional == '' && !options.printUnityMantissa) {
-	// 		currentNode.appendChild(exponential);
-	// 	} else {
-	// 		if (num.exponentMarker != '') {
-	// 			if (options.outputExponentMarker != '') {
-	// 				const customExponentMarker = (new TexParser(options.outputExponentMarker, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-	// 				//const customExponentMarker = parser.create('token', 'mi', { }, options.outputExponentMarker);
-	// 				currentNode.appendChild(customExponentMarker);
-	// 				currentNode.appendChild(supPart);
-	// 			} else {
-	// 				if (num.whole != '' || num.fractional != '') {
-	// 					if (options.tightSpacing) {
-	// 						exponentProductNode.attributes.set('lspace', '0em');
-	// 						exponentProductNode.attributes.set('rspace', '0em');
-	// 					}
-	// 					currentNode.appendChild(exponentProductNode);
-	// 				}
-	// 				currentNode.appendChild(exponential);
-	// 			}
-	// 		}
-	// 	}
-	// }
+	const exponentNode = createExponentMml( num, parser, options);
+	currentNode.appendChild(exponentNode);
+	
 
 	if (options["bracket-negative-numbers"]) {
 		if (num.sign === '-') {
@@ -518,62 +466,41 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	return rootNode;
 }
 
-export function displayOutputMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode[] {
-	const rootNodes: MmlNode[] = [];
-	let currentNode: MmlNode;
-	if (options.numberColor !== '') {
-		currentNode = parser.create('node', 'mstyle', [], { mathcolor: options.numberColor });
-		rootNodes.push(currentNode);
-	} else if (options.color !== '') {
-		currentNode = parser.create('node', 'mstyle', [], { mathcolor: options.color });
-		rootNodes.push(currentNode);
-	}
-
+export function displayOutputMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
+	const color = options["number-color"] || options.color;
+	const rootNode = parser.create('node', color ? 'mrow' : 'inferredMrow', [], color ? {mathcolor: color} : {});
 	if (num.prefix !== '') {
-		const prefix = (new TexParser(num.prefix, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-		prefix.attributes.set('rspace', '0em');
-		prefix.attributes.set('lspace', '0em');
-		if (currentNode === undefined) {
-			rootNodes.push(prefix);
-		} else {
-			currentNode.appendChild(prefix);
-		}
+		const prefix = (new TexParser('{' + num.prefix + '}', parser.stack.env, parser.configuration)).mml();
+		rootNode.appendChild(prefix);
 	}
-
-	const numberNode = displayNumberMml(num, parser, options);
-	if (currentNode === undefined) {
-		rootNodes.push(numberNode);
-	} else {
-		currentNode.appendChild(numberNode);
-	}
-
-	return rootNodes;
+	rootNode.appendChild(displayNumberMml(num, parser, options));
+	return rootNode;
 }
 
-// OBSOLETE
-export function displayOutput(num: INumberPiece, options: IOptions): string {
+// // OBSOLETE
+// export function displayOutput(num: INumberPiece, options: IOptions): string {
 
-	let output = '';
+// 	let output = '';
 
-	let closeColor: boolean = false;
-	if (options.numberColor !== '') {
-		output += '{\\color{' + options.numberColor + '}';
-		closeColor = true;
-	} else if (options.color !== '') {
-		output += '{\\color{' + options.color + '}';
-		closeColor = true;
-	}
+// 	let closeColor: boolean = false;
+// 	if (options.numberColor !== '') {
+// 		output += '{\\color{' + options.numberColor + '}';
+// 		closeColor = true;
+// 	} else if (options.color !== '') {
+// 		output += '{\\color{' + options.color + '}';
+// 		closeColor = true;
+// 	}
 
-	// display any prefix symbol such as less than, greater than, etc.
-	// brackets will remove the extra space that normally occurs with symbol
-	output += '{' + num.prefix + '}';
+// 	// display any prefix symbol such as less than, greater than, etc.
+// 	// brackets will remove the extra space that normally occurs with symbol
+// 	output += '{' + num.prefix + '}';
 
-	// display main number
-	output += displayNumber(num, options);
+// 	// display main number
+// 	output += displayNumber(num, options);
 
-	if (closeColor) {
-		output += '}';
-	}
+// 	if (closeColor) {
+// 		output += '}';
+// 	}
 
-	return output;
-}
+// 	return output;
+// }

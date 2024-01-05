@@ -138,8 +138,8 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 	let closeColor: boolean = false;
 	let texString = '';
-	if (options.unitColor !== '') {
-		texString += `{\\color{${options.unitColor}}`;
+	if (options["unit-color"] !== '') {
+		texString += `{\\color{${options["unit-color"]}}`;
 		closeColor = true;
 	} else if (options.color !== '') {
 		texString += `{\\color{${options.color}}`;

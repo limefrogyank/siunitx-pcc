@@ -22,7 +22,7 @@ import { processQuantityProduct } from './qtyproductMethods';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
-        processNumber(parser).forEach(v => parser.Push(v));
+        parser.Push(processNumber(parser));
     },
     '\\ang': (parser: TexParser): void => {
         parser.Push(processAngle(parser));
@@ -52,7 +52,7 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
         processQuantityRange(parser);
     },
     '\\complexnum': (parser: TexParser): void => {
-        processComplexNumber(parser).forEach(v => parser.Push(v));
+        parser.Push(processComplexNumber(parser));
     },
     '\\complexqty': (parser: TexParser): void => {
         processComplexQuantity(parser);
