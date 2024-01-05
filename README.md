@@ -107,7 +107,7 @@ MathJax = {
 }
 ```
 
-7. **Optional** One method of adding global parameters to siunitx formatting is to add them to the MathJax configuration file.  For example, if you wanted all fractions on that page to display as numerator over denominator (instead of inline with a slash character), you would use the `per-mode = fraction` setting.  You can add this directly to the tex object in the configuration.  You must convert the property name from dash-case to camelCase (remove dashes and capitalize the first letter after each dash, i.e. `list-pair-separator` becomes `listPairSeparator` ).
+7. **Optional** One method of adding global parameters to siunitx formatting is to add them to the MathJax configuration file under the object 'siunitx'.  For example, if you wanted all fractions on that page to display as numerator over denominator (instead of inline with a slash character), you would use the `per-mode = fraction` setting.  You can add this directly to the tex object in the configuration.  Since LaTeX options are dashed-case, most of the option names need quotes around them.  
 
 ```javascript
 MathJax = {
@@ -121,7 +121,9 @@ MathJax = {
         packages: {
             '[+]': ['siunitx', 'gensymb', 'color', 'html', 'cancel']
         },
-        perMode: 'fraction'
+        siunitx: {
+            'per-mode': 'fraction'
+        }
     },
     options: {
         enableEnrichment: true,
@@ -134,7 +136,7 @@ MathJax = {
 
 Of course, you're not required to put global options in the MathJax configuration file!  You may not even have access to this portion of the page.  
 
-You're also allowed to use `\\sisetup` within the page to do the same thing.  Notice, we're using dash-case when using TeX markup.  
+You're also allowed to use `\\sisetup` within the page to do the same thing.  
 
 ```tex
 \sisetup{per-mode = fraction}
