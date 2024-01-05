@@ -40,7 +40,7 @@ export function parseProductList(parser:TexParser, input : string, options:IOpti
 }
 
 export function processNumberProduct(parser: TexParser): void {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const localOptions = findOptions(parser, globalOptions);
 

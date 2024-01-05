@@ -287,7 +287,7 @@ function displayAngle(ang: IAnglePiece, options: IAngleOptions): string {
 
 export function processAngle(parser: TexParser): MmlNode {
 
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const localOptions = findOptions(parser, globalOptions);
 

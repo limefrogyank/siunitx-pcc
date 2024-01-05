@@ -143,7 +143,7 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNodes: MmlNode[]
 
 
 export function processQuantityList(parser: TexParser): void {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const localOptions = findOptions(parser, globalOptions);
 

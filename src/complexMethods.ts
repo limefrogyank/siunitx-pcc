@@ -152,7 +152,7 @@ function displayComplexNumber(complex: IComplex, parser: TexParser, options: IOp
 }
 
 export function processComplexNumber(parser: TexParser): MmlNode[] {
-    const globalOptions: IOptions = { ...parser.options as IOptions };
+    const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
     const localOptions = findOptions(parser, globalOptions);
 

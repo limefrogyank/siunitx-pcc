@@ -113,7 +113,7 @@ export function parseList(parser: TexParser, input: string, options: IOptions): 
 }
 
 export function processNumberList(parser: TexParser): void {
-    const globalOptions: IOptions = { ...parser.options as IOptions };
+    const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
     const localOptions = findOptions(parser, globalOptions);
 

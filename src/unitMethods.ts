@@ -339,7 +339,7 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 							processedMacro.result = Object.assign(processedMacro.result, nextModifier);
 							// TODO: WHY IS THIS parser.options and not globaloptions???
 							// Is this even needed?  repeated-symbol is a display option, not a parsing option.
-							if ((parser.options as IOptions)["per-mode"]=== 'repeated-symbol' || globalOptions["sticky-per"]) {
+							if ((parser.options.siunitx as IOptions)["per-mode"]=== 'repeated-symbol' || globalOptions["sticky-per"]) {
 								const denom = nextModifier.position === 'denominator';
 								nextModifier = null;
 								if (denom) {
@@ -362,7 +362,7 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 }
 
 export function processUnit(parser: TexParser): MmlNode {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	// TODO: may be better done a different way. double check.
 	const localOptions = findOptions(parser, globalOptions);

@@ -224,7 +224,7 @@ export function createQuantityProductMml(parser:TexParser, options:IOptions):Mml
 }
 
 export function processQuantity(parser: TexParser): void {
-	let globalOptions: IOptions = { ...parser.options as IOptions };
+	let globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const localOptions = findOptions(parser, globalOptions);
 	//const localOptions = optionStringToObject(localOptionString);
@@ -249,7 +249,7 @@ export function processQuantity(parser: TexParser): void {
 		}
 
 		// refresh global options from default
-		globalOptions = { ...parser.options as IOptions };
+		globalOptions = { ...parser.options.siunitx as IOptions };
 		//processOptions(globalOptions, localOptionString);
 		//const options = processOptions(globalOptions, localOptions);
 		//options.forEach((v, k) => globalOptions[k] = v);

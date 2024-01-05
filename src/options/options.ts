@@ -41,12 +41,12 @@ export function findOptions(parser: TexParser, globalOptions: IOptions): Partial
 // }
 
 export function processSISetup(parser: TexParser): void {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const optionsString = parser.GetArgument('sisetup');
 
 	const options = processOptions(globalOptions, optionsString);
-	Object.assign(parser.options, options);
+	Object.assign(parser.options.siunitx, options);
 	// We are adding the sisetup options to the parser options.  These are global once the page is loaded.
 	// (the globalOptions variable is just a copy and will reset between each siunitx command)
 

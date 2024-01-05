@@ -6,7 +6,7 @@ import { displayOutputMml } from "./numDisplayMethods";
 import { exponentListModeMap } from "./numlistMethods";
 
 export function processNumberRange(parser: TexParser): void {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const localOptions = findOptions(parser, globalOptions);
 

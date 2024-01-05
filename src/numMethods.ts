@@ -243,7 +243,7 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 }
 
 export function processNumber(parser: TexParser): MmlNode[] {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const localOptions = findOptions(parser, globalOptions);
 

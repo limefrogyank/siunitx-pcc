@@ -174,6 +174,8 @@ Configuration.create('siunitx',
         handler: {
             macro: ['angchar-symbols', 'siunitxMap']
         },
-        options: siunitxDefaults,
+        options: { 
+            siunitx: siunitxDefaults
+        },
         config: config
     });
