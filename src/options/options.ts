@@ -8,6 +8,8 @@ import { IPrintOptions, PrintOptionsDefault } from "./printOptions";
 import { IComplexNumberOptions, ComplexNumberOptionsDefault } from "./complexNumberOptions";
 import { IListOptions, ListOptionDefaults } from "./listOptions";
 import { siunitxError } from "../error/errors";
+import "./patch.js";
+import { EnvList } from "mathjax-full/js/input/tex/StackItem";
 
 
 export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions, IQuantityOptions, IComplexNumberOptions, IPrintOptions, IListOptions { }
@@ -24,7 +26,9 @@ export const siunitxDefaults = {
 
 // originally this function contained a manual version of getting options inside brackets... not necessary anymore
 export function findOptions(parser: TexParser, globalOptions: IOptions): Partial<IOptions> {
-	return optionStringToObject(parser.GetBrackets(parser.currentCS), globalOptions);
+	// No good way to extend typing for patch
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	return optionStringToObject((parser as any).GetBrackets(parser.currentCS, undefined, true), globalOptions);
 }
 
 // // from https://stackoverflow.com/a/10425344/1938624
@@ -56,7 +60,9 @@ export function processSISetup(parser: TexParser): void {
 }
 
 function optionStringToObject(optionString: string, globalOptions: IOptions): Partial<IOptions> {
-	const optionObject = ParseUtil.keyvalOptions(optionString, globalOptions as unknown as { [key: string]: number } , true);
+	// No good way to extend typing for patch
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const optionObject: EnvList = (ParseUtil.keyvalOptions as any)(optionString, globalOptions as unknown as { [key: string]: number }, true, true);
 	const options: Partial<IOptions> = {};
 	for (let [key, value] of Object.entries(optionObject)) {
 		const type = typeof globalOptions[key];
@@ -69,26 +75,27 @@ function optionStringToObject(optionString: string, globalOptions: IOptions): Pa
 		}
 		options[key] = value;
 	}
-	
+
 	return options;
 }
 
 // LaTeX commands (in the value portion) MUST end with a space before using a comma to add another option
 export function processOptions(globalOptions: IOptions, optionString: string): Map<string, string | boolean | number> {
+	// No good way to extend typing for patch
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const optionObject : EnvList = (ParseUtil.keyvalOptions as any)(optionString, globalOptions as unknown as { [key: string]: number }, true, true) ;
+	const options = new Map<string, string | boolean | number>();
 
-		const optionObject = ParseUtil.keyvalOptions(optionString, globalOptions as unknown as { [key: string]: number }, true);
-		const options = new Map<string, string | boolean | number>();
-
-		for (let [key, value] of Object.entries(optionObject)) {
-			const type = typeof globalOptions[key];
-			if (typeof value !== type) {
-				if (type === 'number' && value.toString().match(/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]\d+)?$/)) {
-					value = parseFloat(value.toString());
-				} else {
-					throw siunitxError.InvalidOptionValue(key, type);
-				}
+	for (let [key, value] of Object.entries(optionObject)) {
+		const type = typeof globalOptions[key];
+		if (typeof value !== type) {
+			if (type === 'number' && value.toString().match(/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]\d+)?$/)) {
+				value = parseFloat(value.toString());
+			} else {
+				throw siunitxError.InvalidOptionValue(key, type);
 			}
-			options.set(key, value);
 		}
-		return options;
+		options.set(key, value);
+	}
+	return options;
 }

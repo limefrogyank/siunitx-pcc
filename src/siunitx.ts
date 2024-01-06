@@ -19,6 +19,7 @@ import { processNumberRange } from './numrangeMethods';
 import { processQuantityList } from './qtylistMethods';
 import { processQuantityRange } from './qtyrangeMethods';
 import { processQuantityProduct } from './qtyproductMethods';
+import './options/patch';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
