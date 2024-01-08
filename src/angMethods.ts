@@ -79,7 +79,7 @@ function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IA
 				ang.seconds = generateNumberPiece();
 				num = ang.seconds;
 			} else {
-				throw siunitxError.TooManySemicolonsInAngle;
+				throw siunitxError.ExtraSemicolon;
 			}
 		}
 

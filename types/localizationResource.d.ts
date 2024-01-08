@@ -1,11 +1,14 @@
 interface LocalizationResource {
+    badOptionChars: string;
+    comparatorAlreadySet: string;
+    exponentThresholdsError: string;
+    extraSemicolon: string;
     invalidNumArgument: string;
     invalidOptionValue: string;
-    comparatorAlreadySet: string;
-    extraSemicolon: string;
-    macroNotDefined: string;
     literalUnitsForbidden: string;
-    exponentThresholdsError: string;
+    macroNotDefined: string;
+    noUncertaintyToClose: string;
+    uncertaintyAlreadyClosed: string;
 }
 
 declare module "src/error/resource.*.json" {

@@ -133,7 +133,7 @@ function parseOpenUncertainty(text: string, numPiece: INumberPiece) {
 
 function parseCloseUncertainty(text: string, numPiece: INumberPiece) {
 	if (numPiece.uncertainty.length === 0) {
-		throw new TexError('50', 'No uncertainty parsed to close.');
+		throw new TexError('50', 'Trying to close an uncertainty that doesn\'t exist.');
 	}
 	const uncertainty = numPiece.uncertainty[numPiece.uncertainty.length - 1];
 	if (uncertainty.completed) {
@@ -168,7 +168,7 @@ export function generateNumberMapping(options: INumParseOptions): Map<string, Ch
 	] as [string, CharNumFunction][]) {
 		const option = options[key];
 		if (option.match(/(?:^|[^\\])(?:\\\\)*\\$/)) {
-			throw new TexError('BadOptionChars', 'Invalid control sequence at the end of the %1 option', key);
+			throw siunitxError.BadOptionChars(key);
 		}
 		(option.match(matchMacrosOrChar) || []).forEach((c: string) => {
 			if (parseMap.has(c) && key === 'input-uncertainty-signs') {
