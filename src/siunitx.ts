@@ -73,8 +73,9 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
 
 const declareMap: Record<string, (parser: TexParser, name: string, options: Partial<IOptions>) => void> = {
     '\\DeclareSIUnit': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
-        const userDefinedUnits = parser.configuration.packageData.get(UserDefinedUnitsKey) as Map<string, string>;
-        const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, Partial<IOptions>>;
+        const packageData = parser.configuration.packageData.get('siunitx'); 
+        const userDefinedUnits = packageData[UserDefinedUnitsKey] as Map<string, string>;
+        const userDefinedUnitOptions = packageData[UserDefinedUnitOptionsKey] as Map<string, Partial<IOptions>>;
 
         const newUnitMacro = parser.GetArgument(name);
         const newSymbol = parser.GetArgument(name);
@@ -165,8 +166,10 @@ new CommandMap('siunitxMap', {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const config = (_config: ParserConfiguration, jax: TeX<any, any, any>) => {
-    jax.parseOptions.packageData.set(UserDefinedUnitsKey, new Map<string,string>());
-    jax.parseOptions.packageData.set(UserDefinedUnitOptionsKey, new Map<string,string>());
+    jax.parseOptions.packageData.set('siunitx', {
+        [UserDefinedUnitsKey]: new Map<string,string>(),
+        [UserDefinedUnitOptionsKey]: new Map<string,string>()
+    });
 };
 
 

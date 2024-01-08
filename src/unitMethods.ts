@@ -47,10 +47,10 @@ function processUnitMacro(macro: string, parser: TexParser): IUnitMacroProcessRe
 		return { type: 'prefix', result: { prefix: prefixSymbol.get(macro) } };
 	}
 
-	const userDefinedUnits = parser.configuration.packageData.get(UserDefinedUnitsKey) as Map<string, string>;
+	const userDefinedUnits = parser.configuration.packageData.get('siunitx')[UserDefinedUnitsKey] as Map<string, string>;
 	if (userDefinedUnits.has('\\' + macro)) {
 		const result = userDefinedUnits.get('\\' + macro);
-		const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, Partial<IOptions>>;
+		const userDefinedUnitOptions = parser.configuration.packageData.get('siunitx')[UserDefinedUnitOptionsKey] as Map<string, Partial<IOptions>>;
 		const options = userDefinedUnitOptions.get('\\' + macro);
 		return { type: 'unit', result: { symbol: result as string, prefix: '' }, options: options };
 	}
@@ -135,7 +135,6 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 }
 
 export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, options: IOptions, isLiteral: boolean): string {
-	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 	let closeColor: boolean = false;
 	let texString = '';
 	if (options["unit-color"] !== '') {
@@ -420,7 +419,6 @@ function processPrefixUnitCombo(text: string, unitPiece: IUnitPiece): void {
 }
 
 function parsePlainTextUnits(parser: TexParser, text: string): Array<IUnitPiece> {
-	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 	const unitPieces: Array<IUnitPiece> = new Array<IUnitPiece>();
 	const subParser = new TexParser(text, parser.stack.env, parser.configuration);
 	subParser.i = 0;
