@@ -165,8 +165,8 @@ export function processComplexNumber(parser: TexParser): MmlNode {
             polarToCartesian(parser, complex, globalOptions, globalOptions["complex-angle-unit"] === 'degrees');
         }
 
-        postProcessNumber(complex.real, globalOptions);
-        postProcessNumber(complex.imaginary, globalOptions);
+        postProcessNumber(parser, complex.real, globalOptions);
+        postProcessNumber(parser, complex.imaginary, globalOptions);
 
         return displayComplexNumber(complex, parser, globalOptions);
 
@@ -202,11 +202,11 @@ export function processComplexQuantity(parser: TexParser): void {
     }
 
     // convert number and unit if necessary
-    prefixModeMap.get(globalOptions["prefix-mode"])?.(complex.real, unitPieces, globalOptions);
-    prefixModeMap.get(globalOptions["prefix-mode"])?.(complex.imaginary, unitPieces, globalOptions);
+    prefixModeMap.get(globalOptions["prefix-mode"])?.(parser, complex.real, unitPieces, globalOptions);
+    prefixModeMap.get(globalOptions["prefix-mode"])?.(parser, complex.imaginary, unitPieces, globalOptions);
 
-    postProcessNumber(complex.real, globalOptions);
-    postProcessNumber(complex.imaginary, globalOptions);
+    postProcessNumber(parser, complex.real, globalOptions);
+    postProcessNumber(parser, complex.imaginary, globalOptions);
 
 
     const complexNumMml = displayComplexNumber(complex, parser, globalOptions);

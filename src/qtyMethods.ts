@@ -8,7 +8,7 @@ import { displayUnits, IUnitPiece, parseUnit } from "./unitMethods";
 import { prefixPower } from "./units";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 
-function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
+function combineExponent(parser: TexParser, num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
 	if (num.exponent === '' || (units === null || units.length === 0)) {
 		return;
 	}
@@ -42,10 +42,10 @@ function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 	const newExponent = targetExponent - exponent;
 	num.exponent = (Math.abs(newExponent)).toString();
 	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
-	convertToFixed(num, options);
+	convertToFixed(parser, num, options);
 }
 
-function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
+function extractExponent(parser:TexParser, num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
 	if (units === null) {
 		return;
 	}
@@ -94,7 +94,7 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 	}
 }
 
-export const prefixModeMap = new Map<PrefixMode, (num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions) => void>([
+export const prefixModeMap = new Map<PrefixMode, (parser: TexParser, num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions) => void>([
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	['input', (): void => { }],
 	['combine-exponent', combineExponent],
@@ -269,10 +269,10 @@ export function processQuantity(parser: TexParser): void {
 
 		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 		// convert number and unit if necessary
-		prefixModeMap.get(globalOptions["prefix-mode"])?.(num, unitPieces, globalOptions);
+		prefixModeMap.get(globalOptions["prefix-mode"])?.(parser, num, unitPieces, globalOptions);
 		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 
-		postProcessNumber(num, globalOptions);
+		postProcessNumber(parser, num, globalOptions);
 
 		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 
@@ -282,23 +282,7 @@ export function processQuantity(parser: TexParser): void {
 		unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
 		const unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
 
-		// for (const num of numDisplay){
-		// 	parser.Push(num);
-		// }
-		// parser.Push(unitNode);
-		// uncertainty will already be separated.
 		const quantityProductNode = createQuantityProductMml(parser, globalOptions);
-		// const trimmedQuantityProduct = globalOptions.quantityProduct.trimStart();
-		// if (trimmedQuantityProduct !== '') {
-		// 	let quantityProduct = spacerMap[trimmedQuantityProduct];
-		// 	if (quantityProduct === undefined) {
-		// 		// instead of copying quantityProduct, 
-		// 		// should auto parse latex and extract unicode from mml
-		// 		const spacerNode = (new TexParser(quantityProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-		// 		quantityProduct = findInnerText(spacerNode);
-		// 	}
-		// 	quantityProductNode = parser.create('token', 'mo', {}, quantityProduct);
-		// }
 
 		const qtyDisplay = separateUncertaintyUnitsMmlMap.get(globalOptions["separate-uncertainty-units"])(numDisplay, unitNode, quantityProductNode, parser, globalOptions);
 		parser.Push(qtyDisplay);

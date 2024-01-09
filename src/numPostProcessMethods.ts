@@ -1,16 +1,16 @@
+import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./error/errors";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { INumOptions, INumPostOptions } from "./options/numberOptions";
 import { IOptions } from "./options/options";
 
-import { GlobalParser } from "./siunitx";
 
-function convertToScientific(numOriginal: INumberPiece, options: INumPostOptions): INumberPiece {
+function convertToScientific(parser: TexParser, numOriginal: INumberPiece, options: INumPostOptions): INumberPiece {
 	//convert to actual number and use formating to print scientific
 	const num = JSON.parse(JSON.stringify(numOriginal));
 	const val = (+(num.sign + num.whole + num.decimal + num.fractional + (num.exponent !== '' ? ('e' + num.exponentSign + num.exponent) : ''))).toExponential();
 	// parse that back in
-	const newNum = parseNumber(GlobalParser, val, options as IOptions);
+	const newNum = parseNumber(parser, val, options as IOptions);
 
 	//don't forget to check for trailing zeros and put them back
 	let trailingZeros = 0;
@@ -78,11 +78,11 @@ function convertToExponent(num: INumberPiece, targetExponent: number) {
 	num.exponentSign = Math.sign(targetExponent) < 0 ? '-' : '';
 }
 
-function convertToEngineering(num: INumberPiece, options: INumPostOptions): void {
+function convertToEngineering(parser: TexParser, num: INumberPiece, options: INumPostOptions): void {
 	// similar to convertToFixed except we calculate the exponent to be a power of three that keeps the whole number part non-zero.
 
 	// convert to scientific, then move decimal...
-	const convertedNum = convertToScientific(num, options);
+	const convertedNum = convertToScientific(parser, num, options);
 	Object.assign(num, convertedNum);
 	let targetExponent = +(num.exponentSign + num.exponent);
 	while (targetExponent % 3 !== 0) {
@@ -92,30 +92,30 @@ function convertToEngineering(num: INumberPiece, options: INumPostOptions): void
 	convertToExponent(num, targetExponent);
 }
 
-export function convertToFixed(num: INumberPiece, options: INumPostOptions): void {
+export function convertToFixed(parser: TexParser, num: INumberPiece, options: INumPostOptions): void {
 	// convert to scientific, then move decimal...
-	const convertedNum = convertToScientific(num, options);
+	const convertedNum = convertToScientific(parser, num, options);
 	Object.assign(num, convertedNum);
 
 	convertToExponent(num, options["fixed-exponent"]);
 }
 
-const exponentModeMap = new Map<string, (num: INumberPiece, options: INumPostOptions) => void>([
+const exponentModeMap = new Map<string, (parser: TexParser, num: INumberPiece, options: INumPostOptions) => void>([
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	['input', (): void => { }],  // leave number as-is
 	['fixed', convertToFixed],
 	['engineering', convertToEngineering],
-	['scientific', (num: INumberPiece, options: IOptions) => {
-		const convertedNum = convertToScientific(num, options);
+	['scientific', (parser: TexParser, num: INumberPiece, options: IOptions) => {
+		const convertedNum = convertToScientific(parser, num, options);
 		Object.assign(num, convertedNum);
 	}],
-	['threshold', (num: INumberPiece, options: IOptions) => {
+	['threshold', (parser: TexParser, num: INumberPiece, options: IOptions) => {
 		const minMax = options["exponent-thresholds"].split(':');
 		if (minMax.length !== 2) {
 			throw siunitxError.ExponentThresholdsError(options["exponent-thresholds"]);
 		}
 		// ensure we have a version in scientific form but leave the original alone.
-		const testNum = convertToScientific(num, options);
+		const testNum = convertToScientific(parser, num, options);
 		const testExponent = +(testNum.exponentSign + testNum.exponent);
 		if (testExponent > +minMax[0] && testExponent < +minMax[1]) {
 			//leave number as-is'
@@ -166,7 +166,7 @@ function roundUp(fullNumber: string, position: number): string {
 	return result;
 }
 
-function roundPlaces(num: INumberPiece, options: INumPostOptions): void {
+function roundPlaces(parser: TexParser, num: INumberPiece, options: INumPostOptions): void {
 	// if uncertainty exists, no rounding at all!
 	if (num.uncertainty.length === 0) {
 		if (num.fractional.length > options["round-precision"]) {
@@ -194,12 +194,12 @@ function roundPlaces(num: INumberPiece, options: INumPostOptions): void {
 			//no rounding needed.
 		}
 
-		afterRoundZeroOptions(num, options);
+		afterRoundZeroOptions(parser, num, options);
 
 	}
 }
 
-function roundFigures(num: INumberPiece, options: INumPostOptions): void {
+function roundFigures(parser: TexParser, num: INumberPiece, options: INumPostOptions): void {
 	// if uncertainty exists, no rounding at all!
 	if (num.uncertainty.length === 0) {
 		// whole can't be '0', and converting fractional to number and back to string gets rid of leading zeros.
@@ -249,11 +249,11 @@ function roundFigures(num: INumberPiece, options: INumPostOptions): void {
 			//no rounding needed.
 		}
 
-		afterRoundZeroOptions(num, options);
+		afterRoundZeroOptions(parser, num, options);
 	}
 }
 
-function roundUncertainty(num: INumberPiece, options: INumPostOptions): void {
+function roundUncertainty(_parser: TexParser, num: INumberPiece, options: INumPostOptions): void {
 	// only round if uncertainty included
 	if (num.uncertainty.length > 0) {
 		// just in case convert uncertainty to bracket form... easier to round
@@ -330,13 +330,13 @@ function roundUncertainty(num: INumberPiece, options: INumPostOptions): void {
 	}
 }
 
-function afterRoundZeroOptions(num: INumberPiece, options: INumPostOptions) {
+function afterRoundZeroOptions(parser: TexParser, num: INumberPiece, options: INumPostOptions) {
 	// check if zero, then do stuff
 	const current = Math.abs(+(num.whole + num.decimal + num.fractional + (num.exponentMarker !== '' ? 'e' : '') + num.exponentSign + num.exponent));
 	if (current === 0) {
 		if (options["round-minimum"] !== '0') {
 			num.prefix = '\\lt';
-			const minimumNum = parseNumber(GlobalParser, options["round-minimum"], <INumOptions>options);
+			const minimumNum = parseNumber(parser, options["round-minimum"], <INumOptions>options);
 			num.sign = minimumNum.sign;
 			num.whole = minimumNum.whole;
 			num.decimal = minimumNum.decimal;
@@ -351,7 +351,7 @@ function afterRoundZeroOptions(num: INumberPiece, options: INumPostOptions) {
 	}
 }
 
-const roundModeMap = new Map<string, (num: INumberPiece, options: INumPostOptions) => void>([
+const roundModeMap = new Map<string, (parser: TexParser, num: INumberPiece, options: INumPostOptions) => void>([
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	['none', (): void => { }],
 	['places', roundPlaces],
@@ -359,7 +359,7 @@ const roundModeMap = new Map<string, (num: INumberPiece, options: INumPostOption
 	['uncertainty', roundUncertainty]
 ]);
 
-export function postProcessNumber(num: INumberPiece, options: INumPostOptions) {
+export function postProcessNumber(parser: TexParser, num: INumberPiece, options: INumPostOptions) {
 
 	// Post-process special case for uncertainty: 123 +- 4.5
 	// This number is actually 123.0 +- 4.5 or 123.0(4.5) or 123.0(45)
@@ -382,7 +382,7 @@ export function postProcessNumber(num: INumberPiece, options: INumPostOptions) {
 		num.exponent = '';
 	}
 
-	roundModeMap.get(options["round-mode"])(num, options);
+	roundModeMap.get(options["round-mode"])(parser, num, options);
 
 	if (options["drop-zero-decimal"] && +(num.fractional) === 0) {
 		num.fractional = '';
@@ -407,7 +407,7 @@ export function postProcessNumber(num: INumberPiece, options: INumPostOptions) {
 		}
 	}
 
-	exponentModeMap.get(options["exponent-mode"])(num, options);
+	exponentModeMap.get(options["exponent-mode"])(parser, num, options);
 
 	// remove any explicit plus in exponent
 	if (num.exponentSign === '+')

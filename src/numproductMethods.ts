@@ -63,16 +63,16 @@ export function processNumberProduct(parser: TexParser): void {
 		const numlist = parseProductList(parser, text, globalOptions);
         if (globalOptions["product-exponents"] === 'individual'){
             numlist.forEach(v=>{
-                postProcessNumber(v, globalOptions);
+                postProcessNumber(parser, v, globalOptions);
             });
         } else {
             const targetExponent = numlist[0].exponentSign + numlist[0].exponent;
             const altOptions = Object.assign(globalOptions, { exponentMode: 'fixed', fixedExponent: targetExponent });
             numlist.forEach((v,i)=>{
                 if (i === 0){
-                    postProcessNumber(v, globalOptions);
+                    postProcessNumber(parser, v, globalOptions);
                 } else {
-                    postProcessNumber(v, altOptions);
+                    postProcessNumber(parser, v, altOptions);
                 }
             });
         }

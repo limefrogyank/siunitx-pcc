@@ -138,16 +138,16 @@ export function processNumberList(parser: TexParser): void {
         const numlist = parseList(parser, text, globalOptions);
         if (globalOptions["list-exponents"] === 'individual') {
             numlist.forEach(v => {
-                postProcessNumber(v, globalOptions);
+                postProcessNumber(parser, v, globalOptions);
             });
         } else {
             const targetExponent = numlist[0].exponentSign + numlist[0].exponent;
             const altOptions = Object.assign(globalOptions, { exponentMode: 'fixed', fixedExponent: targetExponent });
             numlist.forEach((v, i) => {
                 if (i === 0) {
-                    postProcessNumber(v, globalOptions);
+                    postProcessNumber(parser, v, globalOptions);
                 } else {
-                    postProcessNumber(v, altOptions);
+                    postProcessNumber(parser, v, altOptions);
                 }
             });
         }

@@ -20,13 +20,13 @@ export function processNumberRange(parser: TexParser): void {
 		const firstNum = parseNumber(parser, first, globalOptions);
 		const lastNum = parseNumber(parser, last, globalOptions);
         if (globalOptions["range-exponents"] === 'individual'){
-            postProcessNumber(firstNum, globalOptions);
-            postProcessNumber(lastNum, globalOptions);
+            postProcessNumber(parser, firstNum, globalOptions);
+            postProcessNumber(parser, lastNum, globalOptions);
         } else {
             const targetExponent = firstNum.exponentSign + firstNum.exponent;
             const altOptions = Object.assign(globalOptions, { exponentMode: 'fixed', fixedExponent: targetExponent });
-            postProcessNumber(firstNum, globalOptions);
-            postProcessNumber(lastNum, altOptions);
+            postProcessNumber(parser, firstNum, globalOptions);
+            postProcessNumber(parser, lastNum, altOptions);
         }
 
         const exponentMapItem = exponentListModeMap.get(globalOptions["range-exponents"]);

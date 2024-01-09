@@ -162,16 +162,16 @@ export function processQuantityList(parser: TexParser): void {
         // seems both have to be set to have the list printed plainly, any changes in units display will affect exponents display and v.v.
         if (globalOptions["list-exponents"] === 'individual'){
             numlist.forEach(v=>{
-                postProcessNumber(v, globalOptions);
+                postProcessNumber(parser, v, globalOptions);
             });
         } else {
             const targetExponent = numlist[0].exponentSign + numlist[0].exponent;
             const altOptions = Object.assign(globalOptions, { exponentMode: 'fixed', fixedExponent: targetExponent });
             numlist.forEach((v,i)=>{
                 if (i === 0){
-                    postProcessNumber(v, globalOptions);
+                    postProcessNumber(parser, v, globalOptions);
                 } else {
-                    postProcessNumber(v, altOptions);
+                    postProcessNumber(parser, v, altOptions);
                 }
             });
         }

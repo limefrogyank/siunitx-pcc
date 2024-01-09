@@ -93,8 +93,6 @@ const declareMap: Record<string, (parser: TexParser, name: string, options: Part
     },
 };
 
-export let GlobalParser: TexParser;
-
 export const UserDefinedUnitsKey = 'siunitxUnits';
 export const UserDefinedUnitOptionsKey = 'siunitxUnitOptions';
 
@@ -133,11 +131,9 @@ new CommandMap('siunitxMap', {
     data: ['Dataset', 'data'],
 }, {
     siunitxToken: (parser, name) => {
-        GlobalParser = parser;
         methodMap[name as string]?.(parser);
     },
     siunitxGlobal: (parser, name) => {
-        GlobalParser = parser;
         const options = findOptions(parser, siunitxDefaults);
         declareMap[name as string]?.(parser, name as string, options);
     },

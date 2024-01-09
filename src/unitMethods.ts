@@ -306,13 +306,7 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 				Object.assign(globalOptions, processedMacro.options);
 			}
 			// apply immediate options here
-			//processOptions(globalOptions, localOptionString);
-			//const options = processOptions(globalOptions, localOptionString);
-			//const options = {...globalOptions, ...localOptions};
-			//console.log(options);
 			Object.assign(globalOptions, localOptions);
-			//localOptions.forEach((v, k) => globalOptions[k] = v);
-			//console.log(globaloptions["per-mode"]);
 
 			switch (processedMacro.type) {
 				case 'next':
