@@ -3,6 +3,7 @@ interface LocalizationResource {
     comparatorAlreadySet: string;
     exponentThresholdsError: string;
     extraSemicolon: string;
+    invalidAngArgument: string;
     invalidNumArgument: string;
     invalidOptionValue: string;
     literalUnitsForbidden: string;

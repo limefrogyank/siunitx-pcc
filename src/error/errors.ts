@@ -11,6 +11,8 @@ export class siunitxError {
 	
 	static ExtraSemicolon = () => new TexError('siunitx:extraSemicolon', data.extraSemicolon);
 
+	static InvalidAngArgument = (arg: string) => new TexError('siunitx:invalidAngArgument', data.invalidAngArgument, arg)
+
 	static InvalidNumArgument = (arg: string) => new TexError('siunitx:invalidNumArgument', data.invalidNumArgument, arg);
 
 	static InvalidOptionValue = (key: string, type:string) => new TexError('siunitx:invalidOptionValue', data.invalidOptionValue, key, type)

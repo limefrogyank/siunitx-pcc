@@ -34,10 +34,14 @@
 						const mml = await MathJax.tex2mmlPromise(arr[capt], {});
 						var regex = /(?:data-semantic-speech=")(.*?)(?:")/g;
 						var matches = [...mml.matchAll(regex)];
+						if (matches[0] === undefined) {
+							break;  // accessibility is not turned on yet
+						}
 						table.rows[capt + 1].cells[2].innerText = matches[0][1];
 						
 					}
 				}
+
 				await fillTableWithSpeech('angTable', ang);
 				await fillTableWithSpeech('numTable', num);
 				await fillTableWithSpeech('complexnumTable', complexnum);

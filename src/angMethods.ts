@@ -2,7 +2,7 @@ import { MmlNode, TextNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./error/errors";
 import { displayNumberMml } from "./numDisplayMethods";
-import { CharNumFunction, generateNumberMapping, generateNumberPiece, INumberPiece } from "./numMethods";
+import { generateNumberMapping, generateNumberPiece, INumberPiece } from "./numMethods";
 import { findOptions, IOptions } from "./options/options";
 import { IAngleOptions } from "./options/angleOptions";
 
@@ -30,48 +30,12 @@ function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IA
 	subParser.i = 0;
 	// process character
 	// if '\', then read until next '\' or whitespace char
+	let token;
 	while (subParser.i < subParser.string.length) {
-		let char = subParser.string.charAt(subParser.i);
-		subParser.i++;
-		if (char !== ';') {
-			if (char !== '\\') {
-				if (mapping.has(char)) {
-					const func = mapping.get(char);
-					if (typeof func === 'function') {
-						(mapping.get(char) as CharNumFunction)(char, num);
-					} else {
-						if (num.whole === '' && num.decimal === '') {
-							(func as Map<string, CharNumFunction>).get('inputSigns')(char, num);
-						} else {
-							(func as Map<string, CharNumFunction>).get('inputUncertaintySigns')(char, num);
-						}
-					}
-				}
-			} else {
-				let macro = char;
-				char = '';
-				while (subParser.i < subParser.string.length && char !== '\\' && char !== ' ') {
-					char = subParser.string.charAt(subParser.i);
-					if (char !== '\\' && char !== ' ') {
-						macro += char;
-					}
-					subParser.i++;
-				}
+		token = subParser.GetNext();
+		subParser.i++; // GetNext() does not advance position unless skipping whitespace
 
-				if (mapping.has(macro)) {
-					const func = mapping.get(macro);
-					if (typeof func === 'function') {
-						(mapping.get(macro) as CharNumFunction)(macro, num);
-					} else {
-						if (num.whole === '' && num.decimal === '') {
-							(func as Map<string, CharNumFunction>).get('inputSigns')(macro, num);
-						} else {
-							(func as Map<string, CharNumFunction>).get('inputUncertaintySigns')(macro, num);
-						}
-					}
-				}
-			}
-		} else {
+		if (token === ';'){
 			if (ang.minutes === undefined) {
 				ang.minutes = generateNumberPiece();
 				num = ang.minutes;
@@ -81,8 +45,18 @@ function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IA
 			} else {
 				throw siunitxError.ExtraSemicolon;
 			}
-		}
+		} else {
 
+			if (token === '\\') {
+				token += subParser.GetCS();
+			}
+
+			try {
+				mapping.get(token)(token, num);
+			} catch {
+				throw siunitxError.InvalidAngArgument(subParser.string);
+			}
+		}
 	}
 
 	// copied directly from parseNumber, this can be applied to degrees only most likely?
