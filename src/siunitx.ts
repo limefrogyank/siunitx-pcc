@@ -58,7 +58,7 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\complexqty': (parser: TexParser): void => {
         processComplexQuantity(parser);
     },
-    
+
     '@{}S': (_parser: TexParser): void => {
         //TODO: NOT IMPLEMENTED
         // no tabular in MathJax, but maybe use \\begin{array} ?  or pure html somehow
@@ -68,27 +68,26 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
     },
     '\\sisetup': (parser: TexParser): void => {
         processSISetup(parser);
-    }
-};
-
-const declareMap: Record<string, (parser: TexParser, name: string, options: Partial<IOptions>) => void> = {
-    '\\DeclareSIUnit': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
-        const packageData = parser.configuration.packageData.get('siunitx'); 
+    },
+    '\\DeclareSIUnit': (parser: TexParser): void => {
+        const packageData = parser.configuration.packageData.get('siunitx');
         const userDefinedUnits = packageData[UserDefinedUnitsKey] as Map<string, string>;
         const userDefinedUnitOptions = packageData[UserDefinedUnitOptionsKey] as Map<string, Partial<IOptions>>;
 
-        const newUnitMacro = parser.GetArgument(name);
-        const newSymbol = parser.GetArgument(name);
+        const options = findOptions(parser, siunitxDefaults);
+
+        const newUnitMacro = parser.GetArgument('DeclareSIUnit');
+        const newSymbol = parser.GetArgument('DeclareSIUnit');
 
         userDefinedUnits.set(newUnitMacro, newSymbol);
         if (options !== undefined) {
             userDefinedUnitOptions.set(newUnitMacro, options);
         }
     },
-    '\\DeclareSIQualifier': (_parser: TexParser, _name: string, _options: Partial<IOptions>): void => {
+    '\\DeclareSIQualifier': (_parser: TexParser): void => {
         //TODO: DeclareSIQualifier (eg g_{salt} for "grams of salt")
     },
-    '\\DeclareSIPower': (_parser: TexParser, _name: string, _options: Partial<IOptions>): void => {
+    '\\DeclareSIPower': (_parser: TexParser): void => {
         //TODO: DeclareSIPower  (eg \square,\cubic,\squared,\cubed)
     },
 };
@@ -125,17 +124,13 @@ new CommandMap('siunitxMap', {
     qtylist: ['siunitxToken', 'qtylist'],
     qtyrange: ['siunitxToken', 'qtyrange'],
     qtyproduct: ['siunitxToken', 'qtyproduct'],
-    DeclareSIUnit: ['siunitxGlobal', 'DeclareSIUnit'],
+    DeclareSIUnit: ['siunitxToken', 'DeclareSIUnit'],
     sisetup: ['siunitxToken', 'sisetup'],
     arialabel: ['Arialabel', 'arialabel'],
     data: ['Dataset', 'data'],
 }, {
     siunitxToken: (parser, name) => {
         methodMap[name as string]?.(parser);
-    },
-    siunitxGlobal: (parser, name) => {
-        const options = findOptions(parser, siunitxDefaults);
-        declareMap[name as string]?.(parser, name as string, options);
     },
     Arialabel: (parser: TexParser, name: string) => {
         const thelabel = parser.GetArgument(name);
@@ -163,8 +158,8 @@ new CommandMap('siunitxMap', {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const config = (_config: ParserConfiguration, jax: TeX<any, any, any>) => {
     jax.parseOptions.packageData.set('siunitx', {
-        [UserDefinedUnitsKey]: new Map<string,string>(),
-        [UserDefinedUnitOptionsKey]: new Map<string,string>()
+        [UserDefinedUnitsKey]: new Map<string, string>(),
+        [UserDefinedUnitOptionsKey]: new Map<string, string>()
     });
 };
 
@@ -174,7 +169,7 @@ Configuration.create('siunitx',
         handler: {
             macro: ['angchar-symbols', 'siunitxMap']
         },
-        options: { 
+        options: {
             siunitx: siunitxDefaults
         },
         config: config
