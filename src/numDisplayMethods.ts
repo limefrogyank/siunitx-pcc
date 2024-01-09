@@ -150,17 +150,6 @@ export function convertUncertaintyToBracket(uncertainty: IUncertainty, piece: IN
 	}
 }
 
-// // Deprecated
-// function displayUncertaintyBracket(uncertainty: IUncertainty, options: INumOutputOptions): string {
-// 	let output = options["uncertainty-separator"];
-// 	output += options["output-open-uncertainty"];
-// 	output += uncertainty.whole;
-// 	output += (options["uncertainty-mode"] === 'compact-marker' || options["uncertainty-mode"] === 'full') && uncertainty.decimal !== '' ? options["output-decimal-marker"] : '';
-// 	output += uncertainty.fractional;
-// 	output += options["output-close-uncertainty"];
-// 	return output;
-// }
-
 function displayUncertaintyBracketMml(uncertainty: IUncertainty, parser: TexParser, options: INumOutputOptions): MmlNode {
 	const uncertaintySeparator = (new TexParser(options["uncertainty-separator"], parser.stack.env, parser.configuration)).mml();
 	const openUncertainty = (new TexParser(options["output-open-uncertainty"], parser.stack.env, parser.configuration)).mml();
@@ -174,37 +163,12 @@ function displayUncertaintyBracketMml(uncertainty: IUncertainty, parser: TexPars
 	return mrow;
 }
 
-// // Deprecated
-// function displayUncertaintyPlusMinus(uncertainty: IUncertainty, options: INumOutputOptions): string {
-// 	return '\\pm' + displayNumber(uncertainty, options);
-// }
-
 function displayUncertaintyPlusMinusMml(uncertainty: IUncertainty, parser: TexParser, options: INumOutputOptions): MmlNode {
 	const numberNode = displayNumberMml(uncertainty, parser, options as IOptions);
 	const plusMinusNode = parser.create('token', 'mo', {}, '\u00b1'); // plus-minus sign 
 	const mrow = parser.create('node', 'mrow', [plusMinusNode, numberNode], { 'data-siunitx-uncertainty': true });
 	return mrow;
 }
-
-// // Deprecated
-// const uncertaintyModeMapping = new Map<string, (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions) => string>([
-// 	['separate', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
-// 		convertUncertaintyToPlusMinus(uncertainty, value, options);
-// 		return displayUncertaintyPlusMinus(uncertainty, options);
-// 	}],
-// 	['compact', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
-// 		convertUncertaintyToBracket(uncertainty, value, options);
-// 		return displayUncertaintyBracket(uncertainty, options);
-// 	}],
-// 	['full', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
-// 		convertUncertaintyToBracket(uncertainty, value, options);
-// 		return displayUncertaintyBracket(uncertainty, options);
-// 	}],
-// 	['compact-marker', (uncertainty: IUncertainty, value: INumberPiece, options: INumOutputOptions): string => {
-// 		convertUncertaintyToBracket(uncertainty, value, options);
-// 		return displayUncertaintyBracket(uncertainty, options);
-// 	}],
-// ])
 
 const uncertaintyModeMmlMapping = new Map<string, (uncertainty: IUncertainty, value: INumberPiece, parser: TexParser, options: INumOutputOptions) => MmlNode>([
 	['separate', (uncertainty: IUncertainty, value: INumberPiece, parser: TexParser, options: INumOutputOptions): MmlNode => {
@@ -225,111 +189,6 @@ const uncertaintyModeMmlMapping = new Map<string, (uncertainty: IUncertainty, va
 	}],
 ])
 
-
-// export function displayNumber(piece: INumberPiece, options: INumOutputOptions): string {
-// 	let output = '';
-// 	let mmlString = '';
-// 	groupNumbersMap.get(options["group-digits"])?.(piece, options);
-
-// 	if (options["negative-color"] !== '') {
-// 		output += '{\\color{' + options["negative-color"] + '}';
-// 	}
-// 	if (options["bracket-negative-numbers"]) {
-// 		if (piece.sign === '-') {
-// 			output += '(';
-// 		}
-// 	} else {
-// 		// brackets remove extra spacing intended for math equation
-// 		if (options["print-implicit-plus"] && piece.sign === '') {
-// 			//output += '\\mmlToken{mrow}{\\mmlToken{mo}{+}}';
-// 			output += '\\mmlToken{mo}[rspace="0em", lspace="0em"]{+}';
-// 		} else {
-// 			if (piece.sign !== '') {
-// 				//output += `\\mmlToken{mrow}{\\mmlToken{mo}{${piece.sign}}}`;
-// 				output += `\\mmlToken{mo}[rspace="0em", lspace="0em"]{${piece.sign}}`;
-// 			}
-// 		}
-// 	}
-
-// 	// if unity mantissa AND don't print it, then we don't need the rest of this.
-// 	if (piece.whole === '1' && piece.fractional === '' && !options["print-unity-mantissa"]) {
-// 		// don't do anything UNLESS exponent is also zero and printZeroExponent is false
-// 		if (!options["print-zero-exponent"] && (piece.exponent === '' || (piece.exponent === '1' && piece.exponentSign !== '-'))) {
-// 			mmlString += '1';
-// 		}
-// 	} else {
-// 		if ((piece.whole === '' && piece.fractional) || piece.whole === '0') {
-// 			if (options["print-zero-integer"]) {
-// 				mmlString += '0';
-// 			}
-// 		} else {
-// 			mmlString += piece.whole;
-// 		}
-// 		mmlString += (piece.decimal !== '' ? options["output-decimal-marker"] : '');
-// 		if (options["zero-decimal-as-symbol"] && +(piece.fractional) === 0) {
-// 			// hack: insert searchable identifier
-// 			mmlString += options["zero-symbol"];
-// 		} else {
-// 			mmlString += piece.fractional;
-// 		}
-// 	}
-
-// 	output += `\\mmlToken{mn}{${mmlString}}`;
-// 	mmlString = '';
-
-// 	// display uncertanties (if not null)
-// 	piece.uncertainty?.forEach(v => {
-// 		output += uncertaintyModeMapping.get(options["uncertainty-mode"])?.(v, piece, options);
-// 	});
-
-// 	if (options["print-zero-exponent"] && (piece.exponent === '' || (piece.exponent === '0'))) {
-// 		if (options["output-exponent-marker"] !== '') {
-// 			output += options["output-exponent-marker"];
-// 			output += '0';
-// 		} else {
-// 			if (options["tight-spacing"]) {
-// 				output += '{' + options["exponent-product"] + '}';
-// 			} else {
-// 				output += options["exponent-product"];
-// 			}
-// 			output += options["exponent-base"];
-// 			output += '^{0}';
-// 		}
-// 	} else if (piece.exponent !== '' && piece.exponent !== '0') {
-// 		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
-// 		if (piece.whole === '1' && piece.fractional === '' && !options["print-unity-mantissa"]) {
-// 			output += options["exponent-base"];
-// 			output += '^{' + piece.exponentSign + piece.exponent + '}';
-// 		} else {
-// 			if (piece.exponentMarker !== '') {
-// 				if (options["output-exponent-marker"] !== '') {
-// 					output += options["output-exponent-marker"];
-// 					output += piece.exponentSign + piece.exponent;
-// 				} else {
-// 					if (options["tight-spacing"]) {
-// 						output += (piece.whole !== '' || piece.fractional !== '') ? '{' + options["exponent-product"] + '}' : '';
-// 					} else {
-// 						output += (piece.whole !== '' || piece.fractional !== '') ? options["exponent-product"] : '';
-// 					}
-// 					output += options["exponent-base"];
-// 					output += '^{' + piece.exponentSign + piece.exponent + '}';
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	if (options["bracket-negative-numbers"]) {
-// 		if (piece.sign === '-') {
-// 			output += ')';
-// 		}
-// 	}
-// 	if (options["negative-color"] !== '') {
-// 		output += '}';
-// 	}
-
-// 	return output;
-// }
-
 export function createExponentMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
 	const root = parser.create('node', 'inferredMrow', [], {});
 	const exponentProductNode = (new TexParser(options["exponent-product"], parser.stack.env, parser.configuration)).mml();
@@ -340,8 +199,6 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 			const customExponentMarker = parser.create('token', 'mi', { mathvariant: 'normal' }, options["output-exponent-marker"]);
 			root.appendChild(customExponentMarker);
 			root.appendChild(zeroNode);
-			//currentNode.appendChild(customExponentMarker);
-			//currentNode.appendChild(zeroNode);
 		} else {
 			if (options["tight-spacing"]) {
 				exponentProductNode.attributes.set('lspace', '0em');
@@ -350,8 +207,6 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 			const exponential = parser.create('node', 'msup', [exponentBaseNode, zeroNode]);
 			root.appendChild(exponentProductNode);
 			root.appendChild(exponential);
-			// currentNode.appendChild(exponentProductNode);
-			// currentNode.appendChild(exponential);
 		}
 	} else if (num.exponent !== '' && num.exponent !== '0') {
 		const exponentSignNode = parser.create('token', 'mo', {}, num.exponentSign);
@@ -362,17 +217,13 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 		const exponential = parser.create('node', 'msup', [exponentBaseNode, supPart]);
 		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
 		if (num.whole === '1' && num.fractional === '' && !options["print-unity-mantissa"]) {
-			//currentNode.appendChild(exponential);
 			root.appendChild(exponential);
 		} else {
 			if (num.exponentMarker !== '') {
 				if (options["output-exponent-marker"] !== '') {
 					const customExponentMarker = (new TexParser(options["output-exponent-marker"], parser.stack.env, parser.configuration)).mml();
-					//const customExponentMarker = parser.create('token', 'mi', { }, options.outputExponentMarker);
 					root.appendChild(customExponentMarker);
 					root.appendChild(supPart);
-					// currentNode.appendChild(customExponentMarker);
-					// currentNode.appendChild(supPart);
 				} else {
 					if (num.whole !== '' || num.fractional !== '') {
 						if (options["tight-spacing"]) {
@@ -380,10 +231,8 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 							exponentProductNode.attributes.set('rspace', '0em');
 						}
 						root.appendChild(exponentProductNode);
-						// currentNode.appendChild(exponentProductNode);
 					}
 					root.appendChild(exponential);
-					// currentNode.appendChild(exponential);
 				}
 			}
 		}
@@ -480,31 +329,3 @@ export function displayOutputMml(num: INumberPiece, parser: TexParser, options: 
 	rootNode.appendChild(displayNumberMml(num, parser, options));
 	return rootNode;
 }
-
-// // OBSOLETE
-// export function displayOutput(num: INumberPiece, options: IOptions): string {
-
-// 	let output = '';
-
-// 	let closeColor: boolean = false;
-// 	if (options.numberColor !== '') {
-// 		output += '{\\color{' + options.numberColor + '}';
-// 		closeColor = true;
-// 	} else if (options.color !== '') {
-// 		output += '{\\color{' + options.color + '}';
-// 		closeColor = true;
-// 	}
-
-// 	// display any prefix symbol such as less than, greater than, etc.
-// 	// brackets will remove the extra space that normally occurs with symbol
-// 	output += '{' + num.prefix + '}';
-
-// 	// display main number
-// 	output += displayNumber(num, options);
-
-// 	if (closeColor) {
-// 		output += '}';
-// 	}
-
-// 	return output;
-// }
