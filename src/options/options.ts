@@ -51,6 +51,7 @@ export function processSISetup(parser: TexParser): void {
 
 	const options = processOptions(globalOptions, optionsString);
 	Object.assign(parser.options.siunitx, options);
+
 	// We are adding the sisetup options to the parser options.  These are global once the page is loaded.
 	// (the globalOptions variable is just a copy and will reset between each siunitx command)
 
@@ -80,11 +81,11 @@ function optionStringToObject(optionString: string, globalOptions: IOptions): Pa
 }
 
 // LaTeX commands (in the value portion) MUST end with a space before using a comma to add another option
-export function processOptions(globalOptions: IOptions, optionString: string): Map<string, string | boolean | number> {
+export function processOptions(globalOptions: IOptions, optionString: string): Record<string, string | boolean | number> {
 	// No good way to extend typing for patch
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const optionObject : EnvList = (ParseUtil.keyvalOptions as any)(optionString, globalOptions as unknown as { [key: string]: number }, true, true) ;
-	const options = new Map<string, string | boolean | number>();
+	const options = {};
 
 	for (let [key, value] of Object.entries(optionObject)) {
 		const type = typeof globalOptions[key];
@@ -95,7 +96,7 @@ export function processOptions(globalOptions: IOptions, optionString: string): M
 				throw siunitxError.InvalidOptionValue(key, type);
 			}
 		}
-		options.set(key, value);
+		options[key] = value;
 	}
 	return options;
 }
