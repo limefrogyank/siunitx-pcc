@@ -1,5 +1,5 @@
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { displayOutputMml, findInnerText, spacerMap } from "./numDisplayMethods";
+import { displayOutputMml, findInnerText } from "./numDisplayMethods";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { convertToFixed, postProcessNumber } from "./numPostProcessMethods";
 import { findOptions, IOptions } from "./options/options";
@@ -7,7 +7,6 @@ import { IQuantityOptions, PrefixMode, SeparateUncertaintyUnits } from "./option
 import { displayUnits, IUnitPiece, parseUnit } from "./unitMethods";
 import { prefixPower } from "./units";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import { GlobalParser } from "./siunitx";
 
 function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
 	if (num.exponent === '' || (units === null || units.length === 0)) {
@@ -227,14 +226,9 @@ export function createQuantityProductMml(parser:TexParser, options:IOptions):Mml
 	let quantityProductNode = null;
 		const trimmedQuantityProduct = options["quantity-product"].trimStart();
 		if (trimmedQuantityProduct !== '') {
-			let quantityProduct = spacerMap[trimmedQuantityProduct];
-			if (quantityProduct === undefined) {
-				// instead of copying quantityProduct, 
-				// should auto parse latex and extract unicode from mml
-				const spacerNode = (new TexParser(quantityProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-				quantityProduct = findInnerText(spacerNode);
-			}
-			quantityProductNode = parser.create('token', 'mo', {}, quantityProduct);
+			const spacerNode = (new TexParser(trimmedQuantityProduct, parser.stack.env, parser.configuration)).mml();
+			const spacerUnicode = findInnerText(spacerNode);
+			quantityProductNode = parser.create('token', 'mo', {}, spacerUnicode);
 		}
 	return quantityProductNode;
 }

@@ -4,7 +4,7 @@ import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import { IOptions, findOptions } from "./options/options";
 
 import { postProcessNumber } from "./numPostProcessMethods";
-import { displayOutputMml, findInnerText, spacerMap } from "./numDisplayMethods";
+import { displayOutputMml, findInnerText } from "./numDisplayMethods";
 import { displayUnits, parseUnit } from "./unitMethods";
 import { prefixModeMap } from "./qtyMethods";
 
@@ -215,14 +215,9 @@ export function processComplexQuantity(parser: TexParser): void {
     let quantityProductNode = null;
     const trimmedQuantityProduct = globalOptions["quantity-product"].trimStart();
     if (trimmedQuantityProduct !== '') {
-        let quantityProduct = spacerMap[trimmedQuantityProduct];
-        if (quantityProduct === undefined) {
-            // instead of copying quantityProduct, 
-            // should auto parse latex and extract unicode from mml
-            const spacerNode = (new TexParser(quantityProduct, parser.stack.env, parser.configuration)).mml();
-            quantityProduct = findInnerText(spacerNode);
-        }
-        quantityProductNode = parser.create('token', 'mo', {}, quantityProduct);
+        const spacerNode = (new TexParser(trimmedQuantityProduct, parser.stack.env, parser.configuration)).mml();
+        const spacerUnicode = findInnerText(spacerNode);
+        quantityProductNode = parser.create('token', 'mo', {}, spacerUnicode);
     }
     parser.Push(quantityProductNode);
 

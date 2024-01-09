@@ -10,7 +10,7 @@
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"lib": [
-			"ES5",
+			"ES2015",
 			"DOM"
 		],
 		"typeRoots": [

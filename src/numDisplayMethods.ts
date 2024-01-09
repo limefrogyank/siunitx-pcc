@@ -2,60 +2,64 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { INumberPiece, IUncertainty } from "./numMethods";
 import { IOptions } from "./options/options";
 import { INumOutputOptions } from "./options/numberOptions";
-import { MmlNode, TextNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import NodeUtil from "mathjax-full/js/input/tex/NodeUtil";
+import { AbstractMmlTokenNode, MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 
-export const spacerMap: Record<string, string> = {
-	'\\,': '\u2009',	// \, 3/18 quad
-	'\\ ': ' ',			// space
-	'\\quad': '\u2001', // em quad
-	'\\qquad': '\u2001\u2001', // double em quad
-	'\\:': '\u2005', 	// \: is actually bigger than \, 4/18 quad
-	'\\;': '\u2004'		// \; is actually bigger than \: 5/18 quad
+const spaceMap: Record<string, string> = {
+	'1em': '\u2001',
+	'2em': '\u2001\u2001',
+	'0.167em': '\u2006',
+	'0.222em': '\u2005',  // U+2005 is actually .25em
+	'0.278em': '\u2004',  // U+2004 is actually .333em
+	// include no leading zero versions just in case...
+	'.167em': '\u2006',
+	'.222em': '\u2005',  // U+2005 is actually .25em
+	'.278em': '\u2004',  // U+2004 is actually .333em
+	//U+2009 is font dependent, so not reliable
 };
 
-// Naive function that assumes there is only one child for each node with children
 export function findInnerText(node: MmlNode): string {
-	let inner = node;
-	while (!inner.isToken && inner.childNodes.length > 0) {
-		inner = inner.childNodes[0] as MmlNode;
-	}
-	if (inner.isToken) {
-		return NodeUtil.getText(inner as TextNode);
-	} else {
-		return "";
-	}
-}
-
-function addSpacing(parser: TexParser, text: string, digitGroupSize: number, minimum: number, spacer: string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number) {
-	let mmlSpacer = spacerMap[spacer.trimStart()];
-	if (mmlSpacer === undefined) {
-		// instead of copying spacer, 
-		// should auto parse latex and extract unicode from mml
-		const spacerNode = (new TexParser(spacer, parser.stack.env, parser.configuration)).mml();
-		mmlSpacer = findInnerText(spacerNode);
-	}
-
-	if (text.length >= minimum) {
-		const arr = text.split('');
-		let adjusted = 0;
-		const firstCount = (digitGroupFirstSize !== -1 && digitGroupFirstSize !== undefined) ? digitGroupFirstSize : digitGroupSize;
-		let fluidCount = firstCount;
-		if (reverse) {
-			for (let i = firstCount; i < arr.length; i += fluidCount) {
-				text = text.slice(0, i + adjusted) + mmlSpacer + text.slice(i + adjusted, text.length + adjusted);
-				adjusted += mmlSpacer.length;
-				fluidCount = (digitGroupOtherSize !== -1 && digitGroupOtherSize !== undefined) ? digitGroupOtherSize : digitGroupSize;
+	const data = { text: '' };
+	node.walkTree((node: MmlNode, data: { text: string }) => {
+		if (!node.isToken) return;
+		if (node.isKind('mspace')) {
+			
+			const w = node.attributes.getExplicit('width');
+			if (Object.prototype.hasOwnProperty.call(spaceMap, w)) {
+				data.text += spaceMap[w as string];
 			}
 		} else {
-			for (let i = arr.length - firstCount; i >= 0; i -= fluidCount) {
-				text = text.slice(0, i) + mmlSpacer + text.slice(i, text.length + adjusted);
-				adjusted += mmlSpacer.length;
-				fluidCount = (digitGroupOtherSize !== -1 && digitGroupOtherSize !== undefined) ? digitGroupOtherSize : digitGroupSize;
-			}
+			data.text += (node as AbstractMmlTokenNode).getText();
+		}
+
+	}, data);
+	return data.text;
+}
+
+function addSpacing(
+	parser: TexParser,
+	text: string,
+	digitGroupSize: number,
+	minimum: number,
+	spacer: string,
+	reverse: boolean,
+	digitGroupFirstSize: number,
+	digitGroupOtherSize: number
+) {
+	// parse the latex space, extract the em spacing, and lookup the proper unicode space
+	const spacerNode = (new TexParser(spacer, parser.stack.env, parser.configuration)).mml();
+	const mmlSpacer = findInnerText(spacerNode);
+
+	// do not use text.split('') as that won't work with 32-bit unicode characters.
+	const digits = [...text];
+	if (digits.length >= minimum) {
+		const firstSize = (digitGroupFirstSize !== -1 ? digitGroupFirstSize : digitGroupSize);
+		const groupSize = (digitGroupOtherSize !== -1 ? digitGroupOtherSize : digitGroupSize);
+		const [start, size] = (reverse ? [firstSize, groupSize + 1] : [digits.length - firstSize, -groupSize]);
+		for (let i = start; i >= 0 && i < digits.length; i += size) {
+			digits.splice(i, 0, mmlSpacer);
 		}
 	}
-	return text;
+	return digits.join('');
 }
 
 
@@ -326,7 +330,7 @@ const uncertaintyModeMmlMapping = new Map<string, (uncertainty: IUncertainty, va
 // 	return output;
 // }
 
-export function createExponentMml(num:INumberPiece, parser: TexParser, options: IOptions):MmlNode {
+export function createExponentMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
 	const root = parser.create('node', 'inferredMrow', [], {});
 	const exponentProductNode = (new TexParser(options["exponent-product"], parser.stack.env, parser.configuration)).mml();
 	const exponentBaseNode = (new TexParser(options["exponent-base"], parser.stack.env, parser.configuration)).mml();
@@ -452,10 +456,10 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 		const uncertaintyNode = uncertaintyModeMmlMapping.get(options["uncertainty-mode"])?.(v, num, parser, options);
 		currentNode.appendChild(uncertaintyNode);
 	});
-	
-	const exponentNode = createExponentMml( num, parser, options);
+
+	const exponentNode = createExponentMml(num, parser, options);
 	currentNode.appendChild(exponentNode);
-	
+
 
 	if (options["bracket-negative-numbers"]) {
 		if (num.sign === '-') {
@@ -468,7 +472,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 
 export function displayOutputMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
 	const color = options["number-color"] || options.color;
-	const rootNode = parser.create('node', color ? 'mrow' : 'inferredMrow', [], color ? {mathcolor: color} : {});
+	const rootNode = parser.create('node', color ? 'mrow' : 'inferredMrow', [], color ? { mathcolor: color } : {});
 	if (num.prefix !== '') {
 		const prefix = (new TexParser('{' + num.prefix + '}', parser.stack.env, parser.configuration)).mml();
 		rootNode.appendChild(prefix);

@@ -74,7 +74,6 @@ function readKeyval(text: string, l3keys: boolean = false): EnvList {
  * @return {string} The cleaned string.
  */
 function removeBraces(text: string, count: number): string {
-  console.log('"' + text + '"');
   if (count === 0) {
     return text.replace(/^\s+/, '')
       .replace(/([^\\\s]|^)((?:\\\\)*(?:\\\s)?)?\s+$/, '$1$2');
