@@ -201,7 +201,7 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 			root.appendChild(customExponentMarker);
 			root.appendChild(zeroNode);
 		} else {
-			
+
 			if (options["tight-spacing"]) {
 				exponentProductNode.attributes.set('lspace', '0em');
 				exponentProductNode.attributes.set('rspace', '0em');
@@ -274,7 +274,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 			numberString += '1';
 		}
 	} else {
-		if ((num.whole === '' && num.fractional) || num.whole === '0') {
+		if ((num.whole === '' && num.fractional) || +num.whole === 0) {
 			if (options["print-zero-integer"]) {
 				numberString += '0';
 			}
