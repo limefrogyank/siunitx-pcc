@@ -50,7 +50,7 @@ function convertToScientific(parser: TexParser, numOriginal: INumberPiece, optio
 }
 
 function convertToExponent(num: INumberPiece, targetExponent: number) {
-	if (num === null) return;
+	if (!num) return;
 	// count difference between target exponent and current one.
 	const diff = targetExponent - +(num.exponentSign + num.exponent);
 	const dir = Math.sign(diff);  // -: move numbers from frac to whole, +: move the other way
@@ -187,7 +187,7 @@ function roundPlaces(parser: TexParser, num: INumberPiece, options: INumPostOpti
 			for (let i = 0; i < toAdd; i++) {
 				num.fractional += '0';  // pad with zeros
 			}
-			if (num.decimal === '') {
+			if (!num.decimal) {
 				num.decimal = (options as INumOptions)["output-decimal-marker"];
 			}
 		} else {
@@ -242,7 +242,7 @@ function roundFigures(parser: TexParser, num: INumberPiece, options: INumPostOpt
 
 			for (let i = 0; i < options["round-precision"] - combined.length; i++) {
 				num.fractional += '0';  // pad with zeros, it's only going to go in the fractional part
-				if (num.decimal === '') num.decimal = '.';
+				if (!num.decimal) num.decimal = '.';
 			}
 
 		} else {
@@ -367,7 +367,7 @@ export function postProcessNumber(parser: TexParser, num: INumberPiece, options:
 	// Check fraction length of uncertainty[0] and compare to value fraction length.
 	// Could theoretically check for equal uncertainty precision in the case of two uncertainties...
 	if (num.uncertainty && num.uncertainty.length > 0 && num.uncertainty[0].fractional.length > num.fractional.length) {
-		if (num.decimal === '') {
+		if (!num.decimal) {
 			num.decimal = '.';
 		}
 		num.fractional = num.fractional.padEnd(num.uncertainty[0].fractional.length, '0');

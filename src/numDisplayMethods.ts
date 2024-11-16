@@ -84,7 +84,7 @@ const groupNumbersMap = new Map<string, (parser: TexParser, num: INumberPiece, o
 function convertUncertaintyToPlusMinus(uncertainty: IUncertainty, piece: INumberPiece, options: INumOutputOptions): void {
 	if (uncertainty.type !== 'pm') {
 		// if there's a decimal in the uncertainty, then it's ok to display as-is
-		if (uncertainty.decimal === '') {
+		if (!uncertainty.decimal) {
 			// add zeros, move whole to fraction part, and potentially add decimal and whole
 			const diff = piece.fractional.length - uncertainty.whole.length;
 			if (diff >= 0) {
@@ -115,7 +115,7 @@ export function convertUncertaintyToBracket(uncertainty: IUncertainty, piece: IN
 	if (uncertainty.type === 'bracket') {
 		// check to make sure that uncertainty doesn't need a decimal point via 'compact marker' or 'full' (full adds zeros to fractional only uncertainty!)
 		// should only be checked if there is NOT already a decimal point
-		if (uncertainty.decimal === '' && (options["uncertainty-mode"] === 'compact-marker' || options["uncertainty-mode"] === 'full')) {
+		if (!uncertainty.decimal && (options["uncertainty-mode"] === 'compact-marker' || options["uncertainty-mode"] === 'full')) {
 			const diff = uncertainty.whole.length - piece.fractional.length;
 			if (diff > 0) {
 				uncertainty.fractional = uncertainty.whole.slice(diff, uncertainty.whole.length);
@@ -193,7 +193,7 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 	const root = parser.create('node', 'inferredMrow', [], {});
 	const exponentProductNode = (new TexParser(options["exponent-product"], parser.stack.env, parser.configuration)).mml();
 	const exponentBaseNode = (new TexParser(options["exponent-base"], parser.stack.env, parser.configuration)).mml();
-	if (options["print-zero-exponent"] && (num.exponent === '' || (num.exponent === '0'))) {
+	if (options["print-zero-exponent"] && (!num.exponent || (num.exponent === '0'))) {
 		const zeroNode = parser.create('token', 'mn', {}, '0');
 
 		if (options["output-exponent-marker"] !== '') {
@@ -268,20 +268,20 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	let numberString = '';
 	let trailingMml: MmlNode;
 	// if unity mantissa AND don't print it, then we don't need the rest of this.
-	if (num.whole === '1' && num.fractional === '' && !options["print-unity-mantissa"]) {
+	if (num.whole === '1' && !num.fractional && !options["print-unity-mantissa"]) {
 		// don't do anything UNLESS exponent is also zero and printZeroExponent is false
-		if (!options["print-zero-exponent"] && (num.exponent === '' || (num.exponent === '0' && num.exponentSign !== '-'))) {
-			numberString += '1';
+		if (!options["print-zero-exponent"] && (!num.exponent || (num.exponent === '0' && num.exponentSign !== '-'))) {
+			numberString = '1';
 		}
 	} else {
-		if ((num.whole === '' && num.fractional) || +num.whole === 0) {
+		if ((!num.whole && num.fractional) || +(num.whole) === 0) {
 			if (options["print-zero-integer"]) {
-				numberString += '0';
+				numberString = '0';
 			}
 		} else {
-			numberString += num.whole;
+			numberString = num.whole;
 		}
-		numberString += (num.decimal !== '' ? options["output-decimal-marker"] : '');
+		numberString += (num.decimal ? options["output-decimal-marker"] : '');
 		if (options["zero-decimal-as-symbol"] && +(num.fractional) === 0) {
 			trailingMml = (new TexParser(options["zero-symbol"], parser.stack.env, parser.configuration)).mml();
 		} else {
@@ -290,7 +290,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	}
 	const numberNode = parser.create('token', 'mn', {}, numberString);
 	rootNode.appendChild(numberNode);
-	if (trailingMml !== undefined) {
+	if (trailingMml) {
 		rootNode.appendChild(trailingMml);
 	}
 	// display uncertanties (if not null)
@@ -315,7 +315,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 export function displayOutputMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
 	const color = options["number-color"] || options.color;
 	const rootNode = parser.create('node', color ? 'mrow' : 'inferredMrow', [], color ? { mathcolor: color } : {});
-	if (num.prefix !== '') {
+	if (num.prefix) {
 		const prefix = (new TexParser('{' + num.prefix + '}', parser.stack.env, parser.configuration)).mml();
 		rootNode.appendChild(prefix);
 	}

@@ -9,7 +9,7 @@ import { prefixPower } from "./units";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 
 function combineExponent(parser: TexParser, num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
-	if (num.exponent === '' || (units === null || units.length === 0)) {
+	if (!num.exponent || (!units || units.length === 0)) {
 		return;
 	}
 
@@ -24,6 +24,7 @@ function combineExponent(parser: TexParser, num: INumberPiece, units: IUnitPiece
 	}
 
 	const firstUnit = units[0];
+	// prefix can be undefined, empty, or string... this specifically checks for empty
 	if (firstUnit.prefix !== '') {
 		const unitPower = (firstUnit.power !== null ? +(firstUnit.power) : 1) * (firstUnit.position === 'denominator' ? -1 : 1);
 		const addedPower = firstUnit.prefix ? prefixPower.get(firstUnit.prefix) : 1;
@@ -45,7 +46,7 @@ function combineExponent(parser: TexParser, num: INumberPiece, units: IUnitPiece
 	convertToFixed(parser, num, options);
 }
 
-function extractExponent(parser:TexParser, num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
+function extractExponent(parser: TexParser, num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
 	if (units === null) {
 		return;
 	}
@@ -89,7 +90,7 @@ function extractExponent(parser:TexParser, num: INumberPiece, units: IUnitPiece[
 	const newExponent = currentExponent + powersOfTen;
 	num.exponent = Math.abs(newExponent).toString();
 	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
-	if (num.exponentMarker === '') {
+	if (!num.exponentMarker) {
 		num.exponentMarker = 'e';
 	}
 }
@@ -168,18 +169,18 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 		if (uncertaintyNode !== null) {
 			const parent = uncertaintyNode.parent;
 			const uncertaintyPosition = parent.childNodes.indexOf(uncertaintyNode);
-			if (quantityProduct === null){
-				
+			if (!quantityProduct) {
+
 				parent.childNodes.splice(uncertaintyPosition, 0, units);
 				parent.appendChild(units);
 			} else {
-				
+
 				parent.childNodes.splice(uncertaintyPosition, 0, quantityProduct, units);
 
 				// To make it match the MathML structure of the previous insert,
 				// we should insert the 2nd unit at the same depth.
 				// However, SRE seems to rearrange it all anyways.
-	
+
 				parent.appendChild(quantityProduct);
 				parent.appendChild(units);
 
@@ -222,14 +223,17 @@ const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: stri
 	}]
 ]);
 
-export function createQuantityProductMml(parser:TexParser, options:IOptions):MmlNode|null{
+export function createQuantityProductMml(parser: TexParser, options: IOptions): MmlNode | null {
 	let quantityProductNode = null;
-		const trimmedQuantityProduct = options["quantity-product"].trimStart();
-		if (trimmedQuantityProduct !== '') {
-			const spacerNode = (new TexParser(trimmedQuantityProduct, parser.stack.env, parser.configuration)).mml();
-			const spacerUnicode = findInnerText(spacerNode);
-			quantityProductNode = parser.create('token', 'mo', {}, spacerUnicode);
-		}
+
+	const trimmedQuantityProduct = options["quantity-product"].trimStart();
+	if (trimmedQuantityProduct) {
+		const spacerNode = (new TexParser(trimmedQuantityProduct, parser.stack.env, parser.configuration)).mml();
+		const spacerUnicode = findInnerText(spacerNode);
+		quantityProductNode = parser.create('token', 'mo', {}, spacerUnicode);
+	} else {
+		quantityProductNode = parser.create('token', 'mo', {} );
+	}
 	return quantityProductNode;
 }
 
@@ -237,7 +241,6 @@ export function processQuantity(parser: TexParser): void {
 	let globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const localOptions = findOptions(parser, globalOptions);
-	//const localOptions = optionStringToObject(localOptionString);
 
 	let numString = parser.GetArgument('num');
 	const unitString = parser.GetArgument('unit');

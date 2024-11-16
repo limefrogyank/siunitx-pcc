@@ -35,13 +35,13 @@ function bracketExponent(exponentResult: IExponentModeOutput, unitNode: MmlNode,
         return numNode;
     });
 
-    if (exponentResult.leading === undefined){
+    if (!exponentResult.leading){
         exponentResult.leading = parser.create('node', 'inferredMrow', [], {});
         const leadingBracket = (new TexParser(bracketOpenMap.get(parser.currentCS)(options), parser.stack.env, parser.configuration)).mml();
         exponentResult.leading.appendChild(leadingBracket);
     }
 
-    if (exponentResult.trailing === undefined){
+    if (!exponentResult.trailing){
         exponentResult.trailing = parser.create('node', 'inferredMrow', [], {});
     }
     if (options["list-exponents"] !== 'combine-bracket'){

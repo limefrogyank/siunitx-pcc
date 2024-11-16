@@ -36,10 +36,10 @@ function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IA
 		subParser.i++; // GetNext() does not advance position unless skipping whitespace
 
 		if (token === ';'){
-			if (ang.minutes === undefined) {
+			if (!ang.minutes) {
 				ang.minutes = generateNumberPiece();
 				num = ang.minutes;
-			} else if (ang.seconds === undefined) {
+			} else if (!ang.seconds) {
 				ang.seconds = generateNumberPiece();
 				num = ang.seconds;
 			} else {
@@ -164,7 +164,7 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 	const root = parser.create('node', 'inferredMrow', [], {});
 
 	const degreeValue = +(ang.degrees.whole + (ang.degrees.decimal !== '' ? '.' : '') + ang.degrees.fractional);
-	if (ang.degrees.whole === '' && options["fill-angle-degrees"]) {
+	if (!ang.degrees.whole && options["fill-angle-degrees"]) {
 		if (ang.minutes.sign === '-') {
 			ang.degrees.sign = '-';
 			ang.minutes.sign = '';
@@ -181,7 +181,7 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 			// TODO: assume no exponents, maybe check for this and thow error
 			degreeNodeToAdd = degreeOverDecimal(parser, degreeMml, options["angle-symbol-degree"], options as IOptions, true);
 		}
-		if (degreeNodeToAdd === undefined) {
+		if (!degreeNodeToAdd) {
 			// do nothing but add symbol to end
 			degreeNodeToAdd = parser.create('node', 'inferredMrow', [], {});
 			degreeNodeToAdd.appendChild(degreeMml);
@@ -217,7 +217,7 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 				minuteNodeToAdd = degreeOverDecimal(parser, minutesMml, moddedAngleSymbolMinute, options as IOptions, false);
 			}
 
-			if (minuteNodeToAdd === undefined) {
+			if (!minuteNodeToAdd) {
 				// do nothing but add symbol to end
 				minuteNodeToAdd = parser.create('node', 'inferredMrow', [], {});
 				minuteNodeToAdd.appendChild(minutesMml);
@@ -249,7 +249,7 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 				secondsNodeToAdd = degreeOverDecimal(parser, secondsMml, moddedAngleSymbolSecond, options as IOptions, false);
 			}
 
-			if (secondsNodeToAdd === undefined) {
+			if (!secondsNodeToAdd) {
 				// do nothing but add symbol to end
 				secondsNodeToAdd = parser.create('node', 'inferredMrow', [], {});
 				secondsNodeToAdd.appendChild(secondsMml);

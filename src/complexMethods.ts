@@ -45,14 +45,14 @@ export function parseComplexNumber(parser: TexParser, text: string, options: IOp
                 complex.real = parseNumber(parser, split[0].trim(), options);
                 //remove imaginary token, add sign, and parse
                 let value = split[1].replace(imaginaryTokenRegex, '').trim();
-                if (value === '') {
+                if (!value) {
                     value = '1';
                 }
                 complex.imaginary = parseNumber(parser, sign + value, options);
             } else {
                 // here because positive imaginary only number was used... i.e. 2i
                 let value = split[0].replace(imaginaryTokenRegex, '');
-                if (value === '') {
+                if (!value) {
                     value = '1';
                 }
                 complex.imaginary = parseNumber(parser, value, options);
