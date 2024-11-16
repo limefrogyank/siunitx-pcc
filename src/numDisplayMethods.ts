@@ -22,7 +22,7 @@ export function findInnerText(node: MmlNode): string {
 	node.walkTree((node: MmlNode, data: { text: string }) => {
 		if (!node.isToken) return;
 		if (node.isKind('mspace')) {
-			
+
 			const w = node.attributes.getExplicit('width');
 			if (Object.prototype.hasOwnProperty.call(spaceMap, w)) {
 				data.text += spaceMap[w as string];
@@ -195,17 +195,23 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 	const exponentBaseNode = (new TexParser(options["exponent-base"], parser.stack.env, parser.configuration)).mml();
 	if (options["print-zero-exponent"] && (num.exponent === '' || (num.exponent === '0'))) {
 		const zeroNode = parser.create('token', 'mn', {}, '0');
+
 		if (options["output-exponent-marker"] !== '') {
 			const customExponentMarker = parser.create('token', 'mi', { mathvariant: 'normal' }, options["output-exponent-marker"]);
 			root.appendChild(customExponentMarker);
 			root.appendChild(zeroNode);
 		} else {
+			
 			if (options["tight-spacing"]) {
 				exponentProductNode.attributes.set('lspace', '0em');
 				exponentProductNode.attributes.set('rspace', '0em');
 			}
 			const exponential = parser.create('node', 'msup', [exponentBaseNode, zeroNode]);
-			root.appendChild(exponentProductNode);
+			// Edge case \num[print-unity-mantissa = false, print-zero-exponent = true]{1e0}  
+			// as this should resolve to 10^0 without mantissa and exponent marker
+			if (options["print-unity-mantissa"]) {
+				root.appendChild(exponentProductNode);
+			}
 			root.appendChild(exponential);
 		}
 	} else if (num.exponent !== '' && num.exponent !== '0') {
@@ -241,35 +247,22 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 }
 
 export function displayNumberMml(num: INumberPiece, parser: TexParser, options: IOptions): MmlNode {
-	let rootNode: MmlNode;
-
-	if (options["negative-color"] !== '') {
-		rootNode = parser.create('node', 'mstyle', [], { mathcolor: options["negative-color"] });
-	}
-	const mrow = parser.create('node', 'mrow');
-	const currentNode = mrow;
-	if (rootNode === undefined) {
-		rootNode = mrow;
-	} else {
-		rootNode.appendChild(mrow);
+	const rootNode: MmlNode = parser.create('node', 'mrow');
+	if (num.sign === '-' && options["negative-color"]) {
+		rootNode.attributes.set('mathcolor', options["negative-color"]);
 	}
 
 	groupNumbersMap.get(options["group-digits"])?.(parser, num, options);
 	if (options["bracket-negative-numbers"]) {
 		if (num.sign === '-') {
 			const leftBracket = parser.create('token', 'mo', {}, '(');
-			currentNode.appendChild(leftBracket);
+			rootNode.appendChild(leftBracket);
 		}
-	} else {
-		if (options["print-implicit-plus"] && num.sign === '') {
-			const sign = parser.create('token', 'mo', { rspace: "0em", lspace: "0em" }, '+');
-			currentNode.appendChild(sign);
-		} else {
-			if (num.sign !== '') {
-				const sign = parser.create('token', 'mo', { rspace: "0em", lspace: "0em" }, num.sign);
-				currentNode.appendChild(sign);
-			}
-		}
+	}
+
+	if (num.sign || options["print-implicit-plus"]) {
+		const sign = parser.create('token', 'mo', { rspace: "0em", lspace: "0em" }, num.sign || '+');
+		rootNode.appendChild(sign);
 	}
 
 	let numberString = '';
@@ -277,7 +270,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	// if unity mantissa AND don't print it, then we don't need the rest of this.
 	if (num.whole === '1' && num.fractional === '' && !options["print-unity-mantissa"]) {
 		// don't do anything UNLESS exponent is also zero and printZeroExponent is false
-		if (!options["print-zero-exponent"] && (num.exponent === '' || (num.exponent === '1' && num.exponentSign !== '-'))) {
+		if (!options["print-zero-exponent"] && (num.exponent === '' || (num.exponent === '0' && num.exponentSign !== '-'))) {
 			numberString += '1';
 		}
 	} else {
@@ -296,24 +289,24 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 		}
 	}
 	const numberNode = parser.create('token', 'mn', {}, numberString);
-	currentNode.appendChild(numberNode);
+	rootNode.appendChild(numberNode);
 	if (trailingMml !== undefined) {
-		currentNode.appendChild(trailingMml);
+		rootNode.appendChild(trailingMml);
 	}
 	// display uncertanties (if not null)
 	num.uncertainty?.forEach(v => {
 		const uncertaintyNode = uncertaintyModeMmlMapping.get(options["uncertainty-mode"])?.(v, num, parser, options);
-		currentNode.appendChild(uncertaintyNode);
+		rootNode.appendChild(uncertaintyNode);
 	});
 
 	const exponentNode = createExponentMml(num, parser, options);
-	currentNode.appendChild(exponentNode);
+	rootNode.appendChild(exponentNode);
 
 
 	if (options["bracket-negative-numbers"]) {
 		if (num.sign === '-') {
 			const rightBracket = parser.create('token', 'mo', {}, ')');
-			currentNode.appendChild(rightBracket);
+			rootNode.appendChild(rightBracket);
 		}
 	}
 	return rootNode;

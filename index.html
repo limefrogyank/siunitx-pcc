@@ -300,7 +300,10 @@
 			String.raw`\num[bracket-negative-numbers]{-15673}`,
 			String.raw`\num{-15673}`,
 			String.raw`\num[negative-color = red]{-15673}`,
+			String.raw`\num[negative-color = red]{15673}`,
 			String.raw`\num[negative-color = red,bracket-negative-numbers]{-15673}`,
+			String.raw`\num[negative-color = red,bracket-negative-numbers]{15673}`,
+			
 
 			String.raw`\num{2e3}`,
 			String.raw`\num[tight-spacing = true]{2e3}`, //TODO: Probably more places to add tight spacing, +- uncertainty probably
@@ -309,13 +312,24 @@
 			String.raw`\num[print-implicit-plus]{345}`,
 			String.raw`\num{1e4}`,
 			String.raw`\num[print-unity-mantissa = false]{1e4}`,
+			String.raw`\num[print-unity-mantissa = false]{1.1e4}`,
+			String.raw`\num[print-unity-mantissa = false]{2e4}`,
 			String.raw`\num{444e0}`,
 			String.raw`\num[print-zero-exponent = true]{444e0}`,
+			String.raw`\num[print-unity-mantissa = true, print-zero-exponent = true]{1e0}`,
+			String.raw`\num[print-unity-mantissa = true, print-zero-exponent = false]{1e0}`,
+			String.raw`\num[print-unity-mantissa = false, print-zero-exponent = true]{1e0}`,
+			String.raw`\num[print-unity-mantissa = false, print-zero-exponent = false]{1e0}`,
 			String.raw`\num{0.123}`,
 			String.raw`\num[print-zero-integer = false]{0.123}`,
+			String.raw`\num{00.123}`,
+			String.raw`\num[print-zero-integer = false]{00.123}`,
 			String.raw`\num{123.00}`,
 			String.raw`\num[zero-decimal-as-symbol]{123.00}`,
 			String.raw`\num[zero-decimal-as-symbol, zero-symbol=\text{[---]}]{123.00}`,
+
+			String.raw`\num[negative-color = red,bracket-negative-numbers,print-implicit-plus]{15673}`,
+			String.raw`\num[negative-color = red,bracket-negative-numbers,print-implicit-plus]{-15673}`,
 
 
 		];
