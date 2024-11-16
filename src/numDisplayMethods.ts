@@ -255,7 +255,7 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	groupNumbersMap.get(options["group-digits"])?.(parser, num, options);
 	if (options["bracket-negative-numbers"]) {
 		if (num.sign === '-') {
-			const leftBracket = parser.create('token', 'mo', {}, '(');
+			const leftBracket = parser.create('token', 'mo', { stretchy: false }, '(');
 			rootNode.appendChild(leftBracket);
 		}
 	}
@@ -296,18 +296,16 @@ export function displayNumberMml(num: INumberPiece, parser: TexParser, options: 
 	// display uncertanties (if not null)
 	num.uncertainty?.forEach(v => {
 		const uncertaintyNode = uncertaintyModeMmlMapping.get(options["uncertainty-mode"])?.(v, num, parser, options);
-		rootNode.appendChild(uncertaintyNode);
+		rootNode.appendChild(uncertaintyNode || parser.create('node', 'inferredMrow'));
 	});
 
 	const exponentNode = createExponentMml(num, parser, options);
 	rootNode.appendChild(exponentNode);
 
 
-	if (options["bracket-negative-numbers"]) {
-		if (num.sign === '-') {
-			const rightBracket = parser.create('token', 'mo', {}, ')');
+	if (options["bracket-negative-numbers"] && num.sign === '-') {
+			const rightBracket = parser.create('token', 'mo', { stretchy: false }, ')');
 			rootNode.appendChild(rightBracket);
-		}
 	}
 	return rootNode;
 }
