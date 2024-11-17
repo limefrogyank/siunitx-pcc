@@ -1,21 +1,30 @@
 {
 	"compilerOptions": {
-	  "outDir": "./js",
-	  "noImplicitAny": false,
-	  "module": "ES6",
-	  "target": "ES2015",
-	  "jsx":"preserve",
-	  "allowJs": true,
-	  "sourceMap": true,
-	  "moduleResolution": "node",
-	  "lib":["ES5", "DOM"]
+		"outDir": "./js",
+		"noImplicitAny": false,
+		"module": "ES6",
+		"target": "ES2015",
+		"jsx": "preserve",
+		"allowJs": true,
+		"sourceMap": true,
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"lib": [
+			"ES2015",
+			"DOM"
+		],
+		"typeRoots": [
+			"./node_modules/@types",
+			"./types"
+		]
 	},
 	"include": [
-	  "src/**/*"
-	],
+		"src/**/*",
+		"types/localizationResource.d.ts"
+, "types/patch.d.ts"	],
 	"exclude": [
 		"node_modules",
 		"**/*.spec.ts",
 		"js/**/*"
 	]
-  }
+}

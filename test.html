@@ -20,15 +20,36 @@
 </script>
 
 <body>
-    $$ \numlist{0.1;0.2;0.3} $$
-    $$ \numlist[list-separator = {; }]{0.1;0.2;0.3} $$
-    $$\numlist[list-final-separator = {, }]{0.1;0.2;0.3} $$
-    $$ \numlist[
-    list-separator = { and },
-    list-final-separator = { and finally }
-    ]{0.1;0.2;0.3} $$
-    $$ \numlist{0.1;0.2} $$
-    $$ \numlist[list-pair-separator = {, and }]{0.1;0.2} $$
+    $$ \qty{2.67}{\farad} $$
+$$ \qty[quantity-product = {\ }]{2.67}{\farad} $$
+$$ \qty[quantity-product = ]{2.67}{\farad} $$
+
+    $$ \displaylines{
+        \ang{-1;;} \\
+        \ang{;-2;} \\
+        \ang{;;-3} \\
+        } $$
+    $$ \displaylines{
+        \sisetup{fill-angle-degrees}
+        \ang{-1;;} \\
+        \ang{;-2;} \\
+        \ang{;;-3} \\
+        \sisetup{fill-angle-degrees = false}
+        } $$
+    $$ \displaylines{
+        \sisetup{fill-angle-minutes}
+        \ang{-1;;} \\
+        \ang{;-2;} \\
+        \ang{;;-3} \\
+        \sisetup{fill-angle-minutes = false}
+        } $$
+    $$ \displaylines{
+        \sisetup{fill-angle-seconds}
+        \ang{-1;;} \\
+        \ang{;-2;} \\
+        \ang{;;-3} \\
+        \sisetup{fill-angle-seconds = false}
+        } $$
 </body>
 
 </html>

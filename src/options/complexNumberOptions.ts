@@ -1,21 +1,21 @@
 export interface IComplexNumberOptions {
-	complexAngleUnit: 'degrees' | 'radians';
-	complexMode: 'input' | 'cartesian' | 'polar';
-	complexRootPosition: 'before-number' | 'after-number';
-	complexSymbolAngle: string;
-	complexSymbolDegree: string;
-	inputComplexRoot: string;
-	outputComplexRoot: string;
-	printComplexUnity: boolean;
+	"complex-angle-unit": 'degrees' | 'radians';
+	"complex-mode": 'input' | 'cartesian' | 'polar';
+	"complex-root-position": 'before-number' | 'after-number';
+	"complex-symbol-angle": string;
+	"complex-symbol-degree": string;
+	"input-complex-root": string;
+	"output-complex-root": string;
+	"print-complex-unity": boolean;
 }
 
 export const ComplexNumberOptionsDefault: IComplexNumberOptions = {
-	complexAngleUnit: 'degrees',
-	complexMode: 'input',
-	complexRootPosition: 'after-number',
-    complexSymbolAngle: '\\angle',
-    complexSymbolDegree: '\\degree',
-    inputComplexRoot: 'ij',
-    outputComplexRoot: '\\mathrm{i}',
-    printComplexUnity: false
+	"complex-angle-unit": 'degrees',
+	"complex-mode": 'input',
+	"complex-root-position": 'after-number',
+    "complex-symbol-angle": '\\angle',
+    "complex-symbol-degree": '\\degree',
+    "input-complex-root": 'ij',
+    "output-complex-root": '\\mathrm{i}',
+    "print-complex-unity": false
 }

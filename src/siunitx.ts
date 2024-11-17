@@ -1,17 +1,16 @@
 import { TeX } from 'mathjax-full/js/input/tex';
 import { Configuration, ParserConfiguration } from 'mathjax-full/js/input/tex/Configuration';
-import { CommandMap, CharacterMap, parseResult } from 'mathjax-full/js/input/tex/SymbolMap';
+import { CommandMap, CharacterMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
 import { findOptions, IOptions, processSISetup, siunitxDefaults, } from './options/options';
 import { processQuantity } from './qtyMethods';
 import { processUnit } from './unitMethods';
-import { userDefinedUnitOptions, userDefinedUnits } from './units';
 import { GetArgumentMML } from "./aria-label";
 import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
 
-import { Symbol } from 'mathjax-full/js/input/tex/Symbol'
+import { Symbol as TexSymbol } from 'mathjax-full/js/input/tex/Symbol'
 import { TexConstant } from 'mathjax-full/js/input/tex/TexConstants';
 import { processComplexNumber, processComplexQuantity } from './complexMethods';
 import { processNumberList } from './numlistMethods';
@@ -20,21 +19,17 @@ import { processNumberRange } from './numrangeMethods';
 import { processQuantityList } from './qtylistMethods';
 import { processQuantityRange } from './qtyrangeMethods';
 import { processQuantityProduct } from './qtyproductMethods';
+import './options/patch';
 
 const methodMap: Record<string, (parser: TexParser) => void> = {
     '\\num': (parser: TexParser): void => {
-        const nodes = processNumber(parser);
-        nodes.forEach(v => {
-            parser.Push(v);
-        })
+        parser.Push(processNumber(parser));
     },
     '\\ang': (parser: TexParser): void => {
-        const node = processAngle(parser);
-        parser.Push(node);
+        parser.Push(processAngle(parser));
     },
     '\\unit': (parser: TexParser): void => {
-        const node = processUnit(parser);
-        parser.Push(node);
+        parser.Push(processUnit(parser));
     },
     '\\qty': (parser: TexParser): void => {
         processQuantity(parser); // doesn't return a node, pushes internally
@@ -58,57 +53,53 @@ const methodMap: Record<string, (parser: TexParser) => void> = {
         processQuantityRange(parser);
     },
     '\\complexnum': (parser: TexParser): void => {
-        const nodes = processComplexNumber(parser);
-        nodes.forEach(v => {
-            parser.Push(v);
-        })
+        parser.Push(processComplexNumber(parser));
     },
     '\\complexqty': (parser: TexParser): void => {
         processComplexQuantity(parser);
     },
-    '@{}S': (parser: TexParser): void => {
+
+    '@{}S': (_parser: TexParser): void => {
         //TODO: NOT IMPLEMENTED
         // no tabular in MathJax, but maybe use \\begin{array} ?  or pure html somehow
     },
-    '\\tablenum': (parser: TexParser): void => {
+    '\\tablenum': (_parser: TexParser): void => {
         //TODO: NOT IMPLEMENTED
     },
     '\\sisetup': (parser: TexParser): void => {
         processSISetup(parser);
-    }
-};
+    },
+    '\\DeclareSIUnit': (parser: TexParser): void => {
+        const packageData = parser.configuration.packageData.get('siunitx');
+        const userDefinedUnits = packageData[UserDefinedUnitsKey] as Map<string, string>;
+        const userDefinedUnitOptions = packageData[UserDefinedUnitOptionsKey] as Map<string, Partial<IOptions>>;
 
-const declareMap: Record<string, (parser: TexParser, name: string, options: Partial<IOptions>) => void> = {
-    '\\DeclareSIUnit': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
-        const userDefinedUnits = parser.configuration.packageData.get(UserDefinedUnitsKey) as Map<string, string>;
-        const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, Partial<IOptions>>;
+        const options = findOptions(parser, siunitxDefaults);
 
-        const newUnitMacro = parser.GetArgument(name);
-        const newSymbol = parser.GetArgument(name);
+        const newUnitMacro = parser.GetArgument('DeclareSIUnit');
+        const newSymbol = parser.GetArgument('DeclareSIUnit');
 
         userDefinedUnits.set(newUnitMacro, newSymbol);
         if (options !== undefined) {
             userDefinedUnitOptions.set(newUnitMacro, options);
         }
     },
-    '\\DeclareSIQualifier': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
+    '\\DeclareSIQualifier': (_parser: TexParser): void => {
         //TODO: DeclareSIQualifier (eg g_{salt} for "grams of salt")
     },
-    '\\DeclareSIPower': (parser: TexParser, name: string, options: Partial<IOptions>): void => {
+    '\\DeclareSIPower': (_parser: TexParser): void => {
         //TODO: DeclareSIPower  (eg \square,\cubic,\squared,\cubed)
     },
 };
 
-export let GlobalParser: TexParser;
-
 export const UserDefinedUnitsKey = 'siunitxUnits';
 export const UserDefinedUnitOptionsKey = 'siunitxUnitOptions';
 
-function angleChars(parser: TexParser, mchar: Symbol) {
+function angleChars(parser: TexParser, mchar: TexSymbol) {
     const def = mchar.attributes || {};
     def.mathvariant = TexConstant.Variant.NORMAL;
     def.class = 'MathML-Unit';
-    const emptyToken = parser.create('token', 'mi', { 'data-semantic-type': 'empty' });
+    const emptyToken = parser.create('token', 'mi');
     const symbolToken = parser.create('token', 'mi', def, mchar.char);
     const msupNode = parser.create('node', 'msup', [emptyToken, symbolToken]);
     parser.Push(msupNode);
@@ -133,29 +124,23 @@ new CommandMap('siunitxMap', {
     qtylist: ['siunitxToken', 'qtylist'],
     qtyrange: ['siunitxToken', 'qtyrange'],
     qtyproduct: ['siunitxToken', 'qtyproduct'],
-    DeclareSIUnit: ['siunitxGlobal', 'DeclareSIUnit'],
+    DeclareSIUnit: ['siunitxToken', 'DeclareSIUnit'],
     sisetup: ['siunitxToken', 'sisetup'],
     arialabel: ['Arialabel', 'arialabel'],
     data: ['Dataset', 'data'],
 }, {
     siunitxToken: (parser, name) => {
-        GlobalParser = parser;
         methodMap[name as string]?.(parser);
     },
-    siunitxGlobal: (parser, name) => {
-        GlobalParser = parser;
-        const options = findOptions(parser);
-        declareMap[name as string]?.(parser, name as string, options);
-    },
     Arialabel: (parser: TexParser, name: string) => {
-        let thelabel = parser.GetArgument(name);
+        const thelabel = parser.GetArgument(name);
         const arg = GetArgumentMML(parser, name);
         NodeUtil.setAttribute(arg, 'aria-label', thelabel);
         parser.Push(arg);
     },
     // currently not used
     Dataset: (parser: TexParser, name: string) => {
-        let dataset = parser.GetArgument(name);
+        const dataset = parser.GetArgument(name);
         const arg = GetArgumentMML(parser, name);
         //parse dataset to get both sides of equal
         const pair = dataset.split('=');
@@ -172,8 +157,10 @@ new CommandMap('siunitxMap', {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const config = (_config: ParserConfiguration, jax: TeX<any, any, any>) => {
-    jax.parseOptions.packageData.set(UserDefinedUnitsKey, userDefinedUnits);
-    jax.parseOptions.packageData.set(UserDefinedUnitOptionsKey, userDefinedUnitOptions);
+    jax.parseOptions.packageData.set('siunitx', {
+        [UserDefinedUnitsKey]: new Map<string, string>(),
+        [UserDefinedUnitOptionsKey]: new Map<string, string>()
+    });
 };
 
 
@@ -182,6 +169,8 @@ Configuration.create('siunitx',
         handler: {
             macro: ['angchar-symbols', 'siunitxMap']
         },
-        options: siunitxDefaults,
+        options: {
+            siunitx: siunitxDefaults
+        },
         config: config
     });

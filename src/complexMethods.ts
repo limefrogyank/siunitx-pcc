@@ -2,11 +2,9 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { INumberPiece, NumberPieceDefault, parseNumber, pieceToNumber } from "./numMethods";
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import { IOptions, findOptions } from "./options/options";
-import { IComplexNumberOptions } from "./options/complexNumberOptions";
-import { GlobalParser } from "./siunitx";
+
 import { postProcessNumber } from "./numPostProcessMethods";
-import { displayOutputMml, findInnerText, spacerMap } from "./numDisplayMethods";
-import { OPTIONS } from "mathjax-full/js/util/Options";
+import { displayOutputMml, findInnerText } from "./numDisplayMethods";
 import { displayUnits, parseUnit } from "./unitMethods";
 import { prefixModeMap } from "./qtyMethods";
 
@@ -37,24 +35,24 @@ export function parseComplexNumber(parser: TexParser, text: string, options: IOp
     } else {
         // parse cartesian
         // check if imaginary part exists
-        const imaginaryTokenRegex = new RegExp(`[${options.inputComplexRoot}]`);
+        const imaginaryTokenRegex = new RegExp(`[${options["input-complex-root"]}]`);
         if (text.match(imaginaryTokenRegex)) {
             // identify splitter and split parts
             const regexSplit = /[+-](?![^+-]*[+-])/;
             const sign = text.match(regexSplit);
             const split = text.split(regexSplit);
             if (split.length > 1) {
-                complex.real = parseNumber(parser, split[0], options);
+                complex.real = parseNumber(parser, split[0].trim(), options);
                 //remove imaginary token, add sign, and parse
                 let value = split[1].replace(imaginaryTokenRegex, '').trim();
-                if (value === '') {
+                if (!value) {
                     value = '1';
                 }
                 complex.imaginary = parseNumber(parser, sign + value, options);
             } else {
                 // here because positive imaginary only number was used... i.e. 2i
                 let value = split[0].replace(imaginaryTokenRegex, '');
-                if (value === '') {
+                if (!value) {
                     value = '1';
                 }
                 complex.imaginary = parseNumber(parser, value, options);
@@ -90,156 +88,144 @@ function polarToCartesian(parser: TexParser, complex: IComplex, options: IOption
     }
     const x = r * Math.cos(ang);
     const y = r * Math.sin(ang);
-    
+
     complex.real = parseNumber(parser, x.toString(), options);
     complex.imaginary = parseNumber(parser, y.toString(), options);
 }
 
-function displayComplexNumber(complex: IComplex, parser: TexParser, options: IOptions): MmlNode[]{
-    const realMmlNodes = displayOutputMml(complex.real, parser, options);
+function displayComplexNumber(complex: IComplex, parser: TexParser, options: IOptions): MmlNode {
+    const realMmlNode = displayOutputMml(complex.real, parser, options);
 
-        let rootNodes: MmlNode[] = [];
-        realMmlNodes.forEach(n => {
-            rootNodes.push(n);
-        })
+    const root = parser.create('node', 'inferredMrow', [], {});
+    root.appendChild(realMmlNode);
 
-        const complexValue = pieceToNumber(complex.imaginary);
-        if (complexValue !== 0) {
-            if (complex.inputMode === 'polar' && options.complexMode === 'input' || options.complexMode === 'polar') {
-                const angle = (new TexParser(options.complexSymbolAngle, parser.stack.env, parser.configuration)).mml();
-                rootNodes.push(angle);
+    const complexValue = pieceToNumber(complex.imaginary);
+    if (complexValue !== 0) {
+        if (complex.inputMode === 'polar' && options["complex-mode"] === 'input' || options["complex-mode"] === 'polar') {
+            const angle = (new TexParser(options["complex-symbol-angle"], parser.stack.env, parser.configuration)).mml();
+            root.appendChild(angle);
 
-                
-                const complexMmlNodes = displayOutputMml(complex.imaginary, parser, options);
-                complexMmlNodes.forEach(n => {
-                    rootNodes.push(n);
-                });
-            
-                if (options.complexAngleUnit === 'degrees'){
-                    const degree = (new TexParser(options.complexSymbolDegree, parser.stack.env, parser.configuration)).mml();
-                    rootNodes.push(degree);
-                }
 
-            } else {
-                // extract sign from imaginary part
-                const sign = complex.imaginary.sign === '-' ? '-' : '+';
-                complex.imaginary.sign = '';
+            const complexMmlNode = displayOutputMml(complex.imaginary, parser, options);
 
-                if (pieceToNumber(complex.real) !== 0 || sign === '-') {
-                    const signNode = (new TexParser(sign, parser.stack.env, parser.configuration)).mml();
-                    rootNodes.push(signNode);
-                }
+            root.appendChild(complexMmlNode);
 
-                if (options.complexRootPosition === 'before-number') {
-                    const rootNode = (new TexParser(options.outputComplexRoot, parser.stack.env, parser.configuration)).mml();
-                    rootNodes.push(rootNode);
-                }
+            if (options["complex-angle-unit"] === 'degrees') {
+                const degree = (new TexParser(options["complex-symbol-degree"], parser.stack.env, parser.configuration)).mml();
+                root.appendChild(degree);
+            }
 
-                if (complexValue !== 1 || options.printComplexUnity){
-                    const complexMmlNodes = displayOutputMml(complex.imaginary, parser, options);
-                    complexMmlNodes.forEach(n => {
-                        rootNodes.push(n);
-                    });
-                }
+        } else {
+            // extract sign from imaginary part
+            const sign = complex.imaginary.sign === '-' ? '-' : '+';
+            complex.imaginary.sign = '';
 
-                if (options.complexRootPosition === 'after-number') {
-                    const rootNode = (new TexParser(options.outputComplexRoot, parser.stack.env, parser.configuration)).mml();
-                    rootNodes.push(rootNode);
-                }
+            if (pieceToNumber(complex.real) !== 0 || sign === '-') {
+                const signNode = (new TexParser(sign, parser.stack.env, parser.configuration)).mml();
+                root.appendChild(signNode);
+            }
+
+            if (options["complex-root-position"] === 'before-number') {
+                const rootNode = (new TexParser(options["output-complex-root"], parser.stack.env, parser.configuration)).mml();
+                root.appendChild(rootNode);
+            }
+
+            if (complexValue !== 1 || options["print-complex-unity"]) {
+                const complexMmlNode = displayOutputMml(complex.imaginary, parser, options);
+                root.appendChild(complexMmlNode);
+            }
+
+            if (options["complex-root-position"] === 'after-number') {
+                const rootNode = (new TexParser(options["output-complex-root"], parser.stack.env, parser.configuration)).mml();
+                root.appendChild(rootNode);
             }
         }
+    }
 
-        return rootNodes;
+    return root;
 
 }
 
-export function processComplexNumber(parser: TexParser): MmlNode[] {
-    const globalOptions: IOptions = { ...parser.options as IOptions };
+export function processComplexNumber(parser: TexParser): MmlNode {
+    const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
-    const localOptions = findOptions(parser);
+    const localOptions = findOptions(parser, globalOptions);
 
     Object.assign(globalOptions, localOptions);
 
-    let text = parser.GetArgument('complexnum');
+    const text = parser.GetArgument('complexnum');
 
-    if (globalOptions.parseNumbers) {
+    if (globalOptions["parse-numbers"]) {
 
         const complex = parseComplexNumber(parser, text, globalOptions);
 
-        if (globalOptions.complexMode === 'polar' && complex.inputMode !== 'polar') {
-            cartesianToPolar(parser, complex, globalOptions, globalOptions.complexAngleUnit === 'degrees');
-        } else if (globalOptions.complexMode === 'cartesian' && complex.inputMode !== 'cartesian') {
-            polarToCartesian(parser, complex, globalOptions, globalOptions.complexAngleUnit === 'degrees');
+        if (globalOptions["complex-mode"] === 'polar' && complex.inputMode !== 'polar') {
+            cartesianToPolar(parser, complex, globalOptions, globalOptions["complex-angle-unit"] === 'degrees');
+        } else if (globalOptions["complex-mode"] === 'cartesian' && complex.inputMode !== 'cartesian') {
+            polarToCartesian(parser, complex, globalOptions, globalOptions["complex-angle-unit"] === 'degrees');
         }
 
-        postProcessNumber(complex.real, globalOptions);
-        postProcessNumber(complex.imaginary, globalOptions);
+        postProcessNumber(parser, complex.real, globalOptions);
+        postProcessNumber(parser, complex.imaginary, globalOptions);
 
-       return displayComplexNumber(complex, parser, globalOptions);
+        return displayComplexNumber(complex, parser, globalOptions);
 
     } else {
         const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();
-        return [mml];
+        return mml;
     }
 
 }
 
 export function processComplexQuantity(parser: TexParser): void {
-    const globalOptions: IOptions = { ...parser.options as IOptions };
+    const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
-    const localOptions = findOptions(parser);
+    const localOptions = findOptions(parser, globalOptions);
 
     Object.assign(globalOptions, localOptions);
 
-    let complexnum = parser.GetArgument('complexnum');
+    const complexnum = parser.GetArgument('complexnum');
     const unitString = parser.GetArgument('unit');
 
     let unitDisplay = '';
 
-	const isLiteral = (unitString.indexOf('\\') == -1);
-	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
+    const isLiteral = (unitString.indexOf('\\') === -1);
+    const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
 
-    
+
     const complex = parseComplexNumber(parser, complexnum, globalOptions);
 
-    if (globalOptions.complexMode === 'polar' && complex.inputMode !== 'polar') {
+    if (globalOptions["complex-mode"] === 'polar' && complex.inputMode !== 'polar') {
         cartesianToPolar(parser, complex, globalOptions);
-    } else if (globalOptions.complexMode === 'cartesian' && complex.inputMode !== 'cartesian') {
+    } else if (globalOptions["complex-mode"] === 'cartesian' && complex.inputMode !== 'cartesian') {
         polarToCartesian(parser, complex, globalOptions);
     }
 
     // convert number and unit if necessary
-    prefixModeMap.get(globalOptions.prefixMode)?.(complex.real, unitPieces, globalOptions);
-    prefixModeMap.get(globalOptions.prefixMode)?.(complex.imaginary, unitPieces, globalOptions);
+    prefixModeMap.get(globalOptions["prefix-mode"])?.(parser, complex.real, unitPieces, globalOptions);
+    prefixModeMap.get(globalOptions["prefix-mode"])?.(parser, complex.imaginary, unitPieces, globalOptions);
 
-    postProcessNumber(complex.real, globalOptions);
-    postProcessNumber(complex.imaginary, globalOptions);
+    postProcessNumber(parser, complex.real, globalOptions);
+    postProcessNumber(parser, complex.imaginary, globalOptions);
 
-   
-	const complexNumMml = displayComplexNumber( complex, parser, globalOptions);
-    complexNumMml.forEach(v=>{
-        parser.Push(v);
-    });
+
+    const complexNumMml = displayComplexNumber(complex, parser, globalOptions);
+    parser.Push(complexNumMml);
 
     let quantityProductNode = null;
-    const trimmedQuantityProduct = globalOptions.quantityProduct.trimStart();
+    const trimmedQuantityProduct = globalOptions["quantity-product"].trimStart();
     if (trimmedQuantityProduct !== '') {
-        let quantityProduct = spacerMap[trimmedQuantityProduct];
-        if (quantityProduct === undefined) {
-            // instead of copying quantityProduct, 
-            // should auto parse latex and extract unicode from mml
-            const spacerNode = (new TexParser(quantityProduct, GlobalParser.stack.env, GlobalParser.configuration)).mml();
-            quantityProduct = findInnerText(spacerNode);
-        }
-        quantityProductNode = parser.create('token', 'mo', {}, quantityProduct);
+        const spacerNode = (new TexParser(trimmedQuantityProduct, parser.stack.env, parser.configuration)).mml();
+        const spacerUnicode = findInnerText(spacerNode);
+        quantityProductNode = parser.create('token', 'mo', {}, spacerUnicode);
     }
     parser.Push(quantityProductNode);
 
-        // Need to process this after number because some options alter unit prefixes
+    // Need to process this after number because some options alter unit prefixes
     unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
     const unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
 
     parser.Push(unitNode);
 
- 
+
 }

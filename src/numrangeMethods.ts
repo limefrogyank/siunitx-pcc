@@ -6,33 +6,33 @@ import { displayOutputMml } from "./numDisplayMethods";
 import { exponentListModeMap } from "./numlistMethods";
 
 export function processNumberRange(parser: TexParser): void {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 
 	Object.assign(globalOptions, localOptions);
 
-	let first = parser.GetArgument('firstNum');
-	let last = parser.GetArgument('lastNum');
+	const first = parser.GetArgument('firstNum');
+	const last = parser.GetArgument('lastNum');
 
-	if (globalOptions.parseNumbers) {
+	if (globalOptions["parse-numbers"]) {
 
 		const firstNum = parseNumber(parser, first, globalOptions);
 		const lastNum = parseNumber(parser, last, globalOptions);
-        if (globalOptions.rangeExponents === 'individual'){
-            postProcessNumber(firstNum, globalOptions);
-            postProcessNumber(lastNum, globalOptions);
+        if (globalOptions["range-exponents"] === 'individual'){
+            postProcessNumber(parser, firstNum, globalOptions);
+            postProcessNumber(parser, lastNum, globalOptions);
         } else {
             const targetExponent = firstNum.exponentSign + firstNum.exponent;
             const altOptions = Object.assign(globalOptions, { exponentMode: 'fixed', fixedExponent: targetExponent });
-            postProcessNumber(firstNum, globalOptions);
-            postProcessNumber(lastNum, altOptions);
+            postProcessNumber(parser, firstNum, globalOptions);
+            postProcessNumber(parser, lastNum, altOptions);
         }
 
-        const exponentMapItem = exponentListModeMap.get(globalOptions.rangeExponents);
+        const exponentMapItem = exponentListModeMap.get(globalOptions["range-exponents"]);
         const exponentResult = exponentMapItem([firstNum, lastNum], parser, globalOptions);
         const firstMml = displayOutputMml(exponentResult.numbers[0], parser, globalOptions);
-        const separator = (new TexParser(`\\text{${globalOptions.rangePhrase}}`, parser.stack.env, parser.configuration)).mml();
+        const separator = (new TexParser(`\\text{${globalOptions["range-phrase"]}}`, parser.stack.env, parser.configuration)).mml();
         const lastMml = displayOutputMml(exponentResult.numbers[1], parser, globalOptions);
         let total = [];
         if (exponentResult.leading){

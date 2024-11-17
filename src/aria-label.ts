@@ -16,14 +16,10 @@
  *  limitations under the License.
  */
 
-
-import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { ParseMethod } from 'mathjax-full/js/input/tex/Types';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import { MmlNode } from 'mathjax-full/js/core/MmlTree/MmlNode';
 import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
-
 
 /**
  * Parses the math argument of the above commands and returns it as single
@@ -33,12 +29,12 @@ import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
  * @param {string} name The calling macro name.
  * @return {MmlNode} The math node.
  */
-export let GetArgumentMML = function (parser: TexParser, name: string): MmlNode {
-  let arg = parser.ParseArg(name);
+export const GetArgumentMML = function (parser: TexParser, name: string): MmlNode {
+  const arg = parser.ParseArg(name);
   if (!NodeUtil.isInferred(arg)) {
     return arg;
   }
-  let children = NodeUtil.getChildren(arg);
+  const children = NodeUtil.getChildren(arg);
   if (children.length === 1) {
     return children[0];
   }
@@ -49,7 +45,7 @@ export let GetArgumentMML = function (parser: TexParser, name: string): MmlNode 
 };
 
 
-let ArialabelMethods: Record<string, ParseMethod> = {};
+const ArialabelMethods: Record<string, ParseMethod> = {};
 
 /**
  * Implements \arialabel{name}{math}
@@ -57,7 +53,7 @@ let ArialabelMethods: Record<string, ParseMethod> = {};
  * @param {string} name The TeX string
  */
 ArialabelMethods.Arialabel = function (parser: TexParser, name: string) {
-  let thelabel = parser.GetArgument(name);
+  const thelabel = parser.GetArgument(name);
   const arg = GetArgumentMML(parser, name);
   NodeUtil.setAttribute(arg, 'arialabel', thelabel);
   parser.Push(arg);

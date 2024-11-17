@@ -17,8 +17,8 @@ export function mathmlcompare(mml1: string, mml2: string) {
 				.replace(/(>)\s+|\s+(<)/g, "$1")				// Trim content in between tags
 				.replace(/<([a-zA-Z]+)><\/\1>/g, "<$1/>");		// Convert empty tags into self closing tags
 
-	};
+	}
 
-	return simplifyMML(mml1) == simplifyMML(mml2);
+	return simplifyMML(mml1) === simplifyMML(mml2);
 
-};
+}

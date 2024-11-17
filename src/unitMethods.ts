@@ -1,11 +1,11 @@
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { siunitxError } from "./errors";
-import { findOptions, IOptions, processOptions } from "./options/options";
+import { siunitxError } from "./error/errors";
+import { findOptions, IOptions } from "./options/options";
 import { IUnitOptions, QualifierMode } from "./options/unitOptions";
 import { UserDefinedUnitOptionsKey, UserDefinedUnitsKey } from "./siunitx";
-import { prefixSymbol, unitNameLookup, unitSymbol, unitSymbolsWithShortcuts } from "./units";
+import { prefixSymbol, unitSymbol, unitSymbolsWithShortcuts } from "./units";
 
 export interface IUnitPiece {
 	symbol?: string;
@@ -47,10 +47,10 @@ function processUnitMacro(macro: string, parser: TexParser): IUnitMacroProcessRe
 		return { type: 'prefix', result: { prefix: prefixSymbol.get(macro) } };
 	}
 
-	const userDefinedUnits = parser.configuration.packageData.get(UserDefinedUnitsKey) as Map<string, string>;
+	const userDefinedUnits = parser.configuration.packageData.get('siunitx')[UserDefinedUnitsKey] as Map<string, string>;
 	if (userDefinedUnits.has('\\' + macro)) {
 		const result = userDefinedUnits.get('\\' + macro);
-		const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, Partial<IOptions>>;
+		const userDefinedUnitOptions = parser.configuration.packageData.get('siunitx')[UserDefinedUnitOptionsKey] as Map<string, Partial<IOptions>>;
 		const options = userDefinedUnitOptions.get('\\' + macro);
 		return { type: 'unit', result: { symbol: result as string, prefix: '' }, options: options };
 	}
@@ -103,26 +103,26 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 	if (unitPiece.highlight) {
 		unitLatex += `{\\color{${unitPiece.highlight}}`;
 	}
-	unitLatex += options.unitFontCommand + '{';
+	unitLatex += options["unit-font-command"] + '{';
 	//check for square root
-	if (options.powerHalfAsSqrt && unitPiece.power && unitPiece.power == 0.5) {
+	if (options["power-half-as-sqrt"] && unitPiece.power && unitPiece.power === 0.5) {
 		unitLatex += `\\sqrt{\\class{MathML-Unit}{${unitPiece.prefix}${unitPiece.symbol}}}`;
 		unitPiece.power = null;
 	} else {
 		unitLatex += `\\class{MathML-Unit}{${unitPiece.prefix}${unitPiece.symbol}}`;
 	}
 	if (unitPiece.qualifier) {
-		unitLatex += qualiferMethod.get(options.qualifierMode)?.(unitPiece.qualifier, options.qualifierPhrase);
+		unitLatex += qualiferMethod.get(options["qualifier-mode"])?.(unitPiece.qualifier, options["qualifier-phrase"]);
 	}
 	unitLatex += '}';
-	const power = unitPiece.power != null
+	const power = (unitPiece.power !== undefined && unitPiece.power !== null)
 		? (absPower
-			? Math.abs(unitPiece.power * (unitPiece.position == 'denominator' ? -1 : 1))
-			: unitPiece.power * (unitPiece.position == 'denominator' ? -1 : 1))
+			? Math.abs(unitPiece.power * (unitPiece.position === 'denominator' ? -1 : 1))
+			: unitPiece.power * (unitPiece.position === 'denominator' ? -1 : 1))
 		: (absPower
-			? Math.abs(1 * (unitPiece.position == 'denominator' ? -1 : 1))
-			: 1 * (unitPiece.position == 'denominator' ? -1 : 1));
-	if (power != null && power != 1) {
+			? Math.abs(1 * (unitPiece.position === 'denominator' ? -1 : 1))
+			: 1 * (unitPiece.position === 'denominator' ? -1 : 1));
+	if (power !== null && power !== undefined && power !== 1) {
 		unitLatex += '^{' + power + '}';
 	}
 	if (unitPiece.cancel) {
@@ -131,27 +131,26 @@ function unitLatex(unitPiece: IUnitPiece, options: IUnitOptions, absPower = fals
 	if (unitPiece.highlight) {
 		unitLatex += '}';
 	}
-	return { latex: unitLatex, superscriptPresent: power != 1 };
+	return { latex: unitLatex, superscriptPresent: power !== 1 };
 }
 
 export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, options: IOptions, isLiteral: boolean): string {
-	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 	let closeColor: boolean = false;
 	let texString = '';
-	if (options.unitColor != '') {
-		texString += `{\\color{${options.unitColor}}`;
+	if (options["unit-color"] !== '') {
+		texString += `{\\color{${options["unit-color"]}}`;
 		closeColor = true;
-	} else if (options.color != '') {
+	} else if (options.color !== '') {
 		texString += `{\\color{${options.color}}`;
 		closeColor = true;
 	}
 	let perForSingle = false;
 	if (unitPieces.length >= 2 && unitPieces.filter((v) => {
-		const power = v.power != null
-			? (v.power * (v.position == 'denominator' ? -1 : 1))
+		const power = (v.power !== null && v.power !== undefined)
+			? (v.power * (v.position === 'denominator' ? -1 : 1))
 			: 1;
-		return Math.sign(power) == -1;
-	}).length == 1 && options.perMode == 'single-symbol') {
+		return Math.sign(power) === -1;
+	}).length === 1 && options["per-mode"] === 'single-symbol') {
 		perForSingle = true;
 	}
 
@@ -168,13 +167,13 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 			}
 		});
 		unitPieces.forEach((v) => {
-			if (v == startsSlash) {
+			if (v === startsSlash) {
 				latex += ' / ';
 			}
 			const latexResult = unitLatex(v, options);
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			if (latex != '') {
-				latex += options.interUnitProduct;
+			if (latex !== '') {
+				latex += options["inter-unit-product"];
 			}
 			latex += latexResult.latex;
 
@@ -187,59 +186,59 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 		let numeratorCount = 0;
 		let denominatorCount = 0;
 		unitPieces.forEach((v) => {
-			if (v.position === 'denominator' || (v.power != null && v.power < 0)) {
+			if (v.position === 'denominator' || (v.power !== null && v.power !== undefined && v.power < 0)) {
 				denominatorCount++;
 			} else {
 				numeratorCount++;
 			}
 		}, 0);
 
-		if (options.perMode == 'fraction' || options.perMode == 'symbol'
-			|| options.perMode == 'repeated-symbol' || perForSingle || (options.perMode === 'single-symbol' && denominatorCount == 1 && numeratorCount > 0)) {
+		if (options["per-mode"] === 'fraction' || options["per-mode"] === 'symbol'
+			|| options["per-mode"] === 'repeated-symbol' || perForSingle || (options["per-mode"] === 'single-symbol' && denominatorCount === 1 && numeratorCount > 0)) {
 			let numerator = '';
 			let denominator = '';
 			let lastNumeratorHadSuperscript = false;
 			unitPieces.forEach((v) => {
 				let latexResult;
-				if (v.position === 'denominator' || (v.power != null && v.power < 0)) {
-					latexResult = unitLatex(v, options, options.perMode == 'fraction' || options.perMode == 'symbol' || options.perMode == 'repeated-symbol' || options.perMode == "single-symbol" || perForSingle);
+				if (v.position === 'denominator' || (v.power !== null && v.power !== undefined && v.power < 0)) {
+					latexResult = unitLatex(v, options, options["per-mode"] === 'fraction' || options["per-mode"] === 'symbol' || options["per-mode"] === 'repeated-symbol' || options["per-mode"] === "single-symbol" || perForSingle);
 
-					if (denominator != '') {
-						if (options.perMode == 'repeated-symbol') {
+					if (denominator !== '') {
+						if (options["per-mode"] === 'repeated-symbol') {
 							if (latexResult.superscriptPresent) {
-								denominator += options.perSymbolScriptCorrection;
+								denominator += options["per-symbol-script-correction"];
 							}
-							denominator += options.perSymbol;
+							denominator += options["per-symbol"];
 						} else {
-							denominator += options.interUnitProduct;
+							denominator += options["inter-unit-product"];
 						}
 					}
 					denominator += latexResult.latex;
 				} else {
-					latexResult = unitLatex(v, options, options.perMode == 'fraction' || options.perMode == 'symbol' || options.perMode == 'repeated-symbol' || options.perMode == "single-symbol" || perForSingle);
+					latexResult = unitLatex(v, options, options["per-mode"] === 'fraction' || options["per-mode"] === 'symbol' || options["per-mode"] === 'repeated-symbol' || options["per-mode"] === "single-symbol" || perForSingle);
 					lastNumeratorHadSuperscript = latexResult.superscriptPresent;
-					if (numerator != '') {
-						numerator += options.interUnitProduct;
+					if (numerator !== '') {
+						numerator += options["inter-unit-product"];
 					}
 					numerator += latexResult.latex;
 				}
 			});
 
 			// if no numerator, use 1... but use nothing if denominator is empty, too
-			if (numerator == '' && denominator != '') {
+			if (numerator === '' && denominator !== '') {
 				numerator = '1';
 			}
 			// if no denominator, then no fraction needed.
-			if (denominator != '') {
+			if (denominator !== '') {
 				//adjust denominator if brackets are needed
-				if (denominatorCount > 1 && options.perMode === 'symbol' && options.bracketUnitDenominator) {
+				if (denominatorCount > 1 && options["per-mode"] === 'symbol' && options["bracket-unit-denominator"]) {
 					denominator = '(' + denominator + ')';
 				}
-				if (options.perMode === 'fraction') {
-					texString += options.fractionCommand + '{' + numerator + '}{' + denominator + '}';
+				if (options["per-mode"] === 'fraction') {
+					texString += options["fraction-command"] + '{' + numerator + '}{' + denominator + '}';
 				}
-				else if (options.perMode === 'repeated-symbol' || options.perMode === 'symbol' || perForSingle || options.perMode === 'single-symbol') {
-					texString += numerator + (lastNumeratorHadSuperscript ? options.perSymbolScriptCorrection : '') + options.perSymbol + denominator;
+				else if (options["per-mode"] === 'repeated-symbol' || options["per-mode"] === 'symbol' || perForSingle || options["per-mode"] === 'single-symbol') {
+					texString += numerator + (lastNumeratorHadSuperscript ? options["per-symbol-script-correction"] : '') + options["per-symbol"] + denominator;
 				}
 				else {
 					console.log("shouldn't be here");
@@ -249,14 +248,14 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 			}
 
 		} else {
-			if (options.perMode == 'power-positive-first') {
+			if (options["per-mode"] === 'power-positive-first') {
 				unitPieces = unitPieces.sort((x, y) => {
-					let a = x.power != null ? x : 1;
-					if (x.position == 'denominator') {
+					let a = (x.power !== null && x.power !== undefined) ? x : 1;
+					if (x.position === 'denominator') {
 						a = -a;
 					}
-					let b = y.power != null ? y : 1;
-					if (y.position == 'denominator') {
+					let b = (y.power !== null && y.power !== undefined) ? y : 1;
+					if (y.position === 'denominator') {
 						b = -b;
 					}
 					if (a < b) return 1;
@@ -265,13 +264,12 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 				});
 			}
 			let latex = '';
-			let lastHadSuperscript = false;
+			//let lastHadSuperscript = false;
 			unitPieces.forEach((v) => {
 				const latexResult = unitLatex(v, options);
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				lastHadSuperscript = latexResult.superscriptPresent;
-				if (latex != '') {
-					latex += options.interUnitProduct;
+				//lastHadSuperscript = latexResult.superscriptPresent;
+				if (latex !== '') {
+					latex += options["inter-unit-product"];
 				}
 				latex += latexResult.latex;
 
@@ -308,18 +306,12 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 				Object.assign(globalOptions, processedMacro.options);
 			}
 			// apply immediate options here
-			//processOptions(globalOptions, localOptionString);
-			//const options = processOptions(globalOptions, localOptionString);
-			//const options = {...globalOptions, ...localOptions};
-			//console.log(options);
 			Object.assign(globalOptions, localOptions);
-			//localOptions.forEach((v, k) => globalOptions[k] = v);
-			//console.log(globalOptions.perMode);
 
 			switch (processedMacro.type) {
 				case 'next':
 				case 'prefix':
-					if (nextModifier != null) {
+					if (nextModifier !== null) {
 						nextModifier = Object.assign(nextModifier, processedMacro.result);
 					} else {
 						nextModifier = processedMacro.result;
@@ -327,7 +319,7 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 					break;
 				case 'previous':
 					{
-						if (unitPieces.length == 0) {
+						if (unitPieces.length === 0) {
 							throw new TexError("MissingPreviousMacro", "There is no previous macro for %1 to modify.", macro);
 						}
 						let last = unitPieces[unitPieces.length - 1];
@@ -336,12 +328,12 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 					}
 				case 'unit':
 					{
-						if (nextModifier != null) {
+						if (nextModifier !== null) {
 							processedMacro.result = Object.assign(processedMacro.result, nextModifier);
 							// TODO: WHY IS THIS parser.options and not globaloptions???
 							// Is this even needed?  repeated-symbol is a display option, not a parsing option.
-							if ((parser.options as IOptions).perMode === 'repeated-symbol' || globalOptions.stickyPer) {
-								const denom = nextModifier.position == 'denominator';
+							if ((parser.options.siunitx as IOptions)["per-mode"]=== 'repeated-symbol' || globalOptions["sticky-per"]) {
+								const denom = nextModifier.position === 'denominator';
 								nextModifier = null;
 								if (denom) {
 									nextModifier = { position: 'denominator' };
@@ -363,13 +355,13 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 }
 
 export function processUnit(parser: TexParser): MmlNode {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	// TODO: may be better done a different way. double check.
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 
-	if ((localOptions.parseUnits === undefined || localOptions.parseUnits === true) &&
-		globalOptions.parseUnits === true
+	if ((localOptions["parse-units"] === undefined || localOptions["parse-units"] === true) &&
+		globalOptions["parse-units"] === true
 	) {
 
 		const text = parser.GetArgument('unit');
@@ -378,9 +370,9 @@ export function processUnit(parser: TexParser): MmlNode {
 		// If literal, we do NOT apply per-mode settings.
 		// We'll check if text had backslashes and pass that result to the next functions.
 
-		const isLiteral = (text.indexOf('\\') == -1);
+		const isLiteral = (text.indexOf('\\') === -1);
 		// This will only be a global option.  
-		if (globalOptions.forbidLiteralUnits) {
+		if (globalOptions["forbid-literal-units"]) {
 			throw siunitxError.LiteralUnitsForbidden(text);
 		}
 
@@ -408,11 +400,11 @@ function processPrefixUnitCombo(text: string, unitPiece: IUnitPiece): void {
 	const regex = new RegExp('(' + prefixes + ')?(' + units + ')');
 	const result = regex.exec(text);
 
-	if (result == null) {
+	if (result === null) {
 		return;
 	}
 
-	if (result[1] !== undefined) {
+	if (result[1] !== undefined && result[1] !== null) {
 		unitPiece.prefix = result[1];
 	} else {
 		unitPiece.prefix = '';
@@ -421,7 +413,6 @@ function processPrefixUnitCombo(text: string, unitPiece: IUnitPiece): void {
 }
 
 function parsePlainTextUnits(parser: TexParser, text: string): Array<IUnitPiece> {
-	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 	const unitPieces: Array<IUnitPiece> = new Array<IUnitPiece>();
 	const subParser = new TexParser(text, parser.stack.env, parser.configuration);
 	subParser.i = 0;
@@ -452,8 +443,8 @@ function parsePlainTextUnits(parser: TexParser, text: string): Array<IUnitPiece>
 					//power
 					let next = subParser.string.charAt(++subParser.i);
 					let power = '';
-					if (next == '{') {
-						while ((next = subParser.string.charAt(++subParser.i)) != '}') {
+					if (next === '{') {
+						while ((next = subParser.string.charAt(++subParser.i)) !== '}') {
 							power += next;
 						}
 					} else {
@@ -467,8 +458,8 @@ function parsePlainTextUnits(parser: TexParser, text: string): Array<IUnitPiece>
 					//of
 					let next = subParser.string.charAt(++subParser.i);
 					let qualifier = '';
-					if (next == '{') {
-						while ((next = subParser.string.charAt(++subParser.i)) != '}') {
+					if (next === '{') {
+						while ((next = subParser.string.charAt(++subParser.i)) !== '}') {
 							qualifier += next;
 						}
 					} else {

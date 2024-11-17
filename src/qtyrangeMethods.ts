@@ -2,67 +2,69 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { IOptions, findOptions } from "./options/options";
 import { parseNumber } from "./numMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
-import { displayOutputMml } from "./numDisplayMethods";
 import { exponentListModeMap } from "./numlistMethods";
 import { displayUnits, parseUnit } from "./unitMethods";
 import { createQuantityProductMml } from "./qtyMethods";
 import { unitListModeMap } from "./qtylistMethods";
 
 export function processQuantityRange(parser: TexParser): void {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 
 	Object.assign(globalOptions, localOptions);
 
-	let first = parser.GetArgument('firstNum');
-	let last = parser.GetArgument('lastNum');
+	const first = parser.GetArgument('firstNum');
+	const last = parser.GetArgument('lastNum');
 
-    let unitString = parser.GetArgument('unit');
-    const isLiteral = (unitString.indexOf('\\') == -1);
+    const unitString = parser.GetArgument('unit');
+    const isLiteral = (unitString.indexOf('\\') === -1);
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptions, isLiteral);
 
-	if (globalOptions.parseNumbers) {
+	if (globalOptions["parse-numbers"]) {
 
 		const firstNum = parseNumber(parser, first, globalOptions);
 		const lastNum = parseNumber(parser, last, globalOptions);
-        if (globalOptions.rangeExponents === 'individual'){
-            postProcessNumber(firstNum, globalOptions);
-            postProcessNumber(lastNum, globalOptions);
+        if (globalOptions["range-exponents"] === 'individual'){
+            postProcessNumber(parser, firstNum, globalOptions);
+            postProcessNumber(parser, lastNum, globalOptions);
         } else {
             const targetExponent = firstNum.exponentSign + firstNum.exponent;
             const altOptions = Object.assign(globalOptions, { exponentMode: 'fixed', fixedExponent: targetExponent });
-            postProcessNumber(firstNum, globalOptions);
-            postProcessNumber(lastNum, altOptions);
+            postProcessNumber(parser, firstNum, globalOptions);
+            postProcessNumber(parser, lastNum, altOptions);
         }
 
         // Need to process this after number because some options alter unit prefixes
-        let unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
-		const unitNodes = [(new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml()];
+        const unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
+		let unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
         const quantityProductNode = createQuantityProductMml(parser, globalOptions);
         if (quantityProductNode){
-            unitNodes.splice(0,0,quantityProductNode);
+            const root = parser.create('node', 'inferredMrow', [], {});
+            root.appendChild(quantityProductNode);
+            root.appendChild(unitNode);
+            unitNode = root; 
         }
 
-        const exponentMapItem = exponentListModeMap.get(globalOptions.rangeExponents);
+        const exponentMapItem = exponentListModeMap.get(globalOptions["range-exponents"]);
         const exponentResult = exponentMapItem([firstNum, lastNum], parser, globalOptions);
-        const unitsMapItem = unitListModeMap.get(globalOptions.rangeUnits);
-        const unitsResult = unitsMapItem(exponentResult, unitNodes, parser,globalOptions);
+        const unitsMapItem = unitListModeMap.get(globalOptions["range-units"]);
+        const unitsResult = unitsMapItem(exponentResult, unitNode, parser,globalOptions);
         
-        const separator = (new TexParser(`\\text{${globalOptions.rangePhrase}}`, parser.stack.env, parser.configuration)).mml();
-        
-        let total = [];
+        const separator = (new TexParser(`\\text{${globalOptions["range-phrase"]}}`, parser.stack.env, parser.configuration)).mml();
+
+        const root = parser.create('node', 'inferredMrow', [], {});
         if (exponentResult.leading){
-            total.push(exponentResult.leading);
+            root.appendChild(exponentResult.leading);
         }
-        total = total.concat(unitsResult.numbers[0]).concat(separator).concat(unitsResult.numbers[1]);
+        root.appendChild(unitsResult.numbers[0]);
+        root.appendChild(separator);
+        root.appendChild(unitsResult.numbers[1]);
         if (exponentResult.trailing){
-            total = total.concat(exponentResult.trailing);
+            root.appendChild(exponentResult.trailing);
         }
         
-        total.forEach(v=>{
-            parser.Push(v);
-        });
+        parser.Push(root);
 		
 	} else {
 		const mml = (new TexParser(first + last, parser.stack.env, parser.configuration)).mml();

@@ -5,6 +5,7 @@ import { displayOutputMml } from "./numDisplayMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
 import { findOptions, IOptions } from "./options/options";
 import { INumOptions, INumParseOptions } from "./options/numberOptions";
+import { siunitxError } from "./error/errors";
 
 
 
@@ -52,17 +53,17 @@ export function generateNumberPiece(): INumberPiece {
 	return piece;
 }
 
-export function pieceToNumber(piece:INumberPiece): number {
+export function pieceToNumber(piece: INumberPiece): number {
 	let build = piece.sign + piece.whole;
-	if (piece.fractional !== ''){
+	if (piece.fractional !== '') {
 		build += '.' + piece.fractional;
-	}  
-	if (piece.exponent !== ''){
-		build += 'e'+piece.exponentSign + piece.exponent; 
+	}
+	if (piece.exponent !== '') {
+		build += 'e' + piece.exponentSign + piece.exponent;
 	}
 	try {
 		let result = Number.parseFloat(build);
-		if (Number.isNaN(result)){
+		if (Number.isNaN(result)) {
 			result = 0;
 		}
 		return result;
@@ -71,16 +72,20 @@ export function pieceToNumber(piece:INumberPiece): number {
 	}
 }
 
-function parseDigits(text: string, numPiece: INumberPiece) {
-	let num: INumberPiece;
+// INumberPiece is built from left to right, so we're always working on the latest part... which could be uncertainty.  So get the last piece.
+function getLastNumPiece(numPiece: INumberPiece):INumberPiece{
 	if (numPiece.uncertainty.length > 0) {
-		num = numPiece.uncertainty[numPiece.uncertainty.length - 1];
+		return numPiece.uncertainty[numPiece.uncertainty.length - 1];
 	} else {
-		num = numPiece;
+		return numPiece;
 	}
-	if (num.exponentMarker != '') {
+}
+
+function parseDigits(text: string, numPiece: INumberPiece) {
+	const num = getLastNumPiece(numPiece);
+	if (num.exponentMarker !== '') {
 		num.exponent += text;
-	} else if (num.decimal != '') {
+	} else if (num.decimal !== '') {
 		num.fractional += text;
 	} else {
 		num.whole += text;
@@ -88,23 +93,16 @@ function parseDigits(text: string, numPiece: INumberPiece) {
 }
 
 function parseDecimals(text: string, numPiece: INumberPiece) {
-	let num: INumberPiece;
-	if (numPiece.uncertainty.length > 0) {
-		num = numPiece.uncertainty[numPiece.uncertainty.length - 1];
-	} else {
-		num = numPiece;
-	}
+	const num = getLastNumPiece(numPiece);
 	num.decimal += text;
 }
 
 function parseComparators(text: string, numPiece: INumberPiece) {
-	let num: INumberPiece;
-	if (numPiece.uncertainty.length > 0) {
-		num = numPiece.uncertainty[numPiece.uncertainty.length - 1];
-	} else {
-		num = numPiece;
-	}
+	const num = getLastNumPiece(numPiece);
 
+	if (num.prefix !== ''){
+		throw siunitxError.ComparatorAlreadySet(num.prefix, text);
+	}
 	num.prefix += text;
 
 }
@@ -120,13 +118,8 @@ function parseExponentMarkers(text: string, numPiece: INumberPiece) {
 }
 
 function parseSigns(text: string, numPiece: INumberPiece) {
-	let num: INumberPiece;
-	if (numPiece.uncertainty.length > 0) {
-		num = numPiece.uncertainty[numPiece.uncertainty.length - 1];
-	} else {
-		num = numPiece;
-	}
-	if (num.exponentMarker != '') {
+	const num = getLastNumPiece(numPiece);
+	if (num.exponentMarker !== '') {
 		num.exponentSign += text;
 	} else {
 		num.sign += text;
@@ -139,8 +132,8 @@ function parseOpenUncertainty(text: string, numPiece: INumberPiece) {
 }
 
 function parseCloseUncertainty(text: string, numPiece: INumberPiece) {
-	if (numPiece.uncertainty.length == 0) {
-		throw new TexError('50', 'No uncertainty parsed to close.');
+	if (numPiece.uncertainty.length === 0) {
+		throw new TexError('50', 'Trying to close an uncertainty that doesn\'t exist.');
 	}
 	const uncertainty = numPiece.uncertainty[numPiece.uncertainty.length - 1];
 	if (uncertainty.completed) {
@@ -159,59 +152,47 @@ function parseIgnore() {
 }
 
 // using two types for output.  Ex.  \\pm is used both as sign and as an uncertainty.  Need map of map for this one.
-export function generateNumberMapping(options: INumParseOptions): Map<string, CharNumFunction | Map<string, CharNumFunction>> {
-	const parseMap = new Map<string, CharNumFunction | Map<string, CharNumFunction>>();
-	//parseMap.set('\\', parseMacro);
-	let tempArray;
-	const matchMacrosOrChar = /[^\\\s]|(?:\\[^\\]*(?=\s|\\|$))/g;
-	while ((tempArray = matchMacrosOrChar.exec(options.inputComparators)) !== null) {
-		parseMap.set(tempArray[0], parseComparators);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputSigns)) !== null) {
-		parseMap.set(tempArray[0], parseSigns);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputDigits)) !== null) {
-		parseMap.set(tempArray[0], parseDigits);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputDecimalMarkers)) !== null) {
-		parseMap.set(tempArray[0], parseDecimals);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputOpenUncertainty)) !== null) {
-		parseMap.set(tempArray[0], parseOpenUncertainty);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputCloseUncertainty)) !== null) {
-		parseMap.set(tempArray[0], parseCloseUncertainty);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputUncertaintySigns)) !== null) {
-		if (parseMap.has(tempArray[0])) {
-			const firstFunc = parseMap.get(tempArray[0]) as CharNumFunction;
-			const innerMap = new Map<string, CharNumFunction>();
-			innerMap.set('inputSigns', firstFunc);
-			innerMap.set('inputUncertaintySigns', parseUncertaintySigns);
-			parseMap.set(tempArray[0], innerMap);
-		} else {
-			parseMap.set(tempArray[0], parseUncertaintySigns);
+export function generateNumberMapping(options: INumParseOptions): Map<string, CharNumFunction> {
+	const parseMap = new Map<string, CharNumFunction>();
+	const matchMacrosOrChar = /\\(?:[a-zA-Z]+|[\uD800-\uDBFF].|.)|[\uD800-\uDBFF].|[^\s\\]/g;
+	for (const [key, method] of [
+		['input-comparators', parseComparators],
+		['input-signs', parseSigns],
+		['input-digits', parseDigits],
+		['input-decimal-markers', parseDecimals],
+		['input-open-uncertainty', parseOpenUncertainty],
+		['input-close-uncertainty', parseCloseUncertainty],
+		['input-uncertainty-signs', parseUncertaintySigns],
+		['input-exponent-markers', parseExponentMarkers],
+		['input-ignore', parseIgnore]
+	] as [string, CharNumFunction][]) {
+		const option = options[key];
+		if (option.match(/(?:^|[^\\])(?:\\\\)*\\$/)) {
+			throw siunitxError.BadOptionChars(key);
 		}
+		(option.match(matchMacrosOrChar) || []).forEach((c: string) => {
+			if (parseMap.has(c) && key === 'input-uncertainty-signs') {
+				const inputSigns = parseMap.get(c) as CharNumFunction;
+				const altMethod: CharNumFunction = function (macro, num) {
+					(num.whole === '' && num.decimal === '' ? inputSigns : parseUncertaintySigns)(macro, num);
+				}
+				parseMap.set(c, altMethod);
+			} else {
+				parseMap.set(c, method);
+			}
+		});
 	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputExponentMarkers)) !== null) {
-		parseMap.set(tempArray[0], parseExponentMarkers);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputIgnore)) !== null) {
-		parseMap.set(tempArray[0], parseIgnore);
-	}
-
 	return parseMap;
 }
 
 
 export function parseNumber(parser: TexParser, text: string, options: INumOptions): INumberPiece {
-
 	const mapping = generateNumberMapping(options);
-	text = text.replace('<<', '\\ll');
-	text = text.replace('>>', '\\gg');
-	text = text.replace('<=', '\\le');
-	text = text.replace('>=', '\\ge');
-	text = text.replace('+-', '\\pm');
+	text = text.replace('<<', '\\ll')
+		.replace('>>', '\\gg')
+		.replace('<=', '\\le')
+		.replace('>=', '\\ge')
+		.replace('+-', '\\pm');
 
 	const num: INumberPiece = generateNumberPiece();
 
@@ -219,65 +200,40 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 	subParser.i = 0;
 	// process character
 	// if '\', then read until next '\' or whitespace char
-	while (subParser.i < subParser.string.length) {
-		let char = subParser.string.charAt(subParser.i);
-		subParser.i++;
-		if (char != '\\') {
-			if (mapping.has(char)) {
-				const func = mapping.get(char);
-				if (typeof func == 'function') {
-					(mapping.get(char) as CharNumFunction)(char, num);
-				} else {
-					if (num.whole == '' && num.decimal == '') {
-						(func as Map<string, CharNumFunction>).get('inputSigns')?.(char, num);
-					} else {
-						(func as Map<string, CharNumFunction>).get('inputUncertaintySigns')?.(char, num);
-					}
-				}
-			}
-		} else {
-			let macro = char;
-			char = '';
-			while (subParser.i < subParser.string.length && char != '\\' && char != ' ') {
-				char = subParser.string.charAt(subParser.i);
-				if (char != '\\' && char != ' ') {
-					macro += char;
-				}
-				subParser.i++;
-			}
 
-			if (mapping.has(macro)) {
-				const func = mapping.get(macro);
-				if (typeof func == 'function') {
-					(mapping.get(macro) as CharNumFunction)(macro, num);
-				} else {
-					if (num.whole == '' && num.decimal == '') {
-						(func as Map<string, CharNumFunction>).get('inputSigns')?.(macro, num);
-					} else {
-						(func as Map<string, CharNumFunction>).get('inputUncertaintySigns')?.(macro, num);
-					}
-				}
-			}
+	let token;
+	while (subParser.i < subParser.string.length) {
+		token = subParser.GetNext();
+		subParser.i++;  // GetNext() does not advance position unless skipping whitespace
+
+		if (token === '\\') {
+			token += subParser.GetCS();
+		}
+
+		try {
+			mapping.get(token)(token, num);
+		} catch {
+			throw siunitxError.InvalidNumArgument(subParser.string);
 		}
 
 	}
 
-	if (!options.retainExplicitDecimalMarker && num.decimal != '' && num.fractional == '') {
+	if (!options["retain-explicit-decimal-marker"] && num.decimal !== '' && num.fractional === '') {
 		num.decimal = '';
 	}
-	if (!options.retainExplicitPlus && num.sign == '+') {
+	if (!options["retain-explicit-plus"] && num.sign === '+') {
 		num.sign = '';
 	}
 	// adding exponent to value check here.  Without it, exponentials without a base won't stay negative. (-e10)
-	const value = +(num.whole + (num.decimal != '' ? '.' : '') + num.fractional + (num.exponent == '' ? '' : 'e' + num.exponentSign + num.exponent));
-	if (value == 0 && !options.retainNegativeZero && num.sign == '-') {
+	const value = +(num.whole + (num.decimal !== '' ? '.' : '') + num.fractional + (num.exponent === '' ? '' : 'e' + num.exponentSign + num.exponent));
+	if (value === 0 && !options["retain-negative-zero"] && num.sign === '-') {
 		num.sign = '';
 	}
 
-	if (!options.retainZeroUncertainty) {
+	if (!options["retain-zero-uncertainty"]) {
 		for (let i = num.uncertainty.length - 1; i >= 0; i--) {
-			const uncertaintyValue = +(num.uncertainty[i].whole + (num.uncertainty[i].decimal != '' ? '.' : '') + num.uncertainty[i].fractional);
-			if (uncertaintyValue == 0) {
+			const uncertaintyValue = +(num.uncertainty[i].whole + (num.uncertainty[i].decimal !== '' ? '.' : '') + num.uncertainty[i].fractional);
+			if (uncertaintyValue === 0) {
 				num.uncertainty.splice(i, 1);
 			}
 		}
@@ -286,10 +242,10 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 	return num;
 }
 
-export function processNumber(parser: TexParser): MmlNode[] {
-	const globalOptions: IOptions = { ...parser.options as IOptions };
+export function processNumber(parser: TexParser): MmlNode {
+	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
-	const localOptions = findOptions(parser);
+	const localOptions = findOptions(parser, globalOptions);
 
 	//processOptions(globalOptions, localOptionString);
 	//const options = processOptions(globalOptions, localOptionString);
@@ -298,31 +254,28 @@ export function processNumber(parser: TexParser): MmlNode[] {
 
 	let text = parser.GetArgument('num');
 
-	if (globalOptions.parseNumbers) {
+	if (globalOptions["parse-numbers"]) {
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally
-		if (globalOptions.evaluateExpression) {
+		if (globalOptions["evaluate-expression"]) {
 			// TODO Sanitize Evaluate Expression!
 			let expression = globalOptions.expression
 			expression = expression.replace('#1', text);
-			let result = eval(expression);
-			text = result.toString();
+			text = eval(expression).toString();
 		}
-
 		const num = parseNumber(parser, text, globalOptions);
 
-		postProcessNumber(num, globalOptions);
-
+		postProcessNumber(parser, num, globalOptions);
 		//const displayResult = displayOutput(num, globalOptions);
 
-		const mmlNodes = displayOutputMml(num, parser, globalOptions);
+		const mmlNode = displayOutputMml(num, parser, globalOptions);
 
 		//const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
-		return mmlNodes;
+		return mmlNode;
 
 	} else {
 		const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();
-		return [mml];
+		return mml;
 	}
 
 }
