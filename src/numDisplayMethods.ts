@@ -120,7 +120,7 @@ export function convertUncertaintyToBracket(uncertainty: IUncertainty, piece: IN
 			if (diff > 0) {
 				uncertainty.fractional = uncertainty.whole.slice(diff, uncertainty.whole.length);
 				uncertainty.whole = uncertainty.whole.slice(0, diff);
-				if (uncertainty.fractional !== '') {
+				if (uncertainty.fractional) {
 					uncertainty.decimal = options["output-decimal-marker"];
 				}
 			} else if (diff < 0 && options["uncertainty-mode"] === 'full') {
@@ -155,7 +155,7 @@ function displayUncertaintyBracketMml(uncertainty: IUncertainty, parser: TexPars
 	const openUncertainty = (new TexParser(options["output-open-uncertainty"], parser.stack.env, parser.configuration)).mml();
 
 	let number = uncertainty.whole;
-	number += (options["uncertainty-mode"] === 'compact-marker' || options["uncertainty-mode"] === 'full') && uncertainty.decimal !== '' ? options["output-decimal-marker"] : '';
+	number += (options["uncertainty-mode"] === 'compact-marker' || options["uncertainty-mode"] === 'full') && uncertainty.decimal ? options["output-decimal-marker"] : '';
 	number += uncertainty.fractional;
 	const numberNode = parser.create('token', 'mn', {}, number);
 	const closeUncertainty = (new TexParser(options["output-close-uncertainty"], parser.stack.env, parser.configuration)).mml();
@@ -214,7 +214,7 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 			}
 			root.appendChild(exponential);
 		}
-	} else if (num.exponent !== '' && num.exponent !== '0') {
+	} else if (num.exponent && num.exponent !== '0') {
 		const exponentSignNode = parser.create('token', 'mo', {}, num.exponentSign);
 		const exponentValueNode = parser.create('token', 'mn', {}, num.exponent);
 		const supPart = num.exponentSign === '-'
@@ -225,13 +225,13 @@ export function createExponentMml(num: INumberPiece, parser: TexParser, options:
 		if (num.whole === '1' && num.fractional === '' && !options["print-unity-mantissa"]) {
 			root.appendChild(exponential);
 		} else {
-			if (num.exponentMarker !== '') {
+			if (num.exponentMarker) {
 				if (options["output-exponent-marker"] !== '') {
 					const customExponentMarker = (new TexParser(options["output-exponent-marker"], parser.stack.env, parser.configuration)).mml();
 					root.appendChild(customExponentMarker);
 					root.appendChild(supPart);
 				} else {
-					if (num.whole !== '' || num.fractional !== '') {
+					if (num.whole || num.fractional) {
 						if (options["tight-spacing"]) {
 							exponentProductNode.attributes.set('lspace', '0em');
 							exponentProductNode.attributes.set('rspace', '0em');

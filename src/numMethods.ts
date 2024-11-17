@@ -55,10 +55,10 @@ export function generateNumberPiece(): INumberPiece {
 
 export function pieceToNumber(piece: INumberPiece): number {
 	let build = piece.sign + piece.whole;
-	if (piece.fractional !== '') {
+	if (piece.fractional) {
 		build += '.' + piece.fractional;
 	}
-	if (piece.exponent !== '') {
+	if (piece.exponent) {
 		build += 'e' + piece.exponentSign + piece.exponent;
 	}
 	try {
@@ -83,9 +83,9 @@ function getLastNumPiece(numPiece: INumberPiece):INumberPiece{
 
 function parseDigits(text: string, numPiece: INumberPiece) {
 	const num = getLastNumPiece(numPiece);
-	if (num.exponentMarker !== '') {
+	if (num.exponentMarker) {
 		num.exponent += text;
-	} else if (num.decimal !== '') {
+	} else if (num.decimal) {
 		num.fractional += text;
 	} else {
 		num.whole += text;
@@ -100,7 +100,7 @@ function parseDecimals(text: string, numPiece: INumberPiece) {
 function parseComparators(text: string, numPiece: INumberPiece) {
 	const num = getLastNumPiece(numPiece);
 
-	if (num.prefix !== ''){
+	if (num.prefix){
 		throw siunitxError.ComparatorAlreadySet(num.prefix, text);
 	}
 	num.prefix += text;
@@ -119,7 +119,7 @@ function parseExponentMarkers(text: string, numPiece: INumberPiece) {
 
 function parseSigns(text: string, numPiece: INumberPiece) {
 	const num = getLastNumPiece(numPiece);
-	if (num.exponentMarker !== '') {
+	if (num.exponentMarker) {
 		num.exponentSign += text;
 	} else {
 		num.sign += text;
@@ -218,21 +218,21 @@ export function parseNumber(parser: TexParser, text: string, options: INumOption
 
 	}
 
-	if (!options["retain-explicit-decimal-marker"] && num.decimal !== '' && num.fractional === '') {
+	if (!options["retain-explicit-decimal-marker"] && num.decimal && !num.fractional) {
 		num.decimal = '';
 	}
 	if (!options["retain-explicit-plus"] && num.sign === '+') {
 		num.sign = '';
 	}
 	// adding exponent to value check here.  Without it, exponentials without a base won't stay negative. (-e10)
-	const value = +(num.whole + (num.decimal !== '' ? '.' : '') + num.fractional + (num.exponent === '' ? '' : 'e' + num.exponentSign + num.exponent));
+	const value = +(num.whole + (num.decimal ? '.' : '') + num.fractional + (num.exponent === '' ? '' : 'e' + num.exponentSign + num.exponent));
 	if (value === 0 && !options["retain-negative-zero"] && num.sign === '-') {
 		num.sign = '';
 	}
 
 	if (!options["retain-zero-uncertainty"]) {
 		for (let i = num.uncertainty.length - 1; i >= 0; i--) {
-			const uncertaintyValue = +(num.uncertainty[i].whole + (num.uncertainty[i].decimal !== '' ? '.' : '') + num.uncertainty[i].fractional);
+			const uncertaintyValue = +(num.uncertainty[i].whole + (num.uncertainty[i].decimal ? '.' : '') + num.uncertainty[i].fractional);
 			if (uncertaintyValue === 0) {
 				num.uncertainty.splice(i, 1);
 			}
@@ -247,9 +247,6 @@ export function processNumber(parser: TexParser): MmlNode {
 
 	const localOptions = findOptions(parser, globalOptions);
 
-	//processOptions(globalOptions, localOptionString);
-	//const options = processOptions(globalOptions, localOptionString);
-	//options.forEach((v,k)=> globalOptions[k] = v);
 	Object.assign(globalOptions, localOptions);
 
 	let text = parser.GetArgument('num');

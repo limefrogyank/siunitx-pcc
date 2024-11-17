@@ -24,5 +24,7 @@ export class siunitxError {
 	static NoUncertaintyToClose = () => new TexError('siunitx:noUncertaintyToClose', data.noUncertaintyToClose);
 
 	static UncertaintyAlreadyClosed = () => new TexError('siunitx:uncertaintyAlreadyClosed', data.uncertaintyAlreadyClosed);
+
+	static DenominatorParsingError = (denominator:string, permode:string) => new TexError('siunitx:denominatorParsingError', data.denominatorParsingError, denominator, permode);
 	
 }

@@ -77,13 +77,13 @@ function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IA
 }
 
 function convertToArc(ang: IAnglePiece): void {
-	if (ang.minutes !== null || ang.seconds !== null) {
+	if (ang.minutes || ang.seconds) {
 		// already arc format
 		return;
 	}
 
 	// This ignores exponents.
-	if (ang.degrees.decimal !== '') {
+	if (!ang.degrees.decimal) {
 		const firstFraction = +('0.' + ang.degrees.fractional);
 		ang.degrees.fractional = '';
 		ang.degrees.decimal = '';
@@ -109,11 +109,11 @@ function convertToArc(ang: IAnglePiece): void {
 
 function convertToDecimal(ang: IAnglePiece): void {
 	let value = 0;
-	if (ang.seconds !== undefined && ang.seconds !== null) {
+	if (ang.seconds && ang.seconds !== null) {
 		value = +ang.seconds.whole / 60;
 		ang.seconds = null;
 	}
-	if (ang.minutes !== undefined && ang.minutes !== null) {
+	if (ang.minutes && ang.minutes !== null) {
 		value = (+ang.minutes.whole + value) / 60;
 		ang.minutes = null;
 	}
@@ -146,7 +146,6 @@ function degreeOverDecimal(parser: TexParser, inputNode: MmlNode, symbolToUse: s
 			replacementNode.appendChild(parser.create('token', 'mn', {}, split[1]));
 			const parent = numNode.parent;
 			parent.replaceChild(replacementNode, numNode);
-			//console.log(JSON.parse(JSON.stringify(numNode)));
 			degreeNodeToAdd = inputNode as MmlNode;
 		}
 	}
@@ -227,8 +226,8 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 	}
 
 	let secondsNodeToAdd: MmlNode;
-	if (ang.seconds !== undefined && ang.seconds !== null) {
-		const secondsValue = +(ang.seconds.whole + (ang.seconds.decimal !== '' ? '.' : '') + ang.seconds.fractional);
+	if (ang.seconds && ang.seconds !== null) {
+		const secondsValue = +(ang.seconds.whole + (ang.seconds.decimal ? '.' : '') + ang.seconds.fractional);
 		let moddedAngleSymbolSecond = '\\mathrm{' + options["angle-symbol-second"] + '}';
 		if (moddedAngleSymbolSecond === "\\mathrm{''}") {
 			// TODO: Localize the degree-seconds
@@ -284,15 +283,11 @@ export function processAngle(parser: TexParser): MmlNode {
 	const globalOptions: IOptions = { ...parser.options.siunitx as IOptions };
 
 	const localOptions = findOptions(parser, globalOptions);
-
-	//const options = processOptions(globalOptions, localOptions);
-	//options.forEach((v, k) => globalOptions[k] = v);
+	
 	Object.assign(globalOptions, localOptions);
-
+	
 	const text = parser.GetArgument('ang');
 
-	// FIXME:  processOption here twice in processAngle?  
-	//processOptions(globalOptions, localOptionString);  
 	const ang = parseAngle(parser, text, globalOptions);
 	// TODO: consider error checking result
 	// Is there an exponent??  Throw an error... or ignore it?

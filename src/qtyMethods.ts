@@ -25,7 +25,7 @@ function combineExponent(parser: TexParser, num: INumberPiece, units: IUnitPiece
 
 	const firstUnit = units[0];
 	// prefix can be undefined, empty, or string... this specifically checks for empty
-	if (firstUnit.prefix !== '') {
+	if (firstUnit.prefix) {
 		const unitPower = (firstUnit.power !== null ? +(firstUnit.power) : 1) * (firstUnit.position === 'denominator' ? -1 : 1);
 		const addedPower = firstUnit.prefix ? prefixPower.get(firstUnit.prefix) : 1;
 		targetExponent += addedPower * unitPower;
@@ -35,11 +35,7 @@ function combineExponent(parser: TexParser, num: INumberPiece, units: IUnitPiece
 		}
 	}
 	// set new prefix
-	//console.log(JSON.parse(JSON.stringify(units)));
-	//console.log(targetExponent);
 	firstUnit.prefix = prefixPower.revGet(targetExponent);
-	//console.log(firstUnit.prefix);
-	//console.log(JSON.parse(JSON.stringify(units)));
 	const newExponent = targetExponent - exponent;
 	num.exponent = (Math.abs(newExponent)).toString();
 	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
@@ -86,7 +82,7 @@ function extractExponent(parser: TexParser, num: INumberPiece, units: IUnitPiece
 			unit.prefix = 'k';
 		}
 	}
-	const currentExponent = (num.exponent !== '' ? +(num.exponentSign + num.exponent) : 0);
+	const currentExponent = (num.exponent ? +(num.exponentSign + num.exponent) : 0);
 	const newExponent = currentExponent + powersOfTen;
 	num.exponent = Math.abs(newExponent).toString();
 	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
@@ -106,14 +102,14 @@ function findUncertaintyNode(root: MmlNode): MmlNode | null {
 	for (const x of root.childNodes) {
 		const mmlNode = x as MmlNode;
 		if (mmlNode) {
-			if (mmlNode.attributes !== null) {
+			if (mmlNode.attributes) {
 				const names = mmlNode.attributes.getExplicitNames();
 				if (names.indexOf('data-siunitx-uncertainty') !== -1) {
 					return mmlNode;
 				}
 			}
 			const result = findUncertaintyNode(mmlNode);
-			if (result !== null) {
+			if (result) {
 				return result;
 			}
 		}
@@ -134,13 +130,13 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 		let uncertaintyNode: MmlNode = null;
 		for (const x of num.childNodes) {
 			const result = findUncertaintyNode(x as MmlNode);
-			if (result !== null) {
+			if (result) {
 				uncertaintyNode = result;
 				break;
 			}
 		}
 
-		if (uncertaintyNode !== null) {
+		if (uncertaintyNode) {
 			const leftBracket = parser.create('token', 'mo', {}, options["output-open-uncertainty"]);
 			const rightBracket = parser.create('token', 'mo', {}, options["output-close-uncertainty"]);
 			root.appendChild(leftBracket);
@@ -161,12 +157,12 @@ const separateUncertaintyUnitsMmlMap = new Map<SeparateUncertaintyUnits, (num: M
 		let uncertaintyNode: MmlNode = null;
 		for (const x of num.childNodes) {
 			const result = findUncertaintyNode(x as MmlNode);
-			if (result !== null) {
+			if (result) {
 				uncertaintyNode = result;
 				break;
 			}
 		}
-		if (uncertaintyNode !== null) {
+		if (uncertaintyNode) {
 			const parent = uncertaintyNode.parent;
 			const uncertaintyPosition = parent.childNodes.indexOf(uncertaintyNode);
 			if (!quantityProduct) {
@@ -212,7 +208,7 @@ const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: stri
 		const split = num.split('\\pm');
 		let separate = '';
 		for (let i = 0; i < split.length; i++) {
-			if (separate !== '') {
+			if (separate) {
 				separate += '\\pm';
 			}
 			separate += split[i];
@@ -263,21 +259,15 @@ export function processQuantity(parser: TexParser): void {
 
 		// refresh global options from default
 		globalOptions = { ...parser.options.siunitx as IOptions };
-		//processOptions(globalOptions, localOptionString);
-		//const options = processOptions(globalOptions, localOptions);
-		//options.forEach((v, k) => globalOptions[k] = v);
+
 		Object.assign(globalOptions, localOptions);
 
 		const num = parseNumber(parser, numString, globalOptions);
 
-		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 		// convert number and unit if necessary
 		prefixModeMap.get(globalOptions["prefix-mode"])?.(parser, num, unitPieces, globalOptions);
-		//console.log(JSON.parse(JSON.stringify(unitPieces)));
-
+		
 		postProcessNumber(parser, num, globalOptions);
-
-		//console.log(JSON.parse(JSON.stringify(unitPieces)));
 
 		const numDisplay = displayOutputMml(num, parser, globalOptions);
 
