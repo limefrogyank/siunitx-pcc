@@ -20,8 +20,6 @@ const ComplexDefault: IComplex = {
 };
 
 export function parseComplexNumber(parser: TexParser, text: string, options: IOptions): IComplex {
-    // console.log("Complex text: ");
-    // console.log(text);
 
     const complex = { ...ComplexDefault };
     // Check if polar input
@@ -214,7 +212,7 @@ export function processComplexQuantity(parser: TexParser): void {
 
     let quantityProductNode = null;
     const trimmedQuantityProduct = globalOptions["quantity-product"].trimStart();
-    if (trimmedQuantityProduct !== '') {
+    if (trimmedQuantityProduct) {
         const spacerNode = (new TexParser(trimmedQuantityProduct, parser.stack.env, parser.configuration)).mml();
         const spacerUnicode = findInnerText(spacerNode);
         quantityProductNode = parser.create('token', 'mo', {}, spacerUnicode);

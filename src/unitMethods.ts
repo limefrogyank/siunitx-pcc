@@ -241,7 +241,7 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 					texString += numerator + (lastNumeratorHadSuperscript ? options["per-symbol-script-correction"] : '') + options["per-symbol"] + denominator;
 				}
 				else {
-					console.log("shouldn't be here");
+					throw siunitxError.DenominatorParsingError(denominator, options["per-mode"]);
 				}
 			} else {
 				texString += numerator;
@@ -300,9 +300,6 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 			const processedMacro = processUnitMacro(macro, subParser);
 			// check for user defined options
 			if (processedMacro.options !== undefined) {
-				//processOptions(globalOptions, processedMacro.options);
-				//const options = processOptions(globalOptions, processedMacro.options);
-				//options.forEach((v, k) => globalOptions[k] = v);
 				Object.assign(globalOptions, processedMacro.options);
 			}
 			// apply immediate options here

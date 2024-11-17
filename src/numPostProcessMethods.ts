@@ -7,15 +7,15 @@ import { IOptions } from "./options/options";
 
 function convertToScientific(parser: TexParser, numOriginal: INumberPiece, options: INumPostOptions): INumberPiece {
 	//convert to actual number and use formating to print scientific
-	const num = JSON.parse(JSON.stringify(numOriginal));
-	const val = (+(num.sign + num.whole + num.decimal + num.fractional + (num.exponent !== '' ? ('e' + num.exponentSign + num.exponent) : ''))).toExponential();
+	const num :INumberPiece = JSON.parse(JSON.stringify(numOriginal));
+	const val = (+(num.sign + num.whole + num.decimal + num.fractional + (num.exponent ? ('e' + num.exponentSign + num.exponent) : ''))).toExponential();
 	// parse that back in
 	const newNum = parseNumber(parser, val, options as IOptions);
 
 	//don't forget to check for trailing zeros and put them back
 	let trailingZeros = 0;
 	// count trailing zeros in original fractional part
-	if (num.fractional !== '') {
+	if (num.fractional) {
 		for (let i = num.fractional.length - 1; i >= 0; i--) {
 			if (num.fractional[i] === '0') {
 				trailingZeros++;
@@ -25,7 +25,7 @@ function convertToScientific(parser: TexParser, numOriginal: INumberPiece, optio
 		}
 	}
 	// count trailing zeros in original whole part (if all of fractional part was zeros)
-	if (num.whole !== '' && num.fractional.length === trailingZeros) {
+	if (num.whole && num.fractional.length === trailingZeros) {
 		for (let i = num.whole.length - 1; i >= 0; i--) {
 			if (num.whole[i] === '0') {
 				trailingZeros++;
@@ -39,7 +39,7 @@ function convertToScientific(parser: TexParser, numOriginal: INumberPiece, optio
 		newNum.fractional += '0';
 	}
 	// add a decimal if the original didn't have one, but we need it.
-	if (newNum.decimal === '' && trailingZeros > 0) {
+	if (!newNum.decimal && trailingZeros > 0) {
 		newNum.decimal = '.';
 	}
 	// copy the new values to the original reference
@@ -205,7 +205,6 @@ function roundFigures(parser: TexParser, num: INumberPiece, options: INumPostOpt
 		// whole can't be '0', and converting fractional to number and back to string gets rid of leading zeros.
 		const combined = num.whole === '0' ? (+num.fractional).toString() : num.whole + (+num.fractional).toString();
 		if (combined.length > options["round-precision"]) {
-			//console.log(num.whole + num.decimal + num.fractional);
 			const firstDrop = +combined.slice(options["round-precision"], options["round-precision"] + 1);
 			const toRound = +combined.slice(options["round-precision"] - 1, options["round-precision"]);
 

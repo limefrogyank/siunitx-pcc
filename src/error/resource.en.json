@@ -9,5 +9,6 @@
     "literalUnitsForbidden": "%1 is detected as a literal unit.  These are forbidden globally. Use interpreted units instead (i.e. \\kilo\\gram).",
     "macroNotDefined": "The unit macro, %1, has not been defined.",
     "noUncertaintyToClose": "Trying to close an uncertainty that doesn't exist.",
-    "uncertaintyAlreadyClosed": "Uncertainty was already closed."
+    "uncertaintyAlreadyClosed": "Uncertainty was already closed.",
+    "denominatorParsingError": "Couldn't parse %1 using per-mode option of %2."
 }
