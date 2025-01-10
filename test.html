@@ -3,11 +3,11 @@
 <script>
     MathJax = {
         loader: {
-            load: ['[custom]/siunitx.js', '[tex]/gensymb'], //gensymb is required for \degree and \ohm
+            load: ['[custom]/siunitx.js', '[tex]/gensymb', "[tex]/html","[tex]/color",], //gensymb is required for \degree and \ohm
             paths: { custom: '.' }
         },
         tex: {
-            packages: { '[+]': ['siunitx', 'gensymb'] },  //gensymb is required for \degree and \ohm
+            packages: { '[+]': ['siunitx', 'gensymb', 'html', "color"] },  //gensymb is required for \degree and \ohm
             inlineMath: { '[+]': [['$', '$']] }
             /* global options go here, see IOptions in options.ts for properties */
             // Uncomment example below: 
@@ -20,36 +20,13 @@
 </script>
 
 <body>
-    $$ \qty{2.67}{\farad} $$
-$$ \qty[quantity-product = {\ }]{2.67}{\farad} $$
-$$ \qty[quantity-product = ]{2.67}{\farad} $$
-
-    $$ \displaylines{
-        \ang{-1;;} \\
-        \ang{;-2;} \\
-        \ang{;;-3} \\
-        } $$
-    $$ \displaylines{
-        \sisetup{fill-angle-degrees}
-        \ang{-1;;} \\
-        \ang{;-2;} \\
-        \ang{;;-3} \\
-        \sisetup{fill-angle-degrees = false}
-        } $$
-    $$ \displaylines{
-        \sisetup{fill-angle-minutes}
-        \ang{-1;;} \\
-        \ang{;-2;} \\
-        \ang{;;-3} \\
-        \sisetup{fill-angle-minutes = false}
-        } $$
-    $$ \displaylines{
-        \sisetup{fill-angle-seconds}
-        \ang{-1;;} \\
-        \ang{;-2;} \\
-        \ang{;;-3} \\
-        \sisetup{fill-angle-seconds = false}
-        } $$
+    $$\sisetup{per-mode=power}$$
+$$\qtyrange{-729}{659}{\per\cm}$$         <!-- Math input error -->
+$$\qtyrange{-729}{659}{\watt\per\gram}$$  <!-- Math input error -->
+$$\qty{-729}{\watt\per\gram}$$            <!-- works (sanity check) -->
+$$\qtyrange{-729}{659}{\cm}$$             <!-- works -->
+$$\qtyrange{200}{400}{\degreeCelsius}$$   <!-- works -->
+    
 </body>
 
 </html>

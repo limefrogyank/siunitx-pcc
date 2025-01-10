@@ -228,9 +228,21 @@ export function createQuantityProductMml(parser: TexParser, options: IOptions): 
 		const spacerUnicode = findInnerText(spacerNode);
 		quantityProductNode = parser.create('token', 'mo', {}, spacerUnicode);
 	} else {
-		quantityProductNode = parser.create('token', 'mo', {} );
+		quantityProductNode = parser.create('token', 'mo', {});
 	}
 	return quantityProductNode;
+}
+
+export function createUnitsNode(unitLatex: string, parser: TexParser, options: IOptions): MmlNode {
+	let unitNode = (new TexParser(unitLatex, parser.stack.env, parser.configuration)).mml();
+	const quantityProductNode = createQuantityProductMml(parser, options);
+	if (quantityProductNode) {
+		const root = parser.create('node', 'inferredMrow', [], {});
+		root.appendChild(quantityProductNode);
+		root.appendChild(unitNode);
+		unitNode = root;
+	}
+	return unitNode;
 }
 
 export function processQuantity(parser: TexParser): void {
@@ -266,7 +278,7 @@ export function processQuantity(parser: TexParser): void {
 
 		// convert number and unit if necessary
 		prefixModeMap.get(globalOptions["prefix-mode"])?.(parser, num, unitPieces, globalOptions);
-		
+
 		postProcessNumber(parser, num, globalOptions);
 
 		const numDisplay = displayOutputMml(num, parser, globalOptions);

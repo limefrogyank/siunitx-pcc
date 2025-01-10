@@ -7,7 +7,7 @@ import { displayOutputMml } from "./numDisplayMethods";
 import { UnitsModeProduct } from "./options/listOptions";
 import { IExponentModeOutput, bracketCloseMap, bracketOpenMap, exponentListModeMap, parseList } from "./numlistMethods";
 import { displayUnits, parseUnit } from "./unitMethods";
-import { createQuantityProductMml } from "./qtyMethods";
+import { createQuantityProductMml, createUnitsNode } from "./qtyMethods";
 
 interface IUnitsModeOutput {
     leading?: MmlNode;
@@ -15,12 +15,13 @@ interface IUnitsModeOutput {
     trailing?: MmlNode;
 }
 
-function singleExponent(exponentResult: IExponentModeOutput, unitNode: MmlNode, parser:TexParser, options: IOptions):IUnitsModeOutput {
+function singleExponent(exponentResult: IExponentModeOutput, unitLatex: string, parser:TexParser, options: IOptions):IUnitsModeOutput {
     const numNodes = exponentResult.numbers.map(v=>{
         const numNode = displayOutputMml(v, parser, options);
         return numNode;
     });
-    if (exponentResult.trailing){
+    const unitNode = createUnitsNode(unitLatex, parser, options);
+    if (exponentResult.trailing){        
         exponentResult.trailing.appendChild(unitNode);
     } else {
         exponentResult.trailing = parser.create('node', 'inferredMrow', [], {});
@@ -29,7 +30,7 @@ function singleExponent(exponentResult: IExponentModeOutput, unitNode: MmlNode, 
     return { numbers: numNodes, leading: exponentResult.leading, trailing: exponentResult.trailing };
 }
 
-function bracketExponent(exponentResult: IExponentModeOutput, unitNode: MmlNode, parser:TexParser, options: IOptions): IUnitsModeOutput{
+function bracketExponent(exponentResult: IExponentModeOutput, unitLatex: string, parser:TexParser, options: IOptions): IUnitsModeOutput{
     const numNodes = exponentResult.numbers.map(v=>{
         const numNode = displayOutputMml(v, parser, options);
         return numNode;
@@ -52,17 +53,19 @@ function bracketExponent(exponentResult: IExponentModeOutput, unitNode: MmlNode,
         }
         exponentResult.trailing.appendChild(trailingBracket);            
     }
+    const unitNode = createUnitsNode(unitLatex, parser, options);
     exponentResult.trailing.appendChild(unitNode);
    
     return { numbers: numNodes, leading: exponentResult.leading, trailing: exponentResult.trailing };
 }
 
-export const unitListModeMap = new Map<UnitsModeProduct, (exponentResult: IExponentModeOutput, unitNode: MmlNode, parser:TexParser, options: IOptions)=>IUnitsModeOutput>([
-    ['repeat', (exponentResult: IExponentModeOutput, unitNode: MmlNode, parser:TexParser, options: IOptions)=>{
+export const unitListModeMap = new Map<UnitsModeProduct, (exponentResult: IExponentModeOutput, unitLatex: string, parser:TexParser, options: IOptions)=>IUnitsModeOutput>([
+    ['repeat', (exponentResult: IExponentModeOutput, unitLatex: string, parser:TexParser, options: IOptions)=>{
         const numNodes = exponentResult.numbers.map(v=>{
             const root = parser.create('node', 'inferredMrow', [], {});
             const numNode = displayOutputMml(v, parser, options);
             root.appendChild(numNode);
+            const unitNode = createUnitsNode(unitLatex, parser, options);
             root.appendChild(unitNode);
             return root;
         });
@@ -74,20 +77,21 @@ export const unitListModeMap = new Map<UnitsModeProduct, (exponentResult: IExpon
     ['bracket-power', bracketExponent]
 ]);
 
-const listNumberMap = new Map<number, (nums:INumberPiece[], unitNode: MmlNode, parser: TexParser, options: IOptions)=>MmlNode>([
-	[1, (nums: INumberPiece[],  unitNode: MmlNode, parser: TexParser, options: IOptions) => {
+const listNumberMap = new Map<number, (nums:INumberPiece[], unitLatex: string, parser: TexParser, options: IOptions)=>MmlNode>([
+	[1, (nums: INumberPiece[],  unitLatex: string, parser: TexParser, options: IOptions) => {
         const root = parser.create('node', 'inferredMrow', [], {});
         const numMml= displayOutputMml(nums[0], parser, options);
         root.appendChild(numMml);
+        const unitNode = createUnitsNode(unitLatex, parser, options);
         root.appendChild(unitNode);
         return root;
     }],  
-	[2, (nums: INumberPiece[],  unitNode: MmlNode, parser: TexParser, options: IOptions) => {
+	[2, (nums: INumberPiece[],  unitLatex: string, parser: TexParser, options: IOptions) => {
         const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
 
         const unitsMapItem = unitListModeMap.get(options["list-units"]);
-        const unitsResult = unitsMapItem(exponentResult, unitNode, parser,options);
+        const unitsResult = unitsMapItem(exponentResult, unitLatex, parser,options);
         
         const root = parser.create('node', 'inferredMrow', [], {});
         if (unitsResult.leading){
@@ -104,12 +108,12 @@ const listNumberMap = new Map<number, (nums:INumberPiece[], unitNode: MmlNode, p
         }
         return root;
     }],
-	[3, (nums: INumberPiece[], unitNode: MmlNode, parser: TexParser, options: IOptions) => {
+	[3, (nums: INumberPiece[], unitLatex: string, parser: TexParser, options: IOptions) => {
         const exponentMapItem = exponentListModeMap.get(options["list-units"] === 'single' ? 'individual' : options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
         
         const unitsMapItem = unitListModeMap.get(options["list-units"]);
-        const unitsResult = unitsMapItem(exponentResult, unitNode, parser,options);
+        const unitsResult = unitsMapItem(exponentResult, unitLatex, parser,options);
         
         const root = parser.create('node', 'inferredMrow', [], {});
         if (unitsResult.leading){
@@ -177,18 +181,9 @@ export function processQuantityList(parser: TexParser): void {
         }
 
         // Need to process this after number because some options alter unit prefixes
-        const unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
-        let unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
-        const quantityProductNode = createQuantityProductMml(parser, globalOptions);
-        if (quantityProductNode){
-            const root = parser.create('node', 'inferredMrow', [], {});
-            root.appendChild(quantityProductNode);
-            root.appendChild(unitNode);
-            unitNode = root; 
-        }
-        
+        const unitLatex = displayUnits(parser, unitPieces, globalOptions, isLiteral);                
         const mapItem = listNumberMap.get(numlist.length) ?? listNumberMap.get(3);
-        parser.Push(mapItem(numlist, unitNode, parser, globalOptions));
+        parser.Push(mapItem(numlist, unitLatex, parser, globalOptions));
 		
 	} else {
 		const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();
