@@ -6,6 +6,7 @@ import { findOptions, IOptions } from "./options/options";
 import { IUnitOptions, QualifierMode } from "./options/unitOptions";
 import { UserDefinedUnitOptionsKey, UserDefinedUnitsKey } from "./siunitx";
 import { prefixSymbol, unitSymbol, unitSymbolsWithShortcuts } from "./units";
+import { createQuantityProductMml } from "./qtyMethods";
 
 export interface IUnitPiece {
 	symbol?: string;
@@ -286,6 +287,8 @@ export function displayUnits(parser: TexParser, unitPieces: Array<IUnitPiece>, o
 	return texString;
 
 }
+
+
 
 export function parseUnit(parser: TexParser, text: string, globalOptions: IOptions, localOptions: Partial<IOptions>, isLiteral: boolean): Array<IUnitPiece> {
 	const unitPieces: Array<IUnitPiece> = new Array<IUnitPiece>();

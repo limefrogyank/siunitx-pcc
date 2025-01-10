@@ -11,20 +11,21 @@ import { createQuantityProductMml } from "./qtyMethods";
 import { unitListModeMap } from "./qtylistMethods";
 
 
-const listNumberMap = new Map<number, (nums:INumberPiece[], unitNode: MmlNode, parser: TexParser, options: IOptions)=>MmlNode>([
-	[1, (nums: INumberPiece[], unitNode: MmlNode,parser: TexParser, options: IOptions) => {
+const listNumberMap = new Map<number, (nums:INumberPiece[], unitLatex: string, parser: TexParser, options: IOptions)=>MmlNode>([
+	[1, (nums: INumberPiece[], unitLatex: string, parser: TexParser, options: IOptions) => {
         const root = parser.create('node', 'inferredMrow', [], {});
         const node = displayOutputMml(nums[0], parser, options);
         root.appendChild(node);
+        const unitNode = (new TexParser(unitLatex, parser.stack.env, parser.configuration)).mml();
         root.appendChild(unitNode);
         return root;
     }],  
-	[3, (nums: INumberPiece[], unitNode: MmlNode, parser: TexParser, options: IOptions) => {
+	[3, (nums: INumberPiece[], unitLatex: string, parser: TexParser, options: IOptions) => {
         const exponentMapItem = exponentListModeMap.get(options["list-exponents"]);
         const exponentResult = exponentMapItem(nums, parser, options);
 
         const unitsMapItem = unitListModeMap.get(options["product-units"]);
-        const unitsResult = unitsMapItem(exponentResult, unitNode, parser,options);
+        const unitsResult = unitsMapItem(exponentResult, unitLatex, parser,options);
 
         const root = parser.create('node', 'inferredMrow', [], {});
         if (unitsResult.leading){
@@ -96,19 +97,10 @@ export function processQuantityProduct(parser: TexParser): void {
             })
         }
 
-        const unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
-		let unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
-        const quantityProductNode = createQuantityProductMml(parser, globalOptions);
-        if (quantityProductNode){
-            const root = parser.create('node', 'inferredMrow', [], {});
-            root.appendChild(quantityProductNode);
-            root.appendChild(unitNode);
-            unitNode = root; 
-        }
-        
-
+        const unitLatex = displayUnits(parser, unitPieces, globalOptions, isLiteral);
+        		
         const mapItem = listNumberMap.get(numlist.length) ?? listNumberMap.get(3);
-        const mmlNode = mapItem(numlist, unitNode, parser, globalOptions);
+        const mmlNode = mapItem(numlist, unitLatex, parser, globalOptions);
         parser.Push(mmlNode);
 		
 	} else {

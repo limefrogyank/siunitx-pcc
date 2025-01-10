@@ -36,20 +36,12 @@ export function processQuantityRange(parser: TexParser): void {
         }
 
         // Need to process this after number because some options alter unit prefixes
-        const unitDisplay = displayUnits(parser, unitPieces, globalOptions, isLiteral);
-		let unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
-        const quantityProductNode = createQuantityProductMml(parser, globalOptions);
-        if (quantityProductNode){
-            const root = parser.create('node', 'inferredMrow', [], {});
-            root.appendChild(quantityProductNode);
-            root.appendChild(unitNode);
-            unitNode = root; 
-        }
-
+        const unitLatex = displayUnits(parser, unitPieces, globalOptions, isLiteral);
+		
         const exponentMapItem = exponentListModeMap.get(globalOptions["range-exponents"]);
         const exponentResult = exponentMapItem([firstNum, lastNum], parser, globalOptions);
         const unitsMapItem = unitListModeMap.get(globalOptions["range-units"]);
-        const unitsResult = unitsMapItem(exponentResult, unitNode, parser,globalOptions);
+        const unitsResult = unitsMapItem(exponentResult, unitLatex, parser,globalOptions);
         
         const separator = (new TexParser(`\\text{${globalOptions["range-phrase"]}}`, parser.stack.env, parser.configuration)).mml();
 
