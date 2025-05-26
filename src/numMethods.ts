@@ -73,8 +73,9 @@ export function pieceToNumber(piece: INumberPiece): number {
 }
 
 // INumberPiece is built from left to right, so we're always working on the latest part... which could be uncertainty.  So get the last piece.
+// If uncertainty is completed, then return the number.  Could be an uncertainty before the exponent.  
 function getLastNumPiece(numPiece: INumberPiece):INumberPiece{
-	if (numPiece.uncertainty.length > 0) {
+	if (numPiece.uncertainty.length > 0 && !numPiece.uncertainty[numPiece.uncertainty.length - 1].completed) {
 		return numPiece.uncertainty[numPiece.uncertainty.length - 1];
 	} else {
 		return numPiece;
