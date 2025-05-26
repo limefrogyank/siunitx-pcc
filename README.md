@@ -106,6 +106,19 @@ MathJax = {
 }
 ```
 
+**Warning:** siunitx uses a class called `MathML-Unit` to annotate some units and symbols to make the speech engine generate more natural speech.  If you enable the safeOptions extension in MathJax ("ui/safe"), this will strip out all the `MathML-Unit` classes unless you modify the classPattern regex to allow it.  Something like below:
+```
+options: {
+                enableEnrichment: true,
+                sre: {
+                    domain: "clearspeak", // better for speaking compound units vs mathspeak
+                },
+                safeOptions:{
+                    classPattern: /^mjx-[-a-zA-Z0-9_.]+$|MathML-Unit/
+                }
+            },
+```
+
 7. **Optional** One method of adding global parameters to siunitx formatting is to add them to the MathJax configuration file under the object 'siunitx'.  For example, if you wanted all fractions on that page to display as numerator over denominator (instead of inline with a slash character), you would use the `per-mode = fraction` setting.  You can add this directly to the tex object in the configuration.  Since LaTeX options are dashed-case, most of the option names need quotes around them.  
 
 ```javascript
