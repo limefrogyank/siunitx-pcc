@@ -1,4 +1,4 @@
-import TexParser from "mathjax-full/js/input/tex/TexParser";
+import TexParser from "@mathjax/src/mjs/input/tex/TexParser.js";
 import { displayOutputMml, findInnerText } from "./numDisplayMethods";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { convertToFixed, postProcessNumber } from "./numPostProcessMethods";
@@ -6,7 +6,7 @@ import { findOptions, IOptions } from "./options/options";
 import { IQuantityOptions, PrefixMode, SeparateUncertaintyUnits } from "./options/quantityOptions";
 import { displayUnits, IUnitPiece, parseUnit } from "./unitMethods";
 import { prefixPower } from "./units";
-import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
+import { MmlNode } from "@mathjax/src/mjs/core/MmlTree/MmlNode.js";
 
 function combineExponent(parser: TexParser, num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions): void {
 	if (!num.exponent || (!units || units.length === 0)) {

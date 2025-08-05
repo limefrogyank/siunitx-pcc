@@ -1,5 +1,5 @@
-import TexParser from "mathjax-full/js/input/tex/TexParser";
-import ParseUtil from 'mathjax-full/js/input/tex/ParseUtil';
+import TexParser from "@mathjax/src/mjs/input/tex/TexParser.js";
+import { ParseUtil } from '@mathjax/src/mjs/input/tex/ParseUtil.js';
 import { IUnitOptions, UnitOptionDefaults } from "./unitOptions";
 import { INumOptions, NumOptionDefaults } from "./numberOptions";
 import { IAngleOptions, AngleOptionDefaults } from "./angleOptions";
@@ -9,7 +9,7 @@ import { IComplexNumberOptions, ComplexNumberOptionsDefault } from "./complexNum
 import { IListOptions, ListOptionDefaults } from "./listOptions";
 import { siunitxError } from "../error/errors";
 import "./patch.js";
-import { EnvList } from "mathjax-full/js/input/tex/StackItem";
+import { EnvList } from "@mathjax/src/mjs/input/tex/StackItem.js";
 
 
 export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions, IQuantityOptions, IComplexNumberOptions, IPrintOptions, IListOptions { }

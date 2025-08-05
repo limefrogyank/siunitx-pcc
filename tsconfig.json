@@ -8,6 +8,7 @@
 		"allowJs": true,
 		"sourceMap": true,
 		"moduleResolution": "node",
+        "esModuleInterop": true,
 		"resolveJsonModule": true,
 		"lib": [
 			"ES2015",

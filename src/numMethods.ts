@@ -1,6 +1,6 @@
-import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import TexError from "mathjax-full/js/input/tex/TexError";
-import TexParser from "mathjax-full/js/input/tex/TexParser";
+import { MmlNode } from "@mathjax/src/mjs/core/MmlTree/MmlNode.js";
+import TexError from "@mathjax/src/mjs/input/tex/TexError.js";
+import TexParser from "@mathjax/src/mjs/input/tex/TexParser.js";
 import { displayOutputMml } from "./numDisplayMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
 import { findOptions, IOptions } from "./options/options";

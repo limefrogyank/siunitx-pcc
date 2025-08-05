@@ -1,4 +1,4 @@
-import TexParser from "mathjax-full/js/input/tex/TexParser";
+import TexParser from "@mathjax/src/mjs/input/tex/TexParser.js";
 import { IOptions, findOptions } from "./options/options";
 import { parseNumber } from "./numMethods";
 import { postProcessNumber } from "./numPostProcessMethods";

@@ -1,12 +1,15 @@
-import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import TexError from "mathjax-full/js/input/tex/TexError";
-import TexParser from "mathjax-full/js/input/tex/TexParser";
+import { MmlNode } from "@mathjax/src/mjs/core/MmlTree/MmlNode.js";
+import TexError from "@mathjax/src/mjs/input/tex/TexError.js";
+import TexParser from "@mathjax/src/mjs/input/tex/TexParser.js";
 import { siunitxError } from "./error/errors";
 import { findOptions, IOptions } from "./options/options";
 import { IUnitOptions, QualifierMode } from "./options/unitOptions";
 import { UserDefinedUnitOptionsKey, UserDefinedUnitsKey } from "./siunitx";
 import { prefixSymbol, unitSymbol, unitSymbolsWithShortcuts } from "./units";
 import { createQuantityProductMml } from "./qtyMethods";
+
+import {mathjax} from '@mathjax/src/mjs/mathjax';
+import {TeX} from '@mathjax/src/mjs/input/tex';
 
 export interface IUnitPiece {
 	symbol?: string;

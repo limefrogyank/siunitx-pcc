@@ -1,21 +1,21 @@
 //const { paths } = require('mathjax-full/components/src/dependencies');
-const PACKAGE = require('mathjax-full/components/webpack.common.js');
+const { PACKAGE } = require('@mathjax/src/components/webpack.common.cjs');
 //const PACKAGE = require('./webpackModded');
 
 
 
 
-module.exports = PACKAGE(
-  'siunitx',                                // the name of the package to build
-  'node_modules/mathjax-full/js',    // location of the mathjax library
-  [                                     // packages to link to
+module.exports = PACKAGE({
+  name: 'siunitx',                                // the name of the package to build
+  js: 'node_modules/@mathjax/src/js',    // location of the mathjax library
+  libs: [                                     // packages to link to
     'components/src/core/lib',
     'components/src/input/tex-base/lib'
   ],
-  __dirname + '/js',                            // our directory
-  '../.'                                   // where to put the packaged component,
+  dir: __dirname + '/js',                            // our directory
+  dist: '../.'                                   // where to put the packaged component,
 
-);
+});
 
 
 // module.exports = {

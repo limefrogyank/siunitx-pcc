@@ -1,5 +1,5 @@
-import TexError from "mathjax-full/js/input/tex/TexError";
-import * as data from "./resource.en.json";
+import TexError from "@mathjax/src/mjs/input/tex/TexError.js";
+import {default as data} from "./resource.en.json";
 
 export class siunitxError {
 

@@ -16,10 +16,10 @@
  *  limitations under the License.
  */
 
-import { ParseMethod } from 'mathjax-full/js/input/tex/Types';
-import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import { MmlNode } from 'mathjax-full/js/core/MmlTree/MmlNode';
-import NodeUtil from 'mathjax-full/js/input/tex/NodeUtil';
+import { ParseMethod } from '@mathjax/src/mjs/input/tex/Types.js';
+import TexParser from '@mathjax/src/mjs/input/tex/TexParser.js';
+import { MmlNode } from '@mathjax/src/mjs/core/MmlTree/MmlNode.js';
+import NodeUtil from '@mathjax/src/mjs/input/tex/NodeUtil.js';
 
 /**
  * Parses the math argument of the above commands and returns it as single

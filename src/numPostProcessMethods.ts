@@ -1,4 +1,4 @@
-import TexParser from "mathjax-full/js/input/tex/TexParser";
+import TexParser from "@mathjax/src/mjs/input/tex/TexParser";
 import { siunitxError } from "./error/errors";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { INumOptions, INumPostOptions } from "./options/numberOptions";
