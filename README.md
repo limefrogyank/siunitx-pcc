@@ -158,4 +158,4 @@ This line should come before you add anything else and will do the same thing as
 
 ## To Build Yourself
 
-Clone the repo, make sure you have nodejs, then `npm run build` .  This will generate the 'siunitx.js' file that's already in the root folder.
+Clone the repo, make sure you have nodejs, then run `npm install` and `npm run build`. This will generate the 'siunitx.js' file that's already in the root folder.

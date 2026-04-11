@@ -1,6 +1,8 @@
 import { TwoWayMap } from "./twoWayMap";
 
 export const prefixSymbol = new Map<string,string>([
+	['quetta','Q'],
+	['ronna','R'],
 	['yotta','Y'],
 	['zetta','Z'],
 	['exa','E'],
@@ -22,6 +24,8 @@ export const prefixSymbol = new Map<string,string>([
 	['atto','a'],
 	['zepto','z'],
 	['yocto','y'],
+	['ronto','r'],
+	['quecto','q'],
 
 	['kibi','Ki'],
 	['mebi','Mi'],
@@ -34,6 +38,8 @@ export const prefixSymbol = new Map<string,string>([
 ]);
 
 export const prefixPower = new TwoWayMap<string,number>(new Map<string,number>([
+	['Q', 30 ],
+	['R', 27 ],
 	['Y', 24 ],
 	['Z', 21],
 	['E', 18],
@@ -53,7 +59,9 @@ export const prefixPower = new TwoWayMap<string,number>(new Map<string,number>([
 	['f', -15],
 	['a', -18],
 	['z', -21],
-	['y', -24]
+	['y', -24],
+	['r', -27],
+	['q', -30]
 ]));
 
 export const binaryPrefixPower = new Map<string,number>([
@@ -230,6 +238,7 @@ export const unitSymbolsWithShortcuts = new Map<string, string>([
 	['pF', 'pF'],
 	['nF', 'nF'],
 	['uF', '\\micro F'],
+	['mF', 'mF'],
 
 	['H', 'H'],
 	['fH', 'fH'],
@@ -242,6 +251,10 @@ export const unitSymbolsWithShortcuts = new Map<string, string>([
 	['nC', 'nC'],
 	['mC', 'mC'],
 	['uC', '\\micro C'],
+
+	['T', 'T'],
+	['mT', 'mT'],
+	['uT', '\\micro T'],
 
 	['K', 'K'],
 
