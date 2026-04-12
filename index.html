@@ -199,7 +199,7 @@
                 String.raw`\num{1.23e4}`,
                 String.raw`\num[exponent-mode = fixed, fixed-exponent=0]{1.23e4}`, //BUG: Remove decimal in fixed
 
-                String.raw`\displaylines{
+                String.raw`
 		\sisetup{exponent-mode = threshold}
 		\num{0.001} \\
 		\num{0.012} \\
@@ -209,8 +209,8 @@
 		\num{123} \\
 		\num{1234} \\
 		\sisetup{exponent-mode = input}
-	}`,
-                String.raw`\displaylines{
+	`,
+                String.raw`
 		\sisetup{exponent-mode = threshold, exponent-thresholds = -2:2 }
 		\num{0.001} \\
 		\num{0.012} \\
@@ -220,7 +220,7 @@
 		\num{123} \\
 		\num{1234} \\
 		\sisetup{exponent-mode = input}
-	}`,
+	`,
 
                 String.raw`\num{0.01(2)}`,
                 String.raw`\num[drop-uncertainty]{0.01(2)}`,
@@ -404,32 +404,32 @@
                 String.raw`\ang[angle-separator = {\,}]{6;;}`,
                 String.raw`\ang[fill-angle-degrees]{;-2;}`,
                  String.raw`\sisetup{fill-angle-degrees}\ang{;-2;}`,
-                String.raw`\displaylines{
+                String.raw`
 \ang{-1;;} \\
 \ang{;-2;} \\
 \ang{;;-3} \\
-}`,
-                String.raw`\displaylines{
+`,
+                String.raw`
 \sisetup{fill-angle-degrees}
 \ang{-1;;} \\
 \ang{;-2;} \\
 \ang{;;-3} \\
 \sisetup{fill-angle-degrees = false}
-}`,
-                String.raw`\displaylines{
+`,
+                String.raw`
 \sisetup{fill-angle-minutes}
 \ang{-1;;} \\
 \ang{;-2;} \\
 \ang{;;-3} \\
 \sisetup{fill-angle-minutes = false}
-}`,
-                String.raw`\displaylines{
+`,
+                String.raw`
 \sisetup{fill-angle-seconds}
 \ang{-1;;} \\
 \ang{;-2;} \\
 \ang{;;-3} \\
 \sisetup{fill-angle-seconds = false}
-}`,
+`,
                 String.raw`\ang{6;7;6.5}`,
                 String.raw`\sisetup{
 	angle-symbol-degree = d ,
@@ -483,28 +483,28 @@
                 String.raw`\unit{\ampere\per\mole\second}`,
                 String.raw`\unit[per-mode = power-positive-first]{\ampere\per\mole\second}`,
 
-                String.raw`\displaylines{
+                String.raw`
 	\sisetup{per-mode = symbol} \\ 
 	\unit{\joule\per\mole\per\kelvin} \\
 	\unit{\metre\per\second\squared} \\
 	\unit[per-symbol = \ \text{div}\ ]{\joule\per\mole\per\kelvin} \\
 	\unit[bracket-unit-denominator = false]{\joule\per\mole\per\kelvin} \\
 	\sisetup{per-mode = power}
-	}`,
+	`,
                 String.raw`\unit[per-mode = repeated-symbol]{\joule\per\mole\per\kelvin}`,
-                String.raw`\displaylines{
+                String.raw`
 	\sisetup{per-mode = single-symbol}
 		\unit{\per\metre} \\
 		\unit{\metre\per\second} \\
 		\unit{\joule\per\mole\per\kelvin}
 	\sisetup{per-mode = power}
-	}`,
-                String.raw`\displaylines{
+	`,
+                String.raw`
 	\sisetup{per-mode = symbol}%
 	\unit{\cm\cubed\per\gram} \\
 	\unit[per-symbol-script-correction = ]{\cm\cubed\per\gram}
 	\sisetup{per-mode = power}
-	}`,
+	`,
 
                 String.raw`\unit{\pascal\per\gray\henry}`,
                 String.raw`\unit[sticky-per]{\pascal\per\gray\henry}`,
@@ -513,13 +513,13 @@
                 String.raw`\unit[qualifier-mode = bracket]{\kilogram\of{pol}\squared\per\mole\of{cat}\per\hour}`,
                 String.raw`\unit[qualifier-mode = combine]{\deci\bel\of{i}}`,
 
-                String.raw`\displaylines{
+                String.raw`
 	\sisetup{qualifier-mode = phrase, qualifier-phrase = \ }%
 	\unit{\kilogram\of{pol}\squared\per\mole\of{cat}\per\hour} \\
 	\sisetup{qualifier-phrase = \ \mbox{of}\ }%
 	\unit{\kilogram\of{pol}\squared\per\mole\of{cat}\per\hour}
 	\sisetup{qualifier-mode = subscript, qualifier-phrase = }
-	}`,
+	`,
 
                 String.raw`\unit{\Hz\tothe{0.5}}`,
                 String.raw`\unit[power-half-as-sqrt]{\Hz\tothe{0.5}}`,
@@ -612,7 +612,7 @@
                 String.raw`\numproduct{5e3 x 7e3 x 9e3 x 1e4}`,
                 String.raw`\numrange{5e3}{7e3}`,
                 String.raw`
-		\displaylines{
+		
 			\sisetup{list-exponents = combine-bracket ,
 					product-exponents = combine-bracket ,
 					range-exponents = combine-bracket
@@ -628,7 +628,7 @@
 			\numlist{5e3;7e3;9e3;1e4} \\
 			\numproduct{5e3 x 7e3 x 9e3 x 1e4} \\
 			\numrange{5e3}{7e3} \\
-		}
+		
 		`,
                 String.raw`\qtylist{2;4;6;8}{\tesla}`,
                 String.raw`\qtylist[list-units = bracket]{2;4;6;8}{\tesla}`,

@@ -13,6 +13,6 @@
       "components/src/input/tex-base/lib",
       "components/src/core/lib"
     ],
-    "dist": "../"
+    "dist": "../browser/"
   }
 }

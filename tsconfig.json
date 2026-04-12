@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "rootDir": ".",
+        "rootDir": "ts",
         "outDir": "js",
         "noImplicitAny": false,
         "module": "nodenext",
@@ -13,8 +13,8 @@
         "resolveJsonModule": true,
         "skipLibCheck": true,
         "lib": ["ES6", "ES2020", "DOM"],
-        "typeRoots": ["./node_modules/@types", "./types"]
+        "typeRoots": ["./node_modules/@types", "./types"],
     },
     "include": ["ts/**/*", "types/localizationResource.d.ts", "types/patch.d.ts"],
-    "exclude": ["node_modules", "**/*.spec.ts", "js/**/*"]
+    "exclude": ["node_modules", "**/*.spec.ts", "js/**/*"],
 }

@@ -1,18 +1,20 @@
 {
   "dependencies": {
-    "@mathjax/src": "^4.1.1",
-    "terser-webpack-plugin": "^5.4.0"
   },
   "name": "siunitx",
   "version": "1.0.0",
   "main": "./js/siunitx.js",
   "devDependencies": {
+    "@mathjax/src": "^4.1.1",
+    "rimraf": "^6.1.3",
+    "terser-webpack-plugin": "^5.4.0",
     "typescript": "^6.0.2",
     "webpack": "^5.106.1",
     "webpack-cli": "^7.0.2"
   },
   "scripts": {
-    "build": "tsc && node ./node_modules/@mathjax/src/components/bin/makeAll --mjs components",
+    "clean": "rimraf js",
+    "build": "npm run clean && tsc && node ./node_modules/@mathjax/src/components/bin/makeAll --mjs components",
     "release": "standard-version",
     "test": "echo 'No tests yet'"
   },
