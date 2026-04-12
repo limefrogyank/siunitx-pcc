@@ -175,9 +175,7 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 		ang.degrees.whole = '0';
 	}
 	let degreeNodeToAdd: MmlNode | undefined = undefined;
-	console.log("doing degrees");
 	if (degreeValue !== 0 || ang.degrees.whole === '0' || options["fill-angle-degrees"]) {
-		console.log("degree is undefined OR equal to 0 OR fill-angle-degrees");
 		const degreeMml = displayNumberMml(ang.degrees, parser, options as IOptions);
 		if (options["angle-symbol-over-decimal"]) {
 			// TODO: assume no exponents, maybe check for this and thow error
@@ -195,10 +193,8 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 	}
 
 	let minuteNodeToAdd: MmlNode|undefined = undefined;
-	console.log('doing minutes');
 	if (ang.minutes !== undefined && ang.minutes !== null) {
 		const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal !== '' ? '.' : '') + ang.minutes.fractional);
-		console.log(minutesValue);
 		let moddedAngleSymbolMinute = '\\mathrm{' + options["angle-symbol-minute"] + '}';
 		if (moddedAngleSymbolMinute === "\\mathrm{'}") {
 			// TODO: Localize the degree-minutes
@@ -207,7 +203,6 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 			else
 				moddedAngleSymbolMinute = '\\arialabel{degree-minutes}{\\degreeminute}';
 		}
-		console.log(moddedAngleSymbolMinute);
 
 		if (minutesValue !== 0 || ang.minutes.whole === '0' || options["fill-angle-minutes"]) {
 
@@ -220,13 +215,11 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 			}
 			const minutesMml = displayNumberMml(ang.minutes, parser, options as IOptions);
 			if (options["angle-symbol-over-decimal"]) {
-				console.log('angle over decimal')
 				//const number = displayNumber(ang.minutes, options);
 				minuteNodeToAdd = degreeOverDecimal(parser, minutesMml, moddedAngleSymbolMinute, options as IOptions, false);
 			}
 
 			if (!minuteNodeToAdd) {
-				console.log('no special minutes stuff, create it here');
 				// do nothing but add symbol to end
 				minuteNodeToAdd = parser.create('node', 'inferredMrow', [], {});
 				minuteNodeToAdd.appendChild(minutesMml);
@@ -234,8 +227,6 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 			}
 		}
 	}
-	console.log('minutenodetoadd')
-	console.log(minuteNodeToAdd);
 
 	let secondsNodeToAdd: MmlNode|undefined = undefined;
 	if (ang.seconds && ang.seconds !== null) {
@@ -269,26 +260,19 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 		}
 	}
 
-	console.log(ang);
-
 	if (degreeNodeToAdd) {
-		console.log('adding degree node')
 		root.appendChild(degreeNodeToAdd);
 	}
 	if (degreeNodeToAdd && (minuteNodeToAdd || secondsNodeToAdd) && options["angle-separator"] !== '') {
-		console.log('adding modded degree node')
 		root.appendChild((new TexParser(options["angle-separator"], parser.stack.env, parser.configuration)).mml());
 	}
 	if (minuteNodeToAdd){
-		console.log('adding minute node')
 		root.appendChild(minuteNodeToAdd);
 	}
 	if (minuteNodeToAdd && secondsNodeToAdd && options["angle-separator"] !== '') {
-		console.log('adding modded minute node')
 		root.appendChild((new TexParser(options["angle-separator"], parser.stack.env, parser.configuration)).mml());
 	}
 	if (secondsNodeToAdd){
-		console.log('adding second node')
 		root.appendChild(secondsNodeToAdd);
 	}
 

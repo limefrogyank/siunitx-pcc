@@ -167,9 +167,7 @@ function displayAngleMml(parser, ang, options) {
         ang.degrees.whole = '0';
     }
     let degreeNodeToAdd = undefined;
-    console.log("doing degrees");
     if (degreeValue !== 0 || ang.degrees.whole === '0' || options["fill-angle-degrees"]) {
-        console.log("degree is undefined OR equal to 0 OR fill-angle-degrees");
         const degreeMml = (0, numDisplayMethods_1.displayNumberMml)(ang.degrees, parser, options);
         if (options["angle-symbol-over-decimal"]) {
             // TODO: assume no exponents, maybe check for this and thow error
@@ -185,10 +183,8 @@ function displayAngleMml(parser, ang, options) {
         }
     }
     let minuteNodeToAdd = undefined;
-    console.log('doing minutes');
     if (ang.minutes !== undefined && ang.minutes !== null) {
         const minutesValue = +(ang.minutes.whole + (ang.minutes.decimal !== '' ? '.' : '') + ang.minutes.fractional);
-        console.log(minutesValue);
         let moddedAngleSymbolMinute = '\\mathrm{' + options["angle-symbol-minute"] + '}';
         if (moddedAngleSymbolMinute === "\\mathrm{'}") {
             // TODO: Localize the degree-minutes
@@ -197,7 +193,6 @@ function displayAngleMml(parser, ang, options) {
             else
                 moddedAngleSymbolMinute = '\\arialabel{degree-minutes}{\\degreeminute}';
         }
-        console.log(moddedAngleSymbolMinute);
         if (minutesValue !== 0 || ang.minutes.whole === '0' || options["fill-angle-minutes"]) {
             if (minutesValue === 0 && options["fill-angle-minutes"]) {
                 if (((_c = ang.seconds) === null || _c === void 0 ? void 0 : _c.sign) === '-') {
@@ -208,12 +203,10 @@ function displayAngleMml(parser, ang, options) {
             }
             const minutesMml = (0, numDisplayMethods_1.displayNumberMml)(ang.minutes, parser, options);
             if (options["angle-symbol-over-decimal"]) {
-                console.log('angle over decimal');
                 //const number = displayNumber(ang.minutes, options);
                 minuteNodeToAdd = degreeOverDecimal(parser, minutesMml, moddedAngleSymbolMinute, options, false);
             }
             if (!minuteNodeToAdd) {
-                console.log('no special minutes stuff, create it here');
                 // do nothing but add symbol to end
                 minuteNodeToAdd = parser.create('node', 'inferredMrow', [], {});
                 minuteNodeToAdd.appendChild(minutesMml);
@@ -221,8 +214,6 @@ function displayAngleMml(parser, ang, options) {
             }
         }
     }
-    console.log('minutenodetoadd');
-    console.log(minuteNodeToAdd);
     let secondsNodeToAdd = undefined;
     if (ang.seconds && ang.seconds !== null) {
         const secondsValue = +(ang.seconds.whole + (ang.seconds.decimal ? '.' : '') + ang.seconds.fractional);
@@ -251,25 +242,19 @@ function displayAngleMml(parser, ang, options) {
             }
         }
     }
-    console.log(ang);
     if (degreeNodeToAdd) {
-        console.log('adding degree node');
         root.appendChild(degreeNodeToAdd);
     }
     if (degreeNodeToAdd && (minuteNodeToAdd || secondsNodeToAdd) && options["angle-separator"] !== '') {
-        console.log('adding modded degree node');
         root.appendChild((new TexParser_js_1.default(options["angle-separator"], parser.stack.env, parser.configuration)).mml());
     }
     if (minuteNodeToAdd) {
-        console.log('adding minute node');
         root.appendChild(minuteNodeToAdd);
     }
     if (minuteNodeToAdd && secondsNodeToAdd && options["angle-separator"] !== '') {
-        console.log('adding modded minute node');
         root.appendChild((new TexParser_js_1.default(options["angle-separator"], parser.stack.env, parser.configuration)).mml());
     }
     if (secondsNodeToAdd) {
-        console.log('adding second node');
         root.appendChild(secondsNodeToAdd);
     }
     return root;
