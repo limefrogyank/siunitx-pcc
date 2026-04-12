@@ -1,7 +1,7 @@
-import TexError from 'mathjax-full/js/input/tex/TexError';
-import { EnvList } from 'mathjax-full/js/input/tex/StackItem';
-import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import ParseUtil from 'mathjax-full/js/input/tex/ParseUtil';
+import TexError from '@mathjax/src/mjs/input/tex/TexError.js';
+import { EnvList } from '@mathjax/src/mjs/input/tex/StackItem.js';
+import TexParser from '@mathjax/src/mjs/input/tex/TexParser.js';
+import { ParseUtil } from '@mathjax/src/mjs/input/tex/ParseUtil.js';
 
 
 

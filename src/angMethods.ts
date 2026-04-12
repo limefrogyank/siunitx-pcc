@@ -1,5 +1,5 @@
-import { MmlNode, TextNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import TexParser from "mathjax-full/js/input/tex/TexParser";
+import { MmlNode, TextNode } from "@mathjax/src/mjs/core/MmlTree/MmlNode.js";
+import TexParser from "@mathjax/src/mjs/input/tex/TexParser.js";
 import { siunitxError } from "./error/errors";
 import { displayNumberMml } from "./numDisplayMethods";
 import { generateNumberMapping, generateNumberPiece, INumberPiece } from "./numMethods";
