@@ -1,0 +1,18 @@
+{
+  "build": {
+    "id": "[siunitx]/sunitx",
+    "component": "input/tex/extension/siunitx",
+    "js": "../js",
+    "ts": "../ts",
+    "targets": ["siunitx.ts"]
+  },
+  "webpack": {
+    "name": "siunitx",
+    "js": "../js",
+    "libs": [
+      "components/src/input/tex-base/lib",
+      "components/src/core/lib"
+    ],
+    "dist": "../"
+  }
+}

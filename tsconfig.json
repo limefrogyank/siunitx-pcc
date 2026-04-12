@@ -1,31 +1,20 @@
 {
-	"compilerOptions": {
-		"outDir": "./js",
-		"noImplicitAny": false,
-		"module": "ES6",
-		"target": "ES2015",
-		"jsx": "preserve",
-		"allowJs": true,
-		"sourceMap": true,
-		"moduleResolution": "node",
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "js",
+        "noImplicitAny": false,
+        "module": "nodenext",
+        "target": "es6",
+        "jsx": "preserve",
+        "allowJs": true,
+        "sourceMap": true,
+        "moduleResolution": "nodenext",
         "esModuleInterop": true,
-		"resolveJsonModule": true,
-		"lib": [
-			"ES2015",
-			"DOM"
-		],
-		"typeRoots": [
-			"./node_modules/@types",
-			"./types"
-		]
-	},
-	"include": [
-		"src/**/*",
-		"types/localizationResource.d.ts"
-, "types/patch.d.ts"	],
-	"exclude": [
-		"node_modules",
-		"**/*.spec.ts",
-		"js/**/*"
-	]
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "lib": ["ES6", "ES2020", "DOM"],
+        "typeRoots": ["./node_modules/@types", "./types"]
+    },
+    "include": ["ts/**/*", "types/localizationResource.d.ts", "types/patch.d.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts", "js/**/*"]
 }
