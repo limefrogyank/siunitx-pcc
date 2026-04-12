@@ -17,7 +17,7 @@ export const prefixSymbol = new Map<string,string>([
 	['deci','d'],
 	['centi','c'],
 	['milli','m'],
-	['micro','u'],
+	['micro','µ'],
 	['nano','n'],
 	['pico','p'],
 	['femto','f'],

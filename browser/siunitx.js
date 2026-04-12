@@ -3595,7 +3595,7 @@ exports.prefixSymbol = new Map([
     ['deci', 'd'],
     ['centi', 'c'],
     ['milli', 'm'],
-    ['micro', 'u'],
+    ['micro', 'µ'],
     ['nano', 'n'],
     ['pico', 'p'],
     ['femto', 'f'],
