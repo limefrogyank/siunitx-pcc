@@ -32,7 +32,6 @@ function parseAngle(parser: TexParser, text: string, options: IAngleOptions): IA
 	// if '\', then read until next '\' or whitespace char
 	let token;
 	while (subParser.i < subParser.string.length) {
-		console.log(subParser.i + ": " + subParser.string);
 		token = subParser.GetNext();
 		subParser.i++; // GetNext() does not advance position unless skipping whitespace
 
@@ -182,8 +181,6 @@ function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOpt
 			degreeNodeToAdd = degreeOverDecimal(parser, degreeMml, options["angle-symbol-degree"], options as IOptions, true);
 		}
 		if (!degreeNodeToAdd) {
-			console.log("degree node is null and will be created")
-			console.log(degreeValue);
 			// do nothing but add symbol to end
 			degreeNodeToAdd = parser.create('node', 'inferredMrow', [], {});
 			degreeNodeToAdd.appendChild(degreeMml);
@@ -296,7 +293,6 @@ export function processAngle(parser: TexParser): MmlNode {
 	// transform angle format
 	modeMapping.get(globalOptions["angle-mode"])!(ang);
 	const mml = displayAngleMml( parser, ang, globalOptions);
-	console.log(mml);
 
 	return mml;
 }
