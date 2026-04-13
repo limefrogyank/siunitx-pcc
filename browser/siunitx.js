@@ -153,7 +153,7 @@ const modeMapping = new Map([
 ]);
 function displayAngleMml(parser, ang, options) {
     var _a, _b, _c;
-    const root = parser.create('node', 'mrow', [], {});
+    const root = parser.create('node', 'mrow', [], { fake: 'argument' });
     const degreeValue = +(ang.degrees.whole + (ang.degrees.decimal !== '' ? '.' : '') + ang.degrees.fractional);
     if (!ang.degrees.whole && options["fill-angle-degrees"]) {
         if (((_a = ang.minutes) === null || _a === void 0 ? void 0 : _a.sign) === '-') {

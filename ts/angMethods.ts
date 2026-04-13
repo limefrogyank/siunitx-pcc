@@ -161,7 +161,7 @@ const modeMapping = new Map<string, (ang: IAnglePiece) => void>([
 ]);
 
 function displayAngleMml(parser: TexParser, ang: IAnglePiece, options: IAngleOptions): MmlNode {
-	const root = parser.create('node', 'mrow', [], {});
+	const root = parser.create('node', 'mrow', [], {fake:'argument'});
 
 	const degreeValue = +(ang.degrees.whole + (ang.degrees.decimal !== '' ? '.' : '') + ang.degrees.fractional);
 	if (!ang.degrees.whole && options["fill-angle-degrees"]) {
@@ -295,7 +295,6 @@ export function processAngle(parser: TexParser): MmlNode {
 
 	// transform angle format
 	modeMapping.get(globalOptions["angle-mode"])!(ang);
-
 	const mml = displayAngleMml( parser, ang, globalOptions);
 	console.log(mml);
 
