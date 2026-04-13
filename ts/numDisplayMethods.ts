@@ -159,14 +159,14 @@ function displayUncertaintyBracketMml(uncertainty: IUncertainty, parser: TexPars
 	number += uncertainty.fractional;
 	const numberNode = parser.create('token', 'mn', {}, number);
 	const closeUncertainty = (new TexParser(options["output-close-uncertainty"], parser.stack.env, parser.configuration)).mml();
-	const mrow = parser.create('node', 'mrow', [uncertaintySeparator, openUncertainty, numberNode, closeUncertainty]);
+	const mrow = parser.create('node', 'inferredMrow', [uncertaintySeparator, openUncertainty, numberNode, closeUncertainty]);
 	return mrow;
 }
 
 function displayUncertaintyPlusMinusMml(uncertainty: IUncertainty, parser: TexParser, options: INumOutputOptions): MmlNode {
 	const numberNode = displayNumberMml(uncertainty, parser, options as IOptions);
 	const plusMinusNode = parser.create('token', 'mo', {}, '\u00b1'); // plus-minus sign 
-	const mrow = parser.create('node', 'mrow', [plusMinusNode, numberNode], { 'data-siunitx-uncertainty': true });
+	const mrow = parser.create('node', 'inferredMrow', [plusMinusNode, numberNode], { 'data-siunitx-uncertainty': true });
 	return mrow;
 }
 
