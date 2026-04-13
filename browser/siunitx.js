@@ -153,7 +153,7 @@ const modeMapping = new Map([
 ]);
 function displayAngleMml(parser, ang, options) {
     var _a, _b, _c;
-    const root = parser.create('node', 'inferredMrow', [], {});
+    const root = parser.create('node', 'mrow', [], {});
     const degreeValue = +(ang.degrees.whole + (ang.degrees.decimal !== '' ? '.' : '') + ang.degrees.fractional);
     if (!ang.degrees.whole && options["fill-angle-degrees"]) {
         if (((_a = ang.minutes) === null || _a === void 0 ? void 0 : _a.sign) === '-') {
@@ -703,13 +703,13 @@ function displayUncertaintyBracketMml(uncertainty, parser, options) {
     number += uncertainty.fractional;
     const numberNode = parser.create('token', 'mn', {}, number);
     const closeUncertainty = (new TexParser_js_1.default(options["output-close-uncertainty"], parser.stack.env, parser.configuration)).mml();
-    const mrow = parser.create('node', 'mrow', [uncertaintySeparator, openUncertainty, numberNode, closeUncertainty]);
+    const mrow = parser.create('node', 'inferredMrow', [uncertaintySeparator, openUncertainty, numberNode, closeUncertainty]);
     return mrow;
 }
 function displayUncertaintyPlusMinusMml(uncertainty, parser, options) {
     const numberNode = displayNumberMml(uncertainty, parser, options);
     const plusMinusNode = parser.create('token', 'mo', {}, '\u00b1'); // plus-minus sign 
-    const mrow = parser.create('node', 'mrow', [plusMinusNode, numberNode], { 'data-siunitx-uncertainty': true });
+    const mrow = parser.create('node', 'inferredMrow', [plusMinusNode, numberNode], { 'data-siunitx-uncertainty': true });
     return mrow;
 }
 const uncertaintyModeMmlMapping = new Map([
