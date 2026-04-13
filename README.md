@@ -1,4 +1,4 @@
-# siunitx extension for MathJax v3
+# siunitx extension for MathJax v4
 
 ## Demo
 
@@ -20,7 +20,7 @@ This will hopefully be added into the MathJax package.  Until then, you can mimi
 
 1. Add the [siunitx.js](https://github.com/limefrogyank/siunitx-pcc/blob/main/siunitx.js) compiled file to your web server in any directory.
 
-2. To any page that needs MathJax with **siunitx**, add a named path in the config file for MathJax in the `paths` object which is in the `loader` object.  If siunitx.js is in the same directory, you can use `.`, otherwise use a relative path.  (i.e. `./somefolder`,  `../folderbehindpagefolder`, etc.)  This example uses the name "custom" for the named path, but you can use any name for it.
+2. To any page that needs MathJax with **siunitx**, add a named path in the config file for MathJax in the `paths` object which is in the `loader` object.  If siunitx.js is in the same directory, you can use `.`, otherwise use a relative path.  (i.e. `./somefolder`,  `../folderbehindpagefolder`, etc.)  This example uses the name "custom" for the named path, but you can use any name for it.  If you're using the repository directory structure, the js file is found in "./browser".  But feel free to copy it to any directory you want.
 
 ```javascript
 MathJax = {
@@ -159,3 +159,9 @@ This line should come before you add anything else and will do the same thing as
 ## To Build Yourself
 
 Clone the repo, make sure you have nodejs, then run `npm install` and `npm run build`. This will generate the 'siunitx.js' file that's already in the root folder.
+
+## Quirks 
+
+MathJax v4 introduced several newline macros (`\\\\`, `\\goodbreak`, etc.).  These do NOT work well with siunitx.  If you must have multiple siunitx macros within one $$ .. $$ encapsulation, but on separate lines, you should use the `\\displaylines{ }` macro and place all content within the braces.  You can use `\\\\` within that macro as it enforces table rows for each part.  
+
+Otherwise, use plain HTML and multiple `$$..$$` encapsulations for each siunitx macro.

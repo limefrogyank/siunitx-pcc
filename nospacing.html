@@ -4,7 +4,7 @@
     MathJax = {
         loader: {
             load: ['[custom]/siunitx.js', '[tex]/gensymb', "[tex]/html","[tex]/color",], //gensymb is required for \degree and \ohm
-            paths: { custom: './browser/' }
+            paths: { custom: '.' }
         },
         tex: {
             packages: { '[+]': ['siunitx', 'gensymb', 'html', "color"] },  //gensymb is required for \degree and \ohm
@@ -20,13 +20,28 @@
 </script>
 
 <body>
-$\ang{;-2;} \\ \ang{;;2} \\$
-<br/>
-<!-- $\ang{;-2;2} \\ \ang{;2;2} \\$ -->
-<br/>
-$\qty{2}{\centi\meter} \\ \qty{-3.01}{\gram} \\$
-    <br/>
-<!-- $\ang[fill-angle-degrees]{;-2;} \\ \ang[fill-angle-seconds]{;3;} \\$ -->
+
+$$ 
+    \sisetup{fill-angle-degrees}
+    \ang{;-2;} 
+$$
+
+$$\ang[fill-angle-degrees]{;-2;} $$
+
+$$ 
+    \sisetup{fill-angle-degrees}
+    \ang{;-2;} 
+$$
+
+$$\ang[fill-angle-degrees]{;-2;} $$
+$$ 
+    \sisetup{fill-angle-degrees}
+    \ang{;-2;} 
+$$
+
+$$\ang[fill-angle-degrees]{;-2;} $$
+ 
+    
 </body>
 
 </html>
