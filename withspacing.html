@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+    <script>
+        MathJax = {
+            loader: {
+                load: [
+                    "[custom]/siunitx.js",
+                    "[tex]/gensymb",
+                    "[tex]/color",
+                    "[tex]/html",
+                    "[tex]/cancel",
+                ], //gensymb is required for \degree and \ohm
+                paths: { custom: "." },
+            },
+            tex: {
+                packages: {
+                    "[+]": ["siunitx", "gensymb", "color", "html", "cancel"],
+                },
+                //gensymb is required for \degree and \ohm
+                //color is required for color options
+                //cancel is required for cancelation of units
+                inlineMath: { "[+]": [["$", "$"]] },
+                /* global options for siunitx can go in the siunitx object on tex, see IOptions in options.ts for properties */
+                // Uncomment example below:
+                // siunitx: {
+                // 	perMode: 'fraction'
+                // }
+            },
+            options: {
+                enableEnrichment: true,
+                sre: {
+                    domain: "clearspeak", // better for speaking compound units vs mathspeak
+                },
+            },
+            startup: {
+                ready: async () => {
+                    MathJax.startup.defaultReady();
+                    // async function fillTableWithSpeech(name, arr) {
+                    //     var table = document.getElementById(name);
+                    //     for (var j = 0; j < arr.length; j++) {
+                    //         const capt = j;
+                    //         const mml = await MathJax.tex2mmlPromise(
+                    //             arr[capt],
+                    //             {}
+                    //         );
+                    //         var regex = /(?:data-semantic-speech=")(.*?)(?:")/g;
+                    //         var matches = [...mml.matchAll(regex)];
+                    //         if (matches[0] === undefined) {
+                    //             break; // accessibility is not turned on yet
+                    //         }
+                    //         table.rows[capt + 1].cells[2].innerText =
+                    //             matches[0][1];
+                    //     }
+                    // }
+
+                    // await fillTableWithSpeech("angTable", ang);
+                    // await fillTableWithSpeech("numTable", num);
+                    // await fillTableWithSpeech("complexnumTable", complexnum);
+                    // await fillTableWithSpeech("unitTable", unit);
+                    // await fillTableWithSpeech("qtyTable", qty);
+                    // await fillTableWithSpeech("listTable", listStuff);
+                    // await fillTableWithSpeech(
+                    //     "declareSIUnitTable",
+                    //     declareSIUnit
+                    // );
+                },
+            },
+        };
+    </script>
+    <!-- es5 version -->
+    <script
+        type="text/javascript"
+        id="MathJax-script"
+        defer
+        src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js"
+    ></script>
+
+    <body>
+        <style>
+            .tableStyle {
+                border: 1px solid;
+                border-collapse: collapse;
+            }
+
+            .tableStyle th,
+            td {
+                border: 1px solid;
+            }
+        </style>
+
+        <!-- <p>If you don't see the Speech column fill up, right click on any MathJax rendered item, go to the Accessibility menu and check the Activate option.  
+		Then reload the entire page.  This column will just preview approximately what a screenreader will say.</p> -->
+
+        <h2>ang</h2>
+        <table id="angTable" class="tableStyle"></table>
+
+        <h2>num</h2>
+        <table id="numTable" class="tableStyle"></table>
+
+        <h2>complexnum & complexqty</h2>
+        <table id="complexnumTable" class="tableStyle"></table>
+
+        <h2>unit</h2>
+        <table id="unitTable" class="tableStyle"></table>
+
+        <h2>qty</h2>
+        <table id="qtyTable" class="tableStyle"></table>
+
+        <h2>numlist, qtylist, numproduct, qtyproduct, numrange, qtyrange</h2>
+        <table id="listTable" class="tableStyle"></table>
+
+        <h2>DeclareSIUnit</h2>
+        <table id="declareSIUnitTable" class="tableStyle"></table>
+
+        <script>
+            function fillTable(name, arr) {
+                var table = document.getElementById(name);
+                var tr = document.createElement("tr");
+                table.appendChild(tr);
+                var th = document.createElement("th");
+                th.innerText = "LaTeX";
+                tr.appendChild(th);
+                th = document.createElement("th");
+                th.innerText = "SVG";
+                tr.appendChild(th);
+                th = document.createElement("th");
+                th.innerText = "ClearSpeak";
+                tr.appendChild(th);
+                for (var i = 0; i < arr.length; i++) {
+                    tr = document.createElement("tr");
+                    table.appendChild(tr);
+                    var td = document.createElement("td");
+                    td.innerText = arr[i];
+                    tr.appendChild(td);
+                    td = document.createElement("td");
+                    td.innerText = "$ " + arr[i] + " $";
+                    tr.appendChild(td);
+                    td = document.createElement("td");
+                    tr.appendChild(td);
+                }
+            }
+           
+
+            var ang = [
+              
+//                 String.raw`
+// \ang{-1;;} \\
+// \ang{;-2;} \\
+// \ang{;;-3} \\
+// `,
+//                 String.raw`
+// \sisetup{fill-angle-degrees}
+// \ang{-1;;} \\
+// \ang{;-2;} \\
+// \ang{;;-3} \\
+// \sisetup{fill-angle-degrees = false}
+// `,
+//                 String.raw`
+// \sisetup{fill-angle-minutes}
+// \ang{-1;;} \\
+// \ang{;-2;} \\
+// \ang{;;-3} \\
+// \sisetup{fill-angle-minutes = false}
+// `,
+                String.raw`
+                
+
+\ang[fill-angle-seconds]{-1;;} \\
+\ang[fill-angle-seconds]{;-2;} \\
+\ang[fill-angle-seconds]{;;-3} \\
+`,
+
+            ];
+
+            fillTable("angTable", ang);
+
+       
+        </script>
+    </body>
+</html>

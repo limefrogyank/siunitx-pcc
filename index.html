@@ -10,7 +10,7 @@
                     "[tex]/html",
                     "[tex]/cancel",
                 ], //gensymb is required for \degree and \ohm
-                paths: { custom: "." },
+                paths: { custom: "./browser/" },
             },
             tex: {
                 packages: {
@@ -35,34 +35,34 @@
             startup: {
                 ready: async () => {
                     MathJax.startup.defaultReady();
-                    async function fillTableWithSpeech(name, arr) {
-                        var table = document.getElementById(name);
-                        for (var j = 0; j < arr.length; j++) {
-                            const capt = j;
-                            const mml = await MathJax.tex2mmlPromise(
-                                arr[capt],
-                                {}
-                            );
-                            var regex = /(?:data-semantic-speech=")(.*?)(?:")/g;
-                            var matches = [...mml.matchAll(regex)];
-                            if (matches[0] === undefined) {
-                                break; // accessibility is not turned on yet
-                            }
-                            table.rows[capt + 1].cells[2].innerText =
-                                matches[0][1];
-                        }
-                    }
+                    // async function fillTableWithSpeech(name, arr) {
+                    //     var table = document.getElementById(name);
+                    //     for (var j = 0; j < arr.length; j++) {
+                    //         const capt = j;
+                    //         const mml = await MathJax.tex2mmlPromise(
+                    //             arr[capt],
+                    //             {}
+                    //         );
+                    //         var regex = /(?:data-semantic-speech=")(.*?)(?:")/g;
+                    //         var matches = [...mml.matchAll(regex)];
+                    //         if (matches[0] === undefined) {
+                    //             break; // accessibility is not turned on yet
+                    //         }
+                    //         table.rows[capt + 1].cells[2].innerText =
+                    //             matches[0][1];
+                    //     }
+                    // }
 
-                    await fillTableWithSpeech("angTable", ang);
-                    await fillTableWithSpeech("numTable", num);
-                    await fillTableWithSpeech("complexnumTable", complexnum);
-                    await fillTableWithSpeech("unitTable", unit);
-                    await fillTableWithSpeech("qtyTable", qty);
-                    await fillTableWithSpeech("listTable", listStuff);
-                    await fillTableWithSpeech(
-                        "declareSIUnitTable",
-                        declareSIUnit
-                    );
+                    // await fillTableWithSpeech("angTable", ang);
+                    // await fillTableWithSpeech("numTable", num);
+                    // await fillTableWithSpeech("complexnumTable", complexnum);
+                    // await fillTableWithSpeech("unitTable", unit);
+                    // await fillTableWithSpeech("qtyTable", qty);
+                    // await fillTableWithSpeech("listTable", listStuff);
+                    // await fillTableWithSpeech(
+                    //     "declareSIUnitTable",
+                    //     declareSIUnit
+                    // );
                 },
             },
         };
@@ -71,8 +71,8 @@
     <script
         type="text/javascript"
         id="MathJax-script"
-        async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+        defer
+        src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js"
     ></script>
 
     <body>
@@ -402,6 +402,8 @@
                 String.raw`\ang{6;7;6.5}`,
                 String.raw`\ang[angle-separator = {\,}]{6;7;6.5}`,
                 String.raw`\ang[angle-separator = {\,}]{6;;}`,
+                String.raw`\ang[fill-angle-degrees]{;-2;}`,
+                 String.raw`\sisetup{fill-angle-degrees}\ang{;-2;}`,
                 String.raw`\displaylines{
 \ang{-1;;} \\
 \ang{;-2;} \\
