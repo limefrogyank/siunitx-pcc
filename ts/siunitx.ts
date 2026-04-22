@@ -100,10 +100,10 @@ function angleChars(parser: TexParser, mchar: string | TexToken | StackItem) {
         const def = mchar.attributes || {};
         def.mathvariant = TexConstant.Variant.NORMAL;
         def.class = "MathML-Unit";
-        const emptyToken = parser.create("token", "mi");
+        //const emptyToken = parser.create("token", "mi");
         const symbolToken = parser.create("token", "mi", def, mchar.char);
-        const msupNode = parser.create("node", "msup", [emptyToken, symbolToken]);
-        parser.Push(msupNode);
+        //const msupNode = parser.create("node", "msup", [emptyToken, symbolToken]);
+        parser.Push(symbolToken);
     }
 }
 

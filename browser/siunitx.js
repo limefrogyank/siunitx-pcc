@@ -152,7 +152,7 @@ const modeMapping = new Map([
 ]);
 function displayAngleMml(parser, ang, options) {
     var _a, _b, _c;
-    const root = parser.create('node', 'mrow', [], { fake: 'argument' });
+    const root = parser.create('node', 'inferredMrow', [], {});
     const degreeValue = +(ang.degrees.whole + (ang.degrees.decimal !== '' ? '.' : '') + ang.degrees.fractional);
     if (!ang.degrees.whole && options["fill-angle-degrees"]) {
         if (((_a = ang.minutes) === null || _a === void 0 ? void 0 : _a.sign) === '-') {
@@ -3016,10 +3016,10 @@ function angleChars(parser, mchar) {
         const def = mchar.attributes || {};
         def.mathvariant = TexConstants_js_1.TexConstant.Variant.NORMAL;
         def.class = "MathML-Unit";
-        const emptyToken = parser.create("token", "mi");
+        //const emptyToken = parser.create("token", "mi");
         const symbolToken = parser.create("token", "mi", def, mchar.char);
-        const msupNode = parser.create("node", "msup", [emptyToken, symbolToken]);
-        parser.Push(msupNode);
+        //const msupNode = parser.create("node", "msup", [emptyToken, symbolToken]);
+        parser.Push(symbolToken);
     }
 }
 new TokenMap_js_1.CharacterMap("angchar-symbols", angleChars, {
