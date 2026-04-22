@@ -160,8 +160,3 @@ This line should come before you add anything else and will do the same thing as
 
 Clone the repo, make sure you have nodejs, then run `npm install` and `npm run build`. This will generate the 'siunitx.js' file that's already in the root folder.
 
-## Quirks 
-
-MathJax v4 introduced several newline macros (`\\\\`, `\\goodbreak`, etc.).  These do NOT work well with siunitx.  If you must have multiple siunitx macros within one $$ .. $$ encapsulation, but on separate lines, you should use the `\\displaylines{ }` macro and place all content within the braces.  You can use `\\\\` within that macro as it enforces table rows for each part.  
-
-Otherwise, use plain HTML and multiple `$$..$$` encapsulations for each siunitx macro.
