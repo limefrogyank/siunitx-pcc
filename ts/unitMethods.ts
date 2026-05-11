@@ -294,7 +294,11 @@ export function parseUnit(parser: TexParser, text: string, globalOptions: IOptio
 
 	// argument contains either macros or it's just plain text
 	if (!isLiteral) {
-		const subParser = new TexParser(text, parser.stack.env, parser.configuration)
+
+		// ensure siunitx unit-token parser handles e.g. \kilo\metre before MathJax attempts normal TeX macro resolution
+		const subParser = new TexParser('', parser.stack.env, parser.configuration)
+		subParser.string = text
+
 		subParser.i = 0;
 		let nextModifier: IUnitPiece | null = null;
 		while (subParser.i < subParser.string.length) {
@@ -365,12 +369,12 @@ export function processUnit(parser: TexParser): MmlNode {
 
 		const text = parser.GetArgument('unit');
 
-		// There are no switches to change internally that indicates the unit was literal vs interpreted. 
+		// There are no switches to change internally that indicates the unit was literal vs interpreted.
 		// If literal, we do NOT apply per-mode settings.
 		// We'll check if text had backslashes and pass that result to the next functions.
 
 		const isLiteral = (text.indexOf('\\') === -1);
-		// This will only be a global option.  
+		// This will only be a global option.
 		if (globalOptions["forbid-literal-units"]) {
 			throw siunitxError.LiteralUnitsForbidden(text);
 		}
@@ -393,7 +397,7 @@ function joinValues(values: IterableIterator<string>, joinString: string): strin
 function processPrefixUnitCombo(text: string, unitPiece: IUnitPiece): void {
 	const prefixes = joinValues(prefixSymbol.values(), '|');
 	const units = joinValues(unitSymbol.values(), '|');
-	// TODO: Do I need to sort regex options from long string to short string?  
+	// TODO: Do I need to sort regex options from long string to short string?
 	// I don't think so since we're parsing a single unit at a time...but I should verify.
 
 	const regex = new RegExp('(' + prefixes + ')?(' + units + ')');
